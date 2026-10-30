@@ -34,10 +34,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+
+      - name: Approve build scripts
+        run: pnpm approve-builds --all || true
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install
 
       - name: Build site
         run: pnpm run build
