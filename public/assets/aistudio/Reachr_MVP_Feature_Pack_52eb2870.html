@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reachr — Rich Colour Edition · MVP Feature Pack</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff7ec;--ink:#1d1340;--mut:#6a5f8c;--card:#ffffffcc;--line:#1d134022;
+--violet:#5b3df5;--pink:#ff3d8b;--tang:#ff8a1f;--teal:#00b8a0;--lemon:#ffd23f;--sky:#2fa8ff;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150d33;--ink:#fff3e0;--mut:#b7a9e6;--card:#2a1d5acc;--line:#fff3e033;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#150d33;--ink:#fff3e0;--mut:#b7a9e6;--card:#2a1d5acc;--line:#fff3e033;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+.blobs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.b{position:absolute;filter:blur(40px);opacity:.55;animation:morph 14s ease-in-out infinite alternate}
+.b1{width:46vmax;height:46vmax;background:var(--pink);left:-12vmax;top:-10vmax}
+.b2{width:40vmax;height:40vmax;background:var(--lemon);right:-10vmax;top:18vh;animation-delay:-4s}
+.b3{width:44vmax;height:44vmax;background:var(--violet);left:20vw;bottom:-22vmax;animation-delay:-8s;opacity:.4}
+.b4{width:26vmax;height:26vmax;background:var(--teal);right:25vw;top:-8vmax;animation-delay:-2s}
+@keyframes morph{0%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;transform:translate(0,0) rotate(0)}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%}100%{border-radius:50% 50% 40% 60%/30% 70% 60% 40%;transform:translate(4vmax,3vmax) rotate(40deg)}}
+.app{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:16px 18px 60px}
+nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:26px;letter-spacing:-.04em;cursor:pointer;display:flex;align-items:center;gap:8px;background:none;border:0;color:inherit;font-family:inherit}
+.dot{width:22px;height:22px;background:linear-gradient(135deg,var(--pink),var(--tang));animation:morph 6s ease-in-out infinite alternate}
+.tabs{display:flex;gap:4px;background:var(--card);padding:5px;border-radius:99px;border:1px solid var(--line);backdrop-filter:blur(10px)}
+.tab{border:0;background:none;color:var(--ink);font:600 14px inherit;font-family:inherit;padding:9px 18px;border-radius:99px;cursor:pointer;position:relative}
+.tab.on{color:#fff;view-transition-name:pill;background:linear-gradient(120deg,var(--violet),var(--pink))}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+h1{font-size:clamp(44px,9vw,104px);line-height:.92;letter-spacing:-.05em;margin:30px 0 18px;font-weight:800;max-width:11ch}
+h1 span{display:inline-block;background:linear-gradient(100deg,var(--pink),var(--tang),var(--lemon));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:28px;letter-spacing:-.03em;margin:0 0 12px}
+.lead{font-size:19px;color:var(--mut);max-width:46ch;line-height:1.45}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.btn{border:0;font:700 16px inherit;font-family:inherit;color:#fff;padding:15px 26px;border-radius:99px;cursor:pointer;transition:transform .2s,border-radius .4s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px) scale(1.03);border-radius:22px 60px 22px 60px}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.bv{background:linear-gradient(120deg,var(--violet),var(--sky))}.bp{background:linear-gradient(120deg,var(--pink),var(--tang))}.bt{background:linear-gradient(120deg,var(--teal),var(--sky))}.bl{background:var(--lemon);color:#1d1340}
+.ghost{background:none;border:2px solid var(--line);color:var(--ink)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:44px}
+.fl{padding:22px;color:#fff;font-weight:600;line-height:1.3;transition:border-radius .6s}
+.fl:hover{border-radius:60px 20px 60px 20px}.fl b{display:block;font-size:22px;margin-bottom:6px;letter-spacing:-.02em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:22px}
+.st{padding:18px 20px;color:#fff;border-radius:28px 28px 60px 28px}
+.st:nth-child(2){border-radius:28px 60px 28px 28px}.st:nth-child(3){border-radius:60px 28px 28px 28px}.st:nth-child(4){border-radius:28px 28px 28px 60px}
+.st small{opacity:.9;font-weight:600;font-size:13px}.st div{font-size:34px;font-weight:800;letter-spacing:-.04em}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:20px;align-items:start}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:30px;padding:22px;backdrop-filter:blur(14px)}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 5px;color:var(--mut)}
+input,select,textarea{width:100%;font:500 16px inherit;font-family:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:16px;padding:12px 14px}
+.lk{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:var(--bg);color:var(--ink);font-family:inherit;padding:14px 16px;border-radius:20px;margin-top:10px;cursor:pointer;border-left:8px solid var(--tang);transition:transform .2s,border-radius .4s}
+.lk:hover{transform:translateX(5px);border-radius:20px 40px 40px 20px}
+.lk b{font-size:17px}.lk small{color:var(--mut);display:block}
+.chip{font-size:12px;font-weight:700;padding:4px 11px;border-radius:99px;color:#fff;white-space:nowrap}
+.s-pending{background:var(--tang)}.s-paid{background:var(--teal)}.s-disputed{background:var(--pink)}.s-resolved{background:var(--violet)}
+.lk.s-pending{border-color:var(--tang)}.lk.s-paid{border-color:var(--teal)}.lk.s-disputed{border-color:var(--pink)}.lk.s-resolved{border-color:var(--violet)}
+.hero{view-transition-name:morph;padding:24px;color:#fff;border-radius:34px 70px 34px 34px;margin-bottom:16px}
+.hero.s-pending{background:linear-gradient(120deg,var(--tang),var(--pink))}.hero.s-paid{background:linear-gradient(120deg,var(--teal),var(--sky))}
+.hero.s-disputed{background:linear-gradient(120deg,var(--pink),var(--violet))}.hero.s-resolved{background:linear-gradient(120deg,var(--violet),var(--sky))}
+.hero .amt{font-size:56px;font-weight:800;letter-spacing:-.05em;line-height:1}
+.apps{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+.app-c{border:2px solid var(--line);background:none;color:var(--ink);font:700 14px inherit;font-family:inherit;padding:10px 16px;border-radius:99px;cursor:pointer;transition:all .3s}
+.app-c.on{background:var(--lemon);color:#1d1340;border-color:var(--lemon);border-radius:14px 30px 14px 30px}
+.chat{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px;margin-bottom:10px}
+.m{max-width:82%;padding:10px 14px;border-radius:20px;font-size:15px;line-height:1.35;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.m small{display:block;opacity:.7;font-size:11px;margin-top:3px}
+.m.customer{background:var(--sky);color:#fff;align-self:flex-start;border-bottom-left-radius:5px}
+.m.seller{background:var(--pink);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+.m.system{background:var(--lemon);color:#1d1340;align-self:center;font-size:13px;text-align:center}
+.send{display:flex;gap:8px}.send input{flex:1}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.sp{padding:10px 6px;text-align:center;font-size:12px;font-weight:700;border-radius:14px;background:var(--bg);color:var(--mut);transition:all .5s}
+.sp.done{background:var(--teal);color:#fff}.sp.cur{background:linear-gradient(120deg,var(--pink),var(--tang));color:#fff;border-radius:22px 8px 22px 8px;transform:scale(1.06)}
+.tl{margin:10px 0;padding-left:16px;border-left:3px solid var(--violet)}.tl p{margin:0 0 10px;font-size:14px}.tl b{color:var(--violet)}
+.pulse{animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.45}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 22px;border-radius:99px;font-weight:700;z-index:9;animation:pop .4s}
+.back{margin-bottom:12px}
+.app{max-width:1180px}
+nav{position:sticky;top:8px;z-index:5;padding:8px 10px 8px 16px;background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:99px}
+.nl{display:flex;gap:4px}.nl button{border:0;background:none;color:var(--ink);font-family:inherit;padding:8px 12px;border-radius:99px;cursor:pointer}.nl button:hover{background:var(--lemon);color:#1d1340}
+@media(max-width:760px){.nl{display:none}}
+.btn{font-size:16px;font-weight:700}.tab,.nl button,.fb button{font-size:14px;font-weight:600}.app-c{font-size:14px;font-weight:700}input,select,textarea{font-size:16px;font-weight:500}
+.sec{margin-top:96px;scroll-margin-top:90px}.sec>h2{font-size:clamp(32px,5vw,56px);letter-spacing:-.04em;line-height:1;max-width:16ch;margin-bottom:10px}
+.mq{margin:50px -18px 0;overflow:hidden;background:var(--ink);color:var(--bg);padding:14px 0;transform:rotate(-1.5deg)}
+.mq div{display:flex;gap:40px;width:max-content;animation:mq 26s linear infinite;font-weight:800;font-size:22px;letter-spacing:-.02em}
+@keyframes mq{to{transform:translateX(-50%)}}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:26px}
+.ft{padding:26px;color:#fff;min-height:200px;border-radius:30px;transition:border-radius .7s,transform .3s}.ft:hover{border-radius:70px 24px 70px 24px;transform:translateY(-4px)}
+.ft b{font-size:24px;letter-spacing:-.03em;display:block;margin:10px 0 6px}.ft i{font-style:normal;font-size:34px}.ft p{margin:0;line-height:1.4}
+.pr{padding:28px;border-radius:34px}.pr h3{margin:0;font-size:22px}.pr .pz{font-size:52px;font-weight:800;letter-spacing:-.05em;margin:8px 0}.pr ul{padding-left:18px;line-height:1.8}.pr.hot{background:linear-gradient(150deg,var(--violet),var(--pink));color:#fff;border:0;transform:scale(1.04)}
+details{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px 20px;margin-top:10px}summary{font-weight:700;font-size:18px;cursor:pointer}details p{color:var(--mut);line-height:1.5;margin:10px 0 0}
+.cta{margin-top:96px;padding:56px 28px;text-align:center;color:#fff;border-radius:60px 120px 60px 120px;background:linear-gradient(120deg,var(--pink),var(--tang) 45%,var(--violet))}
+.cta h2{font-size:clamp(34px,6vw,64px);letter-spacing:-.04em;margin:0 auto 20px;max-width:14ch;line-height:1}
+footer{margin-top:60px;padding:30px 0 0;border-top:2px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;color:var(--mut);font-size:14px}footer b{color:var(--ink);display:block;margin-bottom:8px}footer span{display:block;margin:5px 0}
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;margin-top:12px}.bars div{flex:1;border-radius:14px 14px 4px 4px;position:relative;transition:height .8s cubic-bezier(.3,1.4,.4,1);min-height:6px}.bars small{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:11px;color:var(--mut);font-weight:600}
+.fb{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.fb button{border:2px solid var(--line);background:none;color:var(--ink);font-family:inherit;padding:6px 13px;border-radius:99px;cursor:pointer}.fb button.on{background:var(--violet);color:#fff;border-color:var(--violet)}
+.qr{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:6px 0 14px}.qr svg{width:120px;height:120px;background:#fff;border-radius:16px;padding:8px}
+.esc{display:inline-flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;background:var(--card);border:2px solid var(--violet);border-radius:99px 30px 30px 99px;margin-top:14px}.esc svg{width:40px;height:46px;flex:none}.esc b{display:block;font-size:15px;margin:0}.esc small{display:block;color:var(--mut);font-size:12px}
+.lic{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}.lic p{margin:0}
+::view-transition-old(morph),::view-transition-new(morph){animation-duration:.55s;animation-timing-function:cubic-bezier(.3,1.2,.4,1)}
+::view-transition-group(pill){animation-duration:.45s;animation-timing-function:cubic-bezier(.3,1.4,.4,1)}
+::view-transition-old(root){animation:.3s ease both fadeo}::view-transition-new(root){animation:.4s ease both fadei}
+@keyframes fadeo{to{opacity:0;transform:scale(.97)}}@keyframes fadei{from{opacity:0;transform:scale(1.03)}}
+@media(prefers-reduced-motion:reduce){*,::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important;transition:none!important}}
+
+/* Reachr Trust Center additions */
+.tc-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin:26px 0 24px}
+.tc-kicker{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
+.tc-title{font-size:clamp(36px,6vw,66px);line-height:.96;letter-spacing:-.055em;margin:8px 0 10px}
+.tc-sub{color:var(--mut);font-size:16px;max-width:58ch;line-height:1.5;margin:0}
+.tc-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin:18px 0}
+.tc-panel{grid-column:span 6;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;min-width:0;backdrop-filter:blur(14px)}
+.tc-panel.wide{grid-column:span 12}.tc-panel.third{grid-column:span 4}
+.tc-panel h3{font-size:21px;letter-spacing:-.03em;margin:0 0 7px}.tc-desc{color:var(--mut);font-size:13px;line-height:1.45;margin:0 0 16px}
+.tc-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.tc-map{height:210px;position:relative;overflow:hidden;border-radius:20px;background:#e8f1ed;margin:12px 0;color:#203d38}
+.tc-map svg{width:100%;height:100%;display:block}.tc-map-tag{position:absolute;top:12px;left:12px;background:#fff;color:#203d38;border-radius:99px;padding:7px 11px;font-size:12px;font-weight:800;box-shadow:0 3px 14px #102b2420}
+.tc-map-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.tc-pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:6px 10px;font-size:11px;font-weight:800;background:#e5e7eb;color:#374151}.tc-pill.green{background:#d1fae5;color:#065f46}.tc-pill.amber{background:#fef3c7;color:#92400e}.tc-pill.violet{background:#ede9fe;color:#5b21b6}.tc-pill.blue{background:#dbeafe;color:#1d4ed8}
+.tc-track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:18px 0 8px}.tc-step{position:relative;text-align:center;color:var(--mut);font-size:11px;font-weight:700}.tc-step .tc-dot{width:25px;height:25px;border-radius:50%;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;margin:0 auto 8px}.tc-step.done .tc-dot{background:var(--teal);border-color:var(--teal);color:#fff}.tc-step.current .tc-dot{background:var(--violet);border-color:var(--violet);color:#fff;box-shadow:0 0 0 5px #5b3df522}.tc-step.done,.tc-step.current{color:var(--ink)}
+.tc-metric{background:var(--bg);border:1px solid var(--line);border-radius:17px;padding:14px;min-width:0}.tc-metric strong{display:block;font-size:26px;letter-spacing:-.04em}.tc-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.tc-list{display:grid;gap:10px}.tc-event{display:flex;gap:12px;align-items:flex-start}.tc-event-dot{width:11px;height:11px;flex:none;border-radius:50%;background:var(--teal);margin-top:5px;box-shadow:0 0 0 4px #00b8a01c}.tc-event p{margin:0;font-size:13px;line-height:1.45}.tc-event small{color:var(--mut)}
+.tc-vault{background:linear-gradient(135deg,#21164b,#5b3df5);color:#fff;border-radius:21px;padding:19px}.tc-vault .tc-label{color:#d8d0ff}.tc-vault .tc-balance{font-size:clamp(34px,5vw,48px);font-weight:800;letter-spacing:-.05em;margin:8px 0}.tc-vault small{color:#e2dcff}.tc-vault .tc-pill{background:#ffffff20;color:#fff}
+.tc-avatar{width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,var(--pink),var(--tang));color:white;display:grid;place-items:center;font-weight:800;font-size:20px;flex:none}.tc-profile{display:flex;align-items:center;gap:13px;margin:12px 0 18px}.tc-profile p{margin:0}.tc-profile small{color:var(--mut)}
+.tc-check{display:flex;gap:9px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px}.tc-check .ok{color:var(--teal);font-weight:900}
+.tc-btn{border:0;border-radius:99px;padding:11px 16px;font:700 13px inherit;font-family:inherit;background:var(--ink);color:var(--bg);cursor:pointer;transition:transform .2s}.tc-btn:hover{transform:translateY(-2px)}.tc-btn.primary{background:var(--violet);color:#fff}.tc-btn.soft{background:var(--bg);color:var(--ink);border:1px solid var(--line)}.tc-btn:disabled{opacity:.45;cursor:default;transform:none}
+.tc-input{width:100%;padding:12px 13px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;margin:8px 0}
+.tc-ai{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:14px;font-size:14px;line-height:1.55;margin:12px 0;white-space:pre-wrap}
+.tc-proof{border:1.5px dashed var(--line);border-radius:18px;padding:18px;text-align:center;background:var(--bg)}.tc-proof input{font-size:12px;border:0;padding:8px}.tc-proof img{max-width:100%;max-height:180px;border-radius:12px;margin-top:10px}
+.tc-notice{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}.tc-notice:first-child{border-top:0}.tc-notice .ni{width:35px;height:35px;display:grid;place-items:center;border-radius:12px;background:var(--bg);flex:none}.tc-notice p{margin:0;font-size:13px;line-height:1.45}.tc-notice small{color:var(--mut)}.tc-notice.unread p{font-weight:700}.tc-notice.unread .ni{background:#ede9fe;color:#5b3df5}
+.tc-bar-row{display:grid;grid-template-columns:64px 1fr 65px;gap:10px;align-items:center;margin:11px 0;font-size:12px}.tc-bar{height:9px;background:var(--bg);border-radius:99px;overflow:hidden}.tc-bar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--violet),var(--pink))}
+.tc-reward{border-radius:18px;padding:14px;background:linear-gradient(130deg,#fff2c5,#ffe2ee);color:#392348}.tc-reward strong{font-size:23px;display:block}.tc-muted-note{font-size:11px;color:var(--mut);line-height:1.45;margin-top:12px}
+@media(max-width:760px){.tc-panel,.tc-panel.third{grid-column:span 12}.tc-grid{gap:12px}.tc-panel{padding:16px}.tc-track{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:14px}.tc-metrics{grid-template-columns:1fr 1fr}.tc-metrics .tc-metric:last-child{grid-column:span 2}}
+
+
+/* RICH COLOUR EDITION — Reachr */
+:root{
+ --bg:#0b1020;--ink:#f6f7ff;--mut:#a5b0d1;--card:rgba(20,29,56,.82);--line:rgba(166,184,255,.18);
+ --violet:#8b5cf6;--pink:#ff4f87;--tang:#ff9f43;--teal:#21d4b4;--lemon:#f6d365;--sky:#43b9ff;
+ color-scheme:dark;
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="light"]){color-scheme:dark}}
+:root[data-theme="light"]{--bg:#f3f5ff;--ink:#151936;--mut:#5e678b;--card:rgba(255,255,255,.88);--line:rgba(56,73,130,.16);color-scheme:light}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(139,92,246,.23),transparent 35%),radial-gradient(ellipse at 100% 24%,rgba(255,79,135,.15),transparent 32%),radial-gradient(ellipse at 55% 100%,rgba(33,212,180,.12),transparent 38%),var(--bg);transition:background .3s}
+.blobs{opacity:.34}.b{filter:blur(72px);opacity:.7}
+.b1{background:#ff4f87}.b2{background:#f6d365}.b3{background:#6d5dfc}.b4{background:#21d4b4}
+.app{max-width:1240px;padding:22px 22px 72px}
+nav{background:rgba(12,17,36,.78);border-color:rgba(185,198,255,.18);box-shadow:0 18px 55px rgba(0,0,0,.22);backdrop-filter:blur(24px);border-radius:24px;padding:10px 14px}
+.logo{font-size:28px;letter-spacing:-.06em}.dot{border-radius:7px;background:linear-gradient(135deg,#ff4f87,#ff9f43 48%,#f6d365);box-shadow:0 0 24px rgba(255,79,135,.35)}
+.tabs{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+.tab{color:#d9def5}.tab.on{background:linear-gradient(115deg,#7757ff,#c052ff 55%,#ff4f87);box-shadow:0 7px 24px rgba(139,92,246,.28)}
+.nl button{color:#d9def5}.nl button:hover{background:linear-gradient(120deg,#21d4b4,#43b9ff);color:#071424}
+h1{letter-spacing:-.065em}.lead{color:var(--mut)}
+h1 span{background:linear-gradient(100deg,#ff4f87 0%,#ff9f43 34%,#f6d365 57%,#21d4b4 78%,#43b9ff 100%);-webkit-background-clip:text;background-clip:text}
+.btn{box-shadow:0 10px 28px rgba(0,0,0,.18);border-radius:16px}
+.btn:hover{border-radius:16px;transform:translateY(-3px);box-shadow:0 16px 32px rgba(0,0,0,.25)}
+.bv{background:linear-gradient(120deg,#7657ff,#a855f7 55%,#e34bcb)}.bp{background:linear-gradient(120deg,#ff4f87,#ff9f43)}.bt{background:linear-gradient(120deg,#00bfa6,#168be5)}.bl{background:linear-gradient(120deg,#f6d365,#ff9f43);color:#24172e}
+.ghost{border:1px solid var(--line);background:rgba(255,255,255,.04)}
+.fl{border:1px solid rgba(255,255,255,.12);border-radius:24px!important;box-shadow:0 15px 38px rgba(0,0,0,.14)}
+.fl:hover{transform:translateY(-4px);border-radius:24px!important}
+.st{border:1px solid rgba(255,255,255,.12);border-radius:24px!important;box-shadow:0 16px 38px rgba(0,0,0,.2)}
+.st:nth-child(1){background:linear-gradient(135deg,#7557ff,#a855f7)}.st:nth-child(2){background:linear-gradient(135deg,#ff4f87,#ff8b65)}.st:nth-child(3){background:linear-gradient(135deg,#00bfa6,#168be5)}.st:nth-child(4){background:linear-gradient(135deg,#e8b94e,#ff8d43)}
+.card{background:var(--card);border-color:var(--line);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.14);backdrop-filter:blur(22px)}
+input,select,textarea{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:13px}
+input::placeholder,textarea::placeholder{color:#818bac}
+.lk{background:rgba(255,255,255,.045);border-radius:15px!important;border-left-width:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}
+.lk:hover{border-radius:15px!important;transform:translateX(4px)}
+.s-pending{background:#ff9f43}.s-paid{background:#21bfa5}.s-disputed{background:#ff4f87}.s-resolved{background:#8b5cf6}
+.hero{border-radius:24px!important;box-shadow:0 18px 45px rgba(0,0,0,.2)}
+.hero.s-pending{background:linear-gradient(120deg,#ff9f43,#ff4f87)}.hero.s-paid{background:linear-gradient(120deg,#00bfa6,#168be5)}.hero.s-disputed{background:linear-gradient(120deg,#ff4f87,#8b5cf6)}.hero.s-resolved{background:linear-gradient(120deg,#7657ff,#168be5)}
+.app-c{border:1px solid var(--line);border-radius:12px}.app-c.on{background:linear-gradient(120deg,#f6d365,#ff9f43);border-color:transparent;color:#24172e;border-radius:12px}
+.m.customer{background:linear-gradient(135deg,#168be5,#43b9ff)}.m.seller{background:linear-gradient(135deg,#ff4f87,#c052ff)}.m.system{background:#f6d365;color:#24172e}
+.sp{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px}.sp.done{background:#00bfa6}.sp.cur{background:linear-gradient(120deg,#7657ff,#c052ff);border-radius:10px;transform:none}
+.tl{border-color:#8b5cf6}.tl b{color:#a995ff}
+.mq{background:linear-gradient(90deg,#7657ff,#c052ff,#ff4f87,#ff9f43);color:white}
+.ft{border-radius:24px!important;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 42px rgba(0,0,0,.14)}.ft:hover{transform:translateY(-4px);border-radius:24px!important}
+.fb button{border:1px solid var(--line)}.fb button.on{background:linear-gradient(120deg,#7657ff,#c052ff);border-color:transparent}
+.esc{border-color:#8b5cf6;background:rgba(139,92,246,.12)}
+.tc-kicker{color:#b7a2ff}.tc-panel{background:var(--card);border-color:var(--line);border-radius:24px;box-shadow:0 16px 48px rgba(0,0,0,.12)}
+.tc-map{background:#122b3a;color:#e6fff8}.tc-map-tag{background:#f6d365;color:#24172e}
+.tc-pill{background:rgba(255,255,255,.09);color:var(--ink)}.tc-pill.green{background:rgba(33,212,180,.15);color:#5ff2d7}.tc-pill.amber{background:rgba(255,159,67,.16);color:#ffc17d}.tc-pill.violet{background:rgba(139,92,246,.18);color:#c8b8ff}.tc-pill.blue{background:rgba(67,185,255,.15);color:#8ad5ff}
+.tc-step .tc-dot{background:rgba(255,255,255,.04);border-color:var(--line)}.tc-step.done .tc-dot{background:#00bfa6;border-color:#00bfa6}.tc-step.current .tc-dot{background:#8b5cf6;border-color:#8b5cf6;box-shadow:0 0 0 5px rgba(139,92,246,.2)}
+.tc-metric{background:rgba(255,255,255,.035);border-color:var(--line);border-radius:16px}
+.tc-event-dot{background:#21d4b4;box-shadow:0 0 0 4px rgba(33,212,180,.13)}
+.tc-vault{background:radial-gradient(circle at 100% 0%,rgba(255,79,135,.55),transparent 40%),linear-gradient(135deg,#302064,#5d3acb 58%,#176d9b);border:1px solid rgba(255,255,255,.15)}
+.tc-avatar{background:linear-gradient(135deg,#ff4f87,#ff9f43 55%,#f6d365);color:#24172e;border-radius:16px}
+.tc-btn{background:linear-gradient(120deg,#7657ff,#a855f7);color:#fff;border-radius:12px}.tc-btn.primary{background:linear-gradient(120deg,#7657ff,#c052ff)}.tc-btn.soft{background:rgba(255,255,255,.05);color:var(--ink);border-color:var(--line)}
+.tc-input{background:rgba(255,255,255,.04);border-color:var(--line)}
+.tc-ai{background:rgba(255,255,255,.035);border-color:var(--line);border-radius:14px}
+.tc-proof{background:rgba(255,255,255,.025);border-color:rgba(139,92,246,.45);border-radius:16px}
+.tc-notice .ni{background:rgba(255,255,255,.06)}.tc-notice.unread .ni{background:rgba(139,92,246,.2);color:#c8b8ff}
+.tc-bar{background:rgba(255,255,255,.08)}.tc-bar span{background:linear-gradient(90deg,#7657ff,#c052ff,#ff4f87,#ff9f43)}
+.tc-reward{background:radial-gradient(circle at 100% 0%,#f6d365,transparent 45%),linear-gradient(135deg,#ffcfda,#f5b7ff);color:#28153b}
+.toast{background:linear-gradient(120deg,#7657ff,#c052ff);color:white;box-shadow:0 12px 35px rgba(0,0,0,.3)}
+footer{color:var(--mut)}
+.bp,.bt{color:#12082b}.chip.s-pending,.chip.s-paid{color:#12082b}
+.st:nth-child(3),.st:nth-child(4){color:#12082b}
+.hero.s-paid,.hero.s-pending,.hero.s-paid .chip,.hero.s-pending .chip{color:#12082b}
+.fl[style*="var(--teal)"],.fl[style*="var(--tang)"],.ft[style*="var(--teal)"],.ft[style*="var(--tang)"],.ft[style*="var(--sky)"]{color:#12082b}
+.btn:active,.app-c:active,.tab:active{transform:scale(.92)!important;transition-duration:.08s}
+.btn{background-size:200% 200%;animation:shift 6s ease infinite}h1 span{background-size:200% 200%;animation:shift 4s ease infinite}
+@keyframes shift{50%{background-position:100% 50%}}
+.stks{position:relative;height:0}.stk{position:absolute;font-size:46px;pointer-events:none;animation:bob 5s ease-in-out infinite;filter:drop-shadow(0 8px 10px #0005)}
+@keyframes bob{50%{transform:translateY(-20px) rotate(14deg)}}
+@media(max-width:760px){.stk{display:none}}
+.rv{opacity:0;transform:translateY(36px) scale(.92);transition:opacity .6s,transform .7s cubic-bezier(.3,1.5,.5,1);transition-delay:calc(var(--i,0)*70ms)}.rv.in{opacity:1;transform:none}
+.ft,.fl{transition:transform .35s cubic-bezier(.3,1.6,.5,1),border-radius .7s}
+.ft:hover,.fl:hover{transform:translateY(-6px) rotate(-1.5deg) scale(1.03)}.ft:nth-child(even):hover{transform:translateY(-6px) rotate(1.5deg) scale(1.03)}
+.ft i{display:inline-block;transition:transform .4s cubic-bezier(.3,1.8,.5,1)}.ft:hover i{transform:scale(1.45) rotate(-12deg)}
+.mq.mq2{transform:rotate(1.5deg);margin-top:-8px}.mq2 div{animation-direction:reverse;animation-duration:34s}
+.logo:hover .dot{animation-duration:1s}
+.cf{position:fixed;z-index:20;pointer-events:none;font-size:28px;animation:fall 1.5s ease-out forwards}
+@keyframes fall{20%{transform:translate(var(--x),var(--y)) scale(1.3)}100%{transform:translate(calc(var(--x)*1.5),calc(var(--y) + 280px)) rotate(var(--r)) scale(.7);opacity:0}}
+.spot{position:fixed;width:380px;height:380px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,#ff4f8755,transparent 65%);transform:translate(-50%,-50%);left:-999px;top:-999px}
+@media(max-width:760px){.app{padding:12px 13px 48px}nav{border-radius:20px;padding:10px 12px}.logo{font-size:24px}.tabs{max-width:100%;overflow:auto}.tab{padding:9px 13px;white-space:nowrap}.card{padding:17px}}
+
+
+/* Reachr MVP feature pack */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+.feature-tile{padding:17px;border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:18px}
+.feature-tile .ico{font-size:24px;margin-bottom:8px}.feature-tile p{color:var(--mut);font-size:13px;line-height:1.5;margin:7px 0 0}
+.timeline{display:grid;gap:0;margin:12px 0 18px}.timeline-item{display:grid;grid-template-columns:18px 1fr;gap:10px;position:relative;padding-bottom:14px}.timeline-item:not(:last-child):before{content:"";position:absolute;left:7px;top:16px;bottom:0;width:2px;background:var(--line)}.timeline-dot{width:16px;height:16px;border-radius:50%;background:var(--teal);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--teal);z-index:1}.timeline-item.pending .timeline-dot{background:var(--bg);box-shadow:0 0 0 1px var(--line)}.timeline-item small{color:var(--mut)}
+.trust-score{display:flex;align-items:center;gap:14px;padding:15px;border:1px solid var(--line);border-radius:18px;background:rgba(33,212,180,.06);margin:14px 0}.trust-number{font-size:32px;font-weight:800;letter-spacing:-.05em;color:var(--teal)}
+.qr img{width:112px;height:112px;background:white;padding:6px;border-radius:10px;object-fit:contain}.prototype-note{padding:12px 14px;border:1px dashed var(--line);border-radius:14px;color:var(--mut);font-size:12px;line-height:1.5;margin-top:12px}.inline-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.inline-fields{grid-template-columns:1fr}.qr{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="blobs"><i class="b b1"></i><i class="b b2"></i><i class="b b3"></i><i class="b b4"></i></div>
+<div class="app" id="app"></div>
+<script>
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
+const clock=()=>new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+const sm=(s,n,t)=>({id:Math.random().toString(36).slice(2),sender:s,senderName:n,text:t,timestamp:clock()});
+const BIZ='Meera’s Handloom',VPA='meera@upi';
+const PM={
+ upi:{name:'UPI',icon:'⚡',pre:'UPI',opts:['GPay','PhonePe','Paytm','BHIM'],hint:l=>'Pay to '+l.businessVpa,cta:l=>'Pay '+inr(l.amount)},
+ card:{name:'Card',icon:'💳',pre:'CRD',opts:['Visa','Mastercard','RuPay','Amex'],hint:()=>'Credit or debit card. This prototype never collects card numbers.',cta:l=>'Pay '+inr(l.amount)},
+ bank:{name:'Netbanking',icon:'🏦',pre:'NBK',opts:['SBI','HDFC','ICICI','Axis'],hint:()=>'You would be sent to your bank to approve the payment.',cta:l=>'Pay '+inr(l.amount)},
+ wallet:{name:'Wallet',icon:'👛',pre:'WLT',opts:['Paytm Wallet','Amazon Pay','Mobikwik','Freecharge'],hint:()=>'Pay from your wallet balance.',cta:l=>'Pay '+inr(l.amount)},
+ emi:{name:'EMI',icon:'📆',pre:'EMI',opts:['3 months','6 months','9 months'],hint:l=>{const n=parseInt(S.app)||6;return 'About '+inr(Math.ceil(l.amount/n))+' a month for '+n+' months. Sample figure; interest and fees are not modelled.'},cta:()=>'Start EMI'},
+ cod:{name:'Cash on delivery',icon:'💵',pre:'COD',opts:['Pay on arrival'],hint:()=>'Pay the courier when the order arrives.',cta:()=>'Confirm order'}
+};
+const S={view:'landing',sel:null,app:'GPay',toast:'',q:'',f:'all',trackStep:3,readNotices:false,rewardClaimed:false,aiResult:'',proofName:'',proofData:'',tcIssue:'Item not as described',tcDetails:'',method:'upi',links:[
+ {id:'l1',linkCode:'RCH-4F2A',customerName:'Ananya Rao',amount:2400,note:'Kalamkari dupatta set',businessName:BIZ,businessVpa:VPA,status:'pending',messages:[sm('seller',BIZ,'Hi Ananya! Here is your payment link.')]},
+ {id:'l2',linkCode:'RCH-9K1D',customerName:'Rohit Sharma',amount:1150,note:'Cotton kurta, size M',businessName:BIZ,businessVpa:VPA,status:'paid',upiRef:'UPI4096211873',messages:[sm('system','Reachr','Payment received.')]},
+ {id:'l3',linkCode:'RCH-2Z7C',customerName:'Ananya Rao',amount:3900,note:'Silk saree, indigo',businessName:BIZ,businessVpa:VPA,status:'paid',upiRef:'UPI4096200412',messages:[sm('customer','Ananya Rao','Received! The colour looks lovely.')]}]};
+// Demo-only local persistence. This is not a secure server database and is not suitable for real customer/payment data.
+try{const saved=localStorage.getItem('reachr-rich-colour-v2');if(saved){const data=JSON.parse(saved);if(Array.isArray(data.links)&&data.links.length)S.links=data.links;}}catch(e){}
+S.links.forEach((l,i)=>{if(!l.createdAt)l.createdAt='Sample order '+(i+1);if(!l.messages)l.messages=[]});
+function saveDemo(){try{localStorage.setItem('reachr-rich-colour-v2',JSON.stringify({links:S.links.map(l=>({...l,proofData:undefined}))}));}catch(e){/* storage may be unavailable or full */}}
+const go=(fn,el)=>{if(document.startViewTransition){if(el)el.style.viewTransitionName='morph';document.startViewTransition(fn)}else fn()};
+const cur=()=>S.links.find(l=>l.id===S.sel);
+const toast=t=>{S.toast=t;draw();setTimeout(()=>{S.toast='';draw()},2200)};
+const ev=(d,stage,title,description,actor)=>{d.currentStage=stage;d.timeline.push({stage,title,description,timestamp:clock(),actor})};
+
+function stats(){const p=S.links.filter(l=>l.status!=='pending');const names={};p.forEach(l=>names[l.customerName]=(names[l.customerName]||0)+1);
+ const rep=Object.values(names).filter(n=>n>1).length;
+ return {active:Object.keys(names).length,amt:p.reduce((a,l)=>a+l.amount,0),rate:Object.keys(names).length?Math.round(rep/Object.keys(names).length*100):0,open:S.links.filter(l=>l.status==='disputed').length}}
+
+function detail(l,role){
+ const d=l.dispute,st=l.status;let h=`<div class="hero s-${st}"><div class="row" style="justify-content:space-between"><b>${esc(l.businessName)}</b><span class="chip" style="background:#0003">${st}</span></div>
+ <div class="amt">${inr(l.amount)}</div><div>${esc(l.note)} · ${esc(l.customerName)} · ${esc(l.linkCode)}</div></div><div class="card"><h2>Smart transaction timeline</h2><p style="color:var(--mut);font-size:13px">A shared view of order, payment and resolution status.</p>${orderTimeline(l)}<div class="trust-score"><div class="trust-number">${Math.min(98,78+(l.status==='paid'?8:0)+(l.dispute?0:5))}</div><div><b>Reachr trust indicators</b><div style="color:var(--mut);font-size:12px">Demo score based on visible order signals, not an identity verification or guarantee.</div></div></div>`;
+ if(l.expiresAt)h+=`<p class="prototype-note">Link expiry: ${esc(l.expiresAt)}. Expiry enforcement is only simulated in this prototype.</p>`;
+ if(l.terms)h+=`<div class="feature-tile"><b>Delivery / return terms</b><p>${esc(l.terms)}</p></div>`;
+ if(st==='pending'&&role==='customer'&&l.cod)h+=`<p><b>Cash on delivery confirmed.</b> Pay ${inr(l.amount)} to the courier when the order arrives.</p>`;
+ if(st==='pending'&&role==='customer'&&!l.cod){
+  h+=`<h2>Choose how to pay</h2><div class="fb">${Object.keys(PM).map(k=>`<button class="${S.method===k?'on':''}" data-act="method" data-v="${k}">${PM[k].icon} ${PM[k].name}</button>`).join('')}</div><small style="color:var(--mut)">${PM[S.method].hint(l)}</small><div class="apps">${PM[S.method].opts.map(a=>`<button class="app-c ${S.app===a?'on':''}" data-act="app" data-v="${a}">${a}</button>`).join('')}</div>
+  <button class="btn bt" data-act="pay" ${l.paying?'disabled':''}>${l.paying?'<span class="pulse">Waiting for '+S.app+'…</span>':PM[S.method].cta(l)+' · '+S.app}</button>${shield()}<hr style="border:0;border-top:1px solid var(--line);margin:18px 0">`}
+ if(role==='seller'){const u=paymentUrl(l);h+=`<div class="qr">${qr(l.linkCode)}<div><b>${u}</b><div class="row" style="margin-top:10px"><button class="btn bv" data-act="copy">Copy link</button><a class="btn bt" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Hi '+l.customerName+', please pay '+inr(l.amount)+' for '+l.note+': '+u)}">Share on WhatsApp</a></div></div></div>`+(st==='pending'?(l.cod?`<p>Cash on delivery. <button class="btn bl" data-act="cashin">Mark cash received</button></p>`:`<p>Waiting for ${esc(l.customerName)} to pay. Switch to Buyer to try it.</p>`):'')}
+ if(l.upiRef)h+=`<p><b>Paid</b> · ${esc(l.methodName||'UPI')} · ref ${esc(l.upiRef)}</p>`;
+ h+=`<h2>Order chat</h2><div class="chat" id="chat">${l.messages.map(m=>`<div class="m ${m.sender}">${esc(m.text)}<small>${esc(m.senderName)} · ${m.timestamp}</small></div>`).join('')}</div>
+ <div class="send"><input id="msg" placeholder="Message as ${role}…" aria-label="Message"><button class="btn bp" data-act="send">Send</button></div>`;
+ if(!d&&st==='paid'&&role==='customer')h+=`<hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><h2>Something wrong?</h2><select id="rsn"><option>Item not as described</option><option>Item not received</option><option>Damaged item</option></select><div style="margin-top:10px"><button class="btn bp" data-act="dispute">Raise a dispute</button></div>`;
+ if(d){h+=`<hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><h2>Dispute: ${esc(d.reason)}</h2><div class="steps">${['Raised','Seller replies','Reachr reviews','Resolved'].map((n,i)=>`<div class="sp ${i+1<d.currentStage||d.currentStage===4?'done':i+1===d.currentStage?'cur':''}">${n}</div>`).join('')}</div>
+  <div class="tl">${d.timeline.map(e=>`<p><b>${esc(e.title)}</b> · ${e.timestamp}<br>${esc(e.description)}</p>`).join('')}</div>`;
+  const c=d.currentStage;
+  if(c===1)h+=role==='seller'?`<label for="sol">Propose a fix</label><input id="sol" placeholder="e.g. Free replacement, or 30% refund"><div style="margin-top:10px"><button class="btn bv" data-act="propose">Send proposal</button></div>`:`<p class="pulse">Waiting for the seller to respond…</p>`;
+  if(c===2)h+=role==='customer'?`<p><b>Proposal:</b> ${esc(d.proposedSolution)}</p><div class="row"><button class="btn bt" data-act="accept">Accept</button><button class="btn ghost" data-act="reject">Ask Reachr to review</button></div>`:`<p class="pulse">Waiting for the buyer to answer…</p>`;
+  if(c===3)h+=`<p><b>Review pending.</b> Both parties' evidence should be checked before an outcome is recorded. This prototype does not automatically decide who is right or move money.</p><button class="btn bv" data-act="reviewcomplete">Record demo review completion</button>`;
+  if(c===4)h+=`<p><b>Review record:</b> ${esc(d.resolutionSummary)}</p><p class="prototype-note">This is a demo record only. No refund or payment movement has occurred.</p>`}
+ return h+'</div>'}
+
+function shield(){return `<div class="esc"><svg viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2 L37 8 V22 C37 33 29 41 20 44 C11 41 3 33 3 22 V8 Z" style="fill:var(--violet)"/><path d="M12 19 L18 25 L28 13" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11.5" cy="33" r="2.3" style="fill:var(--pink)"/><circle cx="17" cy="35" r="2.3" style="fill:var(--tang)"/><circle cx="23" cy="35" r="2.3" style="fill:var(--lemon)"/><circle cx="28.5" cy="33" r="2.3" style="fill:var(--teal)"/></svg><div><b>4-Stage Dispute Protection</b><small>Raise, reply, review, resolve</small></div></div>`}
+function paymentUrl(l){return location.href.split('#')[0]+'#pay='+encodeURIComponent(l.linkCode)}
+function qr(c){const url=paymentUrl(S.links.find(x=>x.linkCode===c)||{linkCode:c});return `<img loading="lazy" alt="Scannable QR code for demo payment link" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(url)}"><small>QR encodes this prototype URL. Deploy Reachr to a public URL before sharing with customers.</small>`}
+function orderTimeline(l){const items=[['Order created',l.createdAt||'Sample order','Order details and payment link created.'],['Payment',l.status==='pending'?'Awaiting payment':(l.paidAt||'Demo timestamp'),l.status==='pending'?'Payment has not been confirmed in this prototype.':'Prototype payment status: '+l.status+'.'],['Fulfilment',l.deliveredAt||'Not yet marked','Seller can update delivery progress in the Trust Center.'],['Resolution',l.dispute?(l.dispute.currentStage===4?'Review closed':'Dispute '+({1:'raised',2:'awaiting buyer response',3:'under review'}[l.dispute.currentStage]||'in progress')):'No dispute raised','Keep messages and evidence attached to this order.']];return `<div class="timeline">${items.map((it,i)=>`<div class="timeline-item ${i===1&&l.status==='pending'||i===2&&!l.deliveredAt?'pending':''}"><span class="timeline-dot"></span><div><b>${esc(it[0])}</b> <small>· ${esc(it[1])}</small><div style="font-size:13px;color:var(--mut);margin-top:3px">${esc(it[2])}</div></div></div>`).join('')}</div>`}
+
+function chart(){const t=S.links.filter(l=>l.paidAt).reduce((a,l)=>a+l.amount,0),v=[1800,3200,2400,4100,2900,5200,t],mx=Math.max(...v,1),c=['violet','pink','tang','teal','sky','lemon','pink'],d=['Mon','Tue','Wed','Thu','Fri','Sat','Today'];
+ return `<div class="card" style="margin-bottom:20px"><h2>Money in, last 7 days</h2><small style="color:var(--mut)">Earlier days are sample data. Today grows as buyers pay.</small><div class="bars">${v.map((x,i)=>`<div style="height:${Math.round(x/mx*100)}%;background:var(--${c[i]})" title="${inr(x)}"><small>${d[i]}</small></div>`).join('')}</div><div style="height:22px"></div></div>`}
+function landing(){const F=[['⚡','Instant payment links','Send a payment link on WhatsApp, SMS or Instagram in ten seconds.','background:var(--violet)'],['▦','QR for every order','Every link gets its own QR, so buyers can pay at your counter or from a parcel.','background:var(--teal)'],['💬','Order chat','Questions about size, colour or delivery stay attached to the payment.','background:var(--pink)'],['⚖','Four-step disputes','Raise, reply, review, resolve. Both sides always know what happens next.','background:var(--tang)'],['📈','Money in, at a glance','See what came in this week and who is still pending.','background:var(--sky)'],['🔁','Repeat customers','Spot the buyers who come back, and thank them first.','background:var(--lemon);color:#1d1340']];
+ const H=[['Create a link','Add the buyer’s name, the amount and what it is for.'],['Buyer pays','They open the link and pay by UPI, card, netbanking, wallet, EMI or cash on delivery.'],['Chat if needed','Both sides talk in the order chat.'],['Settle fast','If something is wrong, the dispute flow settles it.']];
+ const P=[['Starter','₹0',['20 links a month','Order chat','Basic disputes'],''],['Growth','₹299',['Unlimited links','QR codes and sharing','Revenue charts','Priority review'],' hot'],['Studio','₹999',['Everything in Growth','Team seats','Repeat-customer reports'],'']];
+ const Q=[['How do payments work?','Buyers choose UPI, card, netbanking, a wallet, EMI or cash on delivery. In this prototype every payment is simulated and no card details are collected.'],['What happens in a dispute?','The buyer raises it, you reply with a fix, the buyer accepts or asks Reachr to review, and then it is resolved.'],['Can buyers chat with me?','Yes. Every order has its own chat.'],['Do buyers need an app?','No. Links and QR codes open in any browser.'],['Is my data saved?','This prototype keeps data in the page, so refreshing resets it.']];
+ const T=[['Reachr cut my “did you pay?” messages to almost none.','Sample seller, handloom'],['The chat on each order saved me from so many mix-ups.','Sample seller, home bakery'],['Disputes used to turn into arguments. Now there are steps.','Sample seller, jewellery']];
+ return '<div class="stks" aria-hidden="true"><i class="stk" style="right:6%;top:40px">💸</i><i class="stk" style="right:24%;top:180px;animation-delay:-1.6s">✨</i><i class="stk" style="right:9%;top:310px;animation-delay:-3.2s">🔥</i></div>'+landingOld()+`<div class="mq" aria-hidden="true"><div>${'<span>UPI</span><span>✦</span><span>Cards</span><span>✦</span><span>Netbanking</span><span>✦</span><span>Wallets</span><span>✦</span><span>EMI</span><span>✦</span><span>Cash on delivery</span><span>✦</span><span>QR codes</span><span>✦</span><span>Order chat</span><span>✦</span><span>Fair disputes</span><span>✦</span>'.repeat(4)}</div></div>
+<div class="mq mq2" aria-hidden="true"><div>${'<span>fair disputes</span><span>🔥</span><span>no cap</span><span>✨</span><span>pay your way</span><span>💸</span><span>trust the process</span><span>⚡</span>'.repeat(4)}</div></div>
+<section class="sec" id="features"><h2>Everything a small shop needs to get paid</h2><div class="g3">${F.map(f=>`<div class="ft" style="${f[3]}"><i>${f[0]}</i><b>${f[1]}</b><p>${f[2]}</p></div>`).join('')}</div></section>
+<section class="sec" id="problems"><h2>The problems every online shopper knows</h2><small style="color:var(--mut)">Based on public complaint data and customer reviews of large online marketplaces.</small><div class="g3">${[['📦','Marked delivered, never received','Order chat and delivery proof leave a record both sides can see.','background:var(--violet)'],['🔍','Wrong, fake or damaged item','Raise a dispute with photo proof in a few taps.','background:var(--pink)'],['🔄','Refunds that go in circles','Four clear steps, and always a visible next action.','background:var(--teal)'],['🤷','Blame passed around','One order thread, one record of what was agreed.','background:var(--tang)'],['❌','Cancelled with no reason','Every status change appears in the order timeline.','background:var(--sky)'],['📞','Support you cannot reach','If buyer and seller cannot agree, Reachr steps in at stage three.','background:var(--lemon);color:#1d1340']].map(f=>`<div class="ft" style="${f[3]}"><i>${f[0]}</i><b>${f[1]}</b><p>${f[2]}</p></div>`).join('')}</div></section>
+<section class="sec" id="how"><h2>From link to paid in four steps</h2><div class="g3">${H.map((h,i)=>`<div class="card"><div style="font-size:54px;font-weight:800;letter-spacing:-.05em;color:var(--pink)">${i+1}</div><h3 style="margin:4px 0 6px;font-size:21px">${h[0]}</h3><p style="margin:0;color:var(--mut);line-height:1.45">${h[1]}</p></div>`).join('')}</div></section>
+<section class="sec"><h2>Sellers like it</h2><div class="g3">${T.map((t,i)=>`<div class="ft" style="min-height:0;background:var(--${['sky','pink','teal'][i]})"><p style="font-size:20px;font-weight:600">${t[0]}</p><small>${t[1]}</small></div>`).join('')}</div></section>
+<section class="sec" id="pricing"><h2>Pricing that starts at zero</h2><small style="color:var(--mut)">Sample pricing for this prototype.</small><div class="g3">${P.map(p=>`<div class="card pr${p[3]}"><h3>${p[0]}</h3><div class="pz">${p[1]}</div><ul>${p[2].map(x=>`<li>${x}</li>`).join('')}</ul><button class="btn ${p[3]?'bl':'bv'}" data-act="role" data-v="seller">Try it as a seller</button></div>`).join('')}</div></section>
+<section class="sec" id="faq"><h2>Questions, answered</h2>${Q.map(q=>`<details><summary>${q[0]}</summary><p>${q[1]}</p></details>`).join('')}</section>
+<div class="cta"><h2>Send your first link today</h2><button class="btn bl" data-act="role" data-v="seller">Open the seller dashboard</button></div>
+<footer><div><b>Reachr</b>Trust, payments and fair disputes for small sellers.</div><div><b>Product</b><span>UPI links</span><span>QR codes</span><span>Order chat</span></div><div><b>Company</b><span>About</span><span>Contact</span><span>Careers</span></div><div><b>Trust</b><span>Buyer guarantee</span><span>Privacy</span><span>Terms</span></div><div class="lic">${shield()}<p>© 2026 Reachr. Released under the MIT License.</p></div></footer>`}
+function landingOld(){return `<h1>Get paid. <span>Stay fair.</span></h1><p class="lead">Send a payment link, chat about the order in one place, and settle problems in four clear steps. Try both sides below.</p>
+ <div class="row" style="margin-top:26px"><button class="btn bp" data-act="role" data-v="seller">I’m a seller</button><button class="btn bv" data-act="role" data-v="customer">I’m a buyer</button></div><div>${shield()}</div>
+ <div class="flow"><div class="fl" style="background:var(--pink);border-radius:30px 60px 30px 30px"><b>Send a link</b>Name, amount, note. Done in ten seconds.</div>
+ <div class="fl" style="background:var(--violet);border-radius:60px 30px 30px 30px"><b>Pay your way</b>UPI, cards, netbanking, wallets, EMI or cash.</div>
+ <div class="fl" style="background:var(--teal);border-radius:30px 30px 60px 30px"><b>Talk in context</b>Chat stays attached to the order.</div>
+ <div class="fl" style="background:var(--tang);border-radius:30px 30px 30px 60px"><b>Fix problems fast</b>Raise, reply, review, resolve.</div></div>`}
+
+function seller(){const k=stats(),l=cur();
+ if(l)return `<button class="btn ghost back" data-act="back">Back to links</button>`+detail(l,'seller');
+ return `<div class="stats"><div class="st" style="background:var(--violet)"><small>Paying customers</small><div>${k.active}</div></div><div class="st" style="background:var(--teal)"><small>Received</small><div>${inr(k.amt)}</div></div>
+ <div class="st" style="background:var(--tang)"><small>Repeat customers</small><div>${k.rate}%</div></div><div class="st" style="background:var(--pink)"><small>Open disputes</small><div>${k.open}</div></div></div>
+ ${chart()}<div class="feature-grid"><div class="feature-tile"><div class="ico">🧾</div><b>ProofVault</b><p>Keep order details, timestamps, messages and evidence together.</p></div><div class="feature-tile"><div class="ico">🛡️</div><b>Trust profile</b><p>Show clear trust signals without pretending unverified sellers are verified.</p></div><div class="feature-tile"><div class="ico">⚖️</div><b>FairResolve</b><p>Disputes move through response and review; no automatic refund decisions.</p></div><div class="feature-tile"><div class="ico">📊</div><b>Seller insights</b><p>Use order data to understand pending payments and repeat customers.</p></div></div><div class="grid"><div class="card"><h2>SmartPay link</h2><p style="color:var(--mut);font-size:13px">Add order details and optional expiry to make the payment request clearer.</p><form id="nf"><label for="cn">Customer name</label><input id="cn" required placeholder="Priya Nair"><label for="am">Amount (₹)</label><input id="am" type="number" min="1" required placeholder="1500"><label for="nt">What is it for?</label><input id="nt" required placeholder="Block-print cushion covers"><div class="inline-fields"><div><label for="qty">Quantity</label><input id="qty" type="number" min="1" value="1" required></div><div><label for="exp">Link expires (hours)</label><select id="exp"><option value="0">No expiry</option><option value="24">24 hours</option><option value="72">3 days</option><option value="168">7 days</option></select></div></div><label for="terms">Delivery / return terms</label><textarea id="terms" rows="2" placeholder="e.g. Ships in 2–3 working days; exchanges within 7 days"></textarea><div style="margin-top:16px"><button class="btn bp">Create link</button></div></form><div class="prototype-note">Prototype only: link creation and payment states are simulated in this browser. No real payment is collected.</div></div>
+ <div class="card"><h2>Your links</h2><input id="q" value="${esc(S.q)}" placeholder="Search customer or item" aria-label="Search links"><div class="fb">${['all','pending','paid','disputed','resolved'].map(f=>`<button class="${S.f===f?'on':''}" data-act="filt" data-v="${f}">${f}</button>`).join('')}</div>${S.links.filter(x=>(S.f==='all'||x.status===S.f)&&(x.customerName+' '+x.note).toLowerCase().includes(S.q)).slice().reverse().map(l=>`<button class="lk s-${l.status}" data-act="open" data-id="${l.id}"><span><b>${esc(l.customerName)}</b><small>${esc(l.note)}</small></span><span style="text-align:right"><b>${inr(l.amount)}</b><br><span class="chip s-${l.status}">${l.status}</span></span></button>`).join('')}</div></div>`}
+
+function customer(){const l=cur();
+ if(l)return `<button class="btn ghost back" data-act="back">Back to my payments</button>`+detail(l,'customer');
+ return `<div class="card"><h2>Your payments</h2><p class="lead" style="font-size:16px">Pick one to pay, chat, or raise a dispute.</p>${S.links.map(l=>`<button class="lk s-${l.status}" data-act="open" data-id="${l.id}"><span><b>${esc(l.businessName)}</b><small>${esc(l.note)} · for ${esc(l.customerName)}</small></span><span style="text-align:right"><b>${inr(l.amount)}</b><br><span class="chip s-${l.status}">${l.status}</span></span></button>`).join('')}</div>`}
+
+function trustCenter(){
+ const l=cur()||S.links.find(x=>x.status==='pending')||S.links[0];
+ const steps=['Order placed','Confirmed','Packed','Dispatched','Out for delivery','Delivered'];
+ const current=Math.max(0,Math.min(5,S.trackStep));
+ const events=[['Order placed','Today · 10:12 AM','Order created and payment link shared.'],['Seller confirmed','Today · 10:18 AM','Seller confirmed the order details.'],['Packed for dispatch','Today · 11:05 AM','Parcel packed and ready for pickup.'],['Courier picked up','Today · 11:32 AM','Courier pickup is simulated for this demo.']];
+ const notices=[['💳','Payment update',l.status==='paid'?'Payment marked received for '+inr(l.amount)+'.':'Payment of '+inr(l.amount)+' is awaiting confirmation.','Just now'],['🚚','Delivery update','Your demo delivery is at: '+steps[current]+'.','8 min ago'],['🛡️','Trust check','Keep order details and delivery proof together for a clearer resolution.','Today']];
+ const unread=S.readNotices?0:2;
+ const money=l.status==='paid'||l.status==='resolved'?l.amount:0;
+ return `<div class="tc-head"><div><div class="tc-kicker">Reachr · Trust infrastructure</div><h1 class="tc-title">Every order.<br><span>More certainty.</span></h1><p class="tc-sub">One connected place for tracking, delivery proof, payment status and fair resolutions.</p></div><div><span class="tc-pill violet">● Interactive prototype</span></div></div>
+ <div class="tc-grid">
+  <section class="tc-panel wide"><div class="row" style="justify-content:space-between"><div><div class="tc-label">01 / Live Tracking Center</div><h3>Know where the order is</h3><p class="tc-desc">A mock courier route with sample locations. No live GPS is connected.</p></div><span class="tc-pill amber">Demo location</span></div>
+   <div class="tc-map"><svg viewBox="0 0 700 260" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustrated sample delivery map"><rect width="700" height="260" fill="#e8f1ed"/><path d="M-20 42 L170 70 L240 20 L410 72 L540 20 L730 60 M-20 190 L130 155 L260 210 L420 165 L720 215 M90 -20 L130 280 M300 -20 L330 280 M510 -20 L470 280" fill="none" stroke="#c6d9d0" stroke-width="22"/><path d="M-20 42 L170 70 L240 20 L410 72 L540 20 L730 60 M-20 190 L130 155 L260 210 L420 165 L720 215 M90 -20 L130 280 M300 -20 L330 280 M510 -20 L470 280" fill="none" stroke="#fff" stroke-width="13"/><path d="M110 192 C190 176 198 102 286 110 S390 170 465 116 S540 105 590 60" fill="none" stroke="#5b3df5" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 9"/><circle cx="110" cy="192" r="13" fill="#00b8a0" stroke="#fff" stroke-width="5"/><circle cx="590" cy="60" r="13" fill="#ff3d8b" stroke="#fff" stroke-width="5"/><g transform="translate(365 143)"><circle r="22" fill="#5b3df5" opacity=".15"/><circle r="13" fill="#5b3df5" stroke="#fff" stroke-width="4"/><path d="M-5 -3 L5 -3 L7 5 L-7 5 Z M-3 -7 L3 -7 L5 -3 L-5 -3Z" fill="#fff"/></g><g font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#31544b"><text x="78" y="222">PICKUP</text><text x="554" y="37">DROP-OFF</text><text x="382" y="150">Courier</text></g></svg><div class="tc-map-tag">● Mock tracking · Route active</div></div>
+   <div class="tc-map-foot"><span><b>Order ${esc(l.linkCode)}</b> · ${esc(l.note)}</span><span><b>ETA:</b> ~18 min <small>(sample)</small></span></div>
+   <div class="row" style="margin-top:14px"><button class="tc-btn primary" data-act="trackprev" ${current===0?'disabled':''}>Previous stage</button><button class="tc-btn" data-act="tracknext" ${current===5?'disabled':''}>Advance demo delivery ↗</button><span class="tc-pill blue">${steps[current]}</span></div>
+  </section>
+  <section class="tc-panel wide"><div class="tc-label">02 / Delivery Timeline</div><h3>One clear journey</h3><p class="tc-desc">The tracking stage updates this timeline too.</p><div class="tc-track">${steps.map((x,i)=>`<div class="tc-step ${i<current?'done':i===current?'current':''}"><div class="tc-dot">${i<current?'✓':i+1}</div>${x}</div>`).join('')}</div><div class="tc-list">${events.map((e,i)=>`<div class="tc-event"><span class="tc-event-dot" style="background:${i<=current?'var(--teal)':'var(--line)'}"></span><p><b>${e[0]}</b> <small>· ${e[1]}</small><br>${e[2]}</p></div>`).join('')}${current===5?'<div class="tc-event"><span class="tc-event-dot"></span><p><b>Delivered</b><br>Demo delivery marked complete. Add proof below to complete the example.</p></div>':''}</div></section>
+  <section class="tc-panel"><div class="tc-label">03 / Trust Passport</div><h3>A clearer trust profile</h3><div class="tc-profile"><div class="tc-avatar">MH</div><div><b>Meera’s Handloom</b><p><small>Sample seller profile · Demo ID RCH-2048</small></p></div></div><div class="tc-check"><span class="ok">✓</span><span>Profile details added</span><span class="tc-pill green" style="margin-left:auto">Demo</span></div><div class="tc-check"><span class="ok">✓</span><span>Order history available</span><span class="tc-pill green" style="margin-left:auto">Demo</span></div><div class="tc-check"><span>○</span><span>Identity / business verification</span><span class="tc-pill amber" style="margin-left:auto">Not verified</span></div><p class="tc-muted-note">This passport uses fictional demo details. A real verification badge must be backed by a verification process.</p></section>
+  <section class="tc-panel"><div class="tc-label">04 / Payment Status Vault</div><h3>Payment protection overview</h3><div class="tc-vault"><div class="tc-label">Order amount · ${esc(l.linkCode)}</div><div class="tc-balance">${inr(l.amount)}</div><span class="tc-pill">${l.status==='paid'?'Payment marked received':l.status==='resolved'?'Order resolved':'Awaiting payment'}</span><p style="margin:16px 0 5px;font-size:13px">${l.status==='paid'?'Demo status: received; not held in real escrow.':'Demo status only. No funds are being held or transferred.'}</p><small>Release condition: delivery confirmation + configured order rules.</small></div><div class="tc-metrics" style="margin-top:12px"><div class="tc-metric"><span class="tc-label">Received</span><strong>${inr(money)}</strong></div><div class="tc-metric"><span class="tc-label">Held in escrow</span><strong>₹0</strong></div><div class="tc-metric"><span class="tc-label">Refunds</span><strong>₹0</strong></div></div><p class="tc-muted-note">Real escrow requires a compliant payment/settlement partner and clear release and refund rules.</p></section>
+  <section class="tc-panel"><div class="tc-label">05 / Evidence Checklist</div><h3>Make the next step clearer</h3><p class="tc-desc">Describe the issue. This demo fills in a standard checklist. It is not a decision.</p><select id="tcIssue" class="tc-input">${['Item not as described','Item not received','Item damaged','Payment or refund issue'].map(o=>`<option ${S.tcIssue===o?'selected':''}>${o}</option>`).join('')}</select><textarea id="tcDetails" class="tc-input" rows="3" placeholder="What happened? Add dates, order details and what outcome you want.">${esc(S.tcDetails)}</textarea><button class="tc-btn primary" data-act="aiassist">Build evidence checklist</button><div class="tc-ai" id="tcAi">${S.aiResult?esc(S.aiResult):'Your suggested next steps will appear here.'}</div><p class="tc-muted-note">The checklist is informational. A real dispute needs evidence, transparent rules and human review for contested outcomes.</p></section>
+  <section class="tc-panel"><div class="tc-label">06 / Delivery Proof Center</div><h3>Keep evidence with the order</h3><p class="tc-desc">Attach a sample parcel or delivery photo. The preview stays in this page only.</p><div class="tc-proof"><b>＋ Add delivery proof</b><p style="font-size:12px;color:var(--mut)">Image upload · local demo preview</p><input type="file" id="tcProofFile" accept="image/*" aria-label="Upload delivery proof image"><div id="tcProofPreview">${S.proofData?`<img alt="Local delivery proof preview" src="${S.proofData}">`:''}${S.proofName?`<small>Selected: ${esc(S.proofName)}</small>`:'<small>No proof added yet</small>'}</div></div><div class="tc-list" style="margin-top:13px"><div class="tc-event"><span class="tc-event-dot"></span><p><b>Order details</b><br><small>${esc(l.linkCode)} · ${esc(l.note)}</small></p></div><div class="tc-event"><span class="tc-event-dot" style="background:var(--line)"></span><p><b>Delivery confirmation</b><br><small>${current===5?'Demo delivery marked complete':'Pending in demo timeline'}</small></p></div></div></section>
+  <section class="tc-panel"><div class="tc-label">07 / Rewards Dashboard</div><h3>Good experiences add up</h3><div class="tc-reward"><span class="tc-label">Your sample points balance</span><strong>${S.rewardClaimed?'650 points':'500 points'}</strong><span style="font-size:12px">${S.rewardClaimed?'Reward claimed in demo':'Earn points for completed orders and helpful feedback'}</span></div><div class="tc-metrics" style="margin-top:12px"><div class="tc-metric"><span class="tc-label">Completed</span><strong>4</strong></div><div class="tc-metric"><span class="tc-label">Next reward</span><strong>750</strong></div><div class="tc-metric"><span class="tc-label">Streak</span><strong>2 wk</strong></div></div><button class="tc-btn primary" style="margin-top:14px" data-act="reward" ${S.rewardClaimed?'disabled':''}>${S.rewardClaimed?'Demo reward claimed':'Claim +150 demo points'}</button><p class="tc-muted-note">Points and milestones are sample values, not monetary value.</p></section>
+  <section class="tc-panel"><div class="tc-label">08 / Enhanced Analytics</div><h3>Business health at a glance</h3><p class="tc-desc">Illustrative sample metrics; not connected to real transactions.</p><div class="tc-metrics"><div class="tc-metric"><span class="tc-label">Sample revenue</span><strong>₹24.8k</strong><small>+12% vs prior period</small></div><div class="tc-metric"><span class="tc-label">Delivered</span><strong>92%</strong><small>Sample fulfilment</small></div><div class="tc-metric"><span class="tc-label">Disputes</span><strong>2.4%</strong><small>Sample order rate</small></div></div><div style="margin-top:16px"><div class="tc-bar-row"><span>Payments</span><div class="tc-bar"><span style="width:88%"></span></div><b>88%</b></div><div class="tc-bar-row"><span>Dispatch</span><div class="tc-bar"><span style="width:76%"></span></div><b>76%</b></div><div class="tc-bar-row"><span>Repeat buyers</span><div class="tc-bar"><span style="width:54%"></span></div><b>54%</b></div></div><p class="tc-muted-note">Replace these sample figures with metrics calculated from verified order records before launch.</p></section>
+  <section class="tc-panel"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="tc-label">09 / Smart Notifications</div><h3>Nothing important gets lost</h3></div><span class="tc-pill violet">${unread} unread</span></div><p class="tc-desc">In-app sample alerts for payment, delivery and trust events.</p>${notices.map((n,i)=>`<div class="tc-notice ${!S.readNotices&&i<2?'unread':''}"><div class="ni">${n[0]}</div><p>${n[1]}<br><span style="font-weight:400">${n[2]}</span><br><small>${n[3]}</small></p></div>`).join('')}<button class="tc-btn soft" data-act="readnotices" style="margin-top:12px">${S.readNotices?'All caught up ✓':'Mark all as read'}</button></section>
+ </div><p class="tc-muted-note">Prototype note: tracking, trust metrics, escrow balances, rewards and analytics are illustrative. No live courier, identity verification, AI service, payment processor or backend is connected. Demo data may persist in this browser only; do not enter real customer, card or bank details.</p>`;
+}
+
+function draw(){const v=S.view;saveDemo();
+ document.getElementById('app').innerHTML=`<nav><button class="logo" data-act="role" data-v="landing"><i class="dot"></i>Reachr</button>${v==='landing'?'<div class="nl">'+[['features','Features'],['how','How it works'],['pricing','Pricing'],['faq','FAQ']].map(x=>`<button data-act="jump" data-v="${x[0]}">${x[1]}</button>`).join('')+'</div>':''}<div class="tabs">${['landing','seller','customer','center'].map(t=>`<button class="tab ${v===t?'on':''}" data-act="role" data-v="${t}">${{landing:'Home',seller:'Seller',customer:'Buyer',center:'Trust Center'}[t]}</button>`).join('')}</div></nav>`+
+ (v==='landing'?landing():v==='seller'?seller():v==='center'?trustCenter():customer())+(S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'');
+ const c=document.getElementById('chat');if(c)c.scrollTop=c.scrollHeight;
+ document.title={landing:'Reachr — Get paid. Stay fair.',seller:'Reachr — Seller dashboard',customer:'Reachr — Pay securely',center:'Reachr — Trust Center'}[v]}
+
+function say(l,role,text){if(/received|resolved|confirmed/i.test(text))setTimeout(()=>boom(innerWidth/2,innerHeight*.45),60);l.messages.push(sm(role,role==='system'?'Reachr':role==='seller'?l.businessName:l.customerName,text))}
+function bot(l,fn,ms){setTimeout(()=>{fn();draw()},ms)}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,v=S.view,l=cur(),role=v==='seller'?'seller':'customer';
+ if(a==='role'){go(()=>{S.view=b.dataset.v;S.sel=null;draw()});return}
+ if(a==='open'){go(()=>{S.sel=b.dataset.id;draw()},b);return}
+ if(a==='back'){go(()=>{S.sel=null;draw()});return}
+ if(a==='app'){S.app=b.dataset.v;draw();return}
+ if(a==='method'){S.method=b.dataset.v;S.app=PM[S.method].opts[0];draw();return}
+ if(a==='cashin'&&l){l.status='paid';l.paidAt=clock();l.methodName='Cash on delivery';l.upiRef='COD'+Math.floor(1e9+Math.random()*9e9);say(l,'system','Cash received by the seller.');draw();return}
+ if(a==='jump'){document.getElementById(b.dataset.v).scrollIntoView({behavior:'smooth'});return}
+  if(a==='filt'){S.f=b.dataset.v;draw();return}
+  if(a==='tracknext'){S.trackStep=Math.min(5,S.trackStep+1);draw();return}
+  if(a==='trackprev'){S.trackStep=Math.max(0,S.trackStep-1);draw();return}
+  if(a==='readnotices'){S.readNotices=true;draw();return}
+  if(a==='reward'){S.rewardClaimed=true;toast('150 demo points added');return}
+  if(a==='aiassist'){const issue=document.getElementById('tcIssue')?.value||'Order issue';const detail=document.getElementById('tcDetails')?.value.trim()||'No extra details supplied.';S.aiResult='Suggested checklist for: '+issue+'\n\n1. Keep the order link, payment status and seller/buyer messages together.\n2. Add dated photos or delivery confirmation if relevant.\n3. Write a short timeline of what happened and the resolution you want.\n4. Give the other party a chance to respond.\n5. If unresolved, request a human review under the published dispute policy.\n\nYour notes: '+detail+'\n\nThis is a demo checklist, not a decision or legal advice.';draw();return}
+  if(a==='copy'){const url=paymentUrl(l);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>toast('Prototype link copied')).catch(()=>toast('Copy unavailable — select the link text manually'))}else{toast('Clipboard unavailable — select the link text manually')}return}
+ if(!l)return;
+ if(a==='pay'&&S.method==='cod'){l.cod=true;say(l,'system','Cash on delivery confirmed. Pay '+inr(l.amount)+' when the order arrives.');draw();return}
+ if(a==='pay'){if(l.expiresAt&&Date.now()>new Date(l.expiresAt).getTime()){toast('This demo link has expired');return}l.paying=true;draw();bot(l,()=>{l.paying=false;l.status='paid';l.paidAt=clock();l.methodName=PM[S.method].name+' · '+S.app;l.upiRef=PM[S.method].pre+Math.floor(1e9+Math.random()*9e9);say(l,'system','Payment of '+inr(l.amount)+' received via '+S.app+'.')},1600);return}
+ if(a==='send'){const i=document.getElementById('msg');if(!i.value.trim())return;say(l,role,i.value.trim());draw();document.getElementById('msg').focus();return}
+ if(a==='dispute'){const r=document.getElementById('rsn').value;l.status='disputed';l.dispute={id:'d'+l.id,raisedAt:clock(),reason:r,description:r,currentStage:1,timeline:[]};ev(l.dispute,1,'Dispute raised','Buyer reported: '+r+'.','customer');say(l,'system','Dispute raised: '+r+'. The seller has 48 hours to reply.');draw();return}
+ if(a==='propose'){const t=document.getElementById('sol').value.trim();if(!t)return toast('Write a proposal first');l.dispute.proposedSolution=t;ev(l.dispute,2,'Seller replied','Proposed: '+t,'seller');say(l,'seller',l.businessName.length?'I’ve sent a proposal: '+t:t);draw();return}
+ if(a==='accept'){const d=l.dispute;d.resolutionSummary='Buyer accepted the seller’s proposal: '+d.proposedSolution;ev(d,4,'Resolved','Buyer accepted the proposal.','customer');l.status='resolved';say(l,'system','Dispute resolved by agreement.');draw();return}
+ if(a==='reject'){const d=l.dispute;ev(d,3,'Sent for review','Buyer asked for a review. Both parties should submit evidence before a human reviewer records an outcome.','customer');say(l,'system','Review requested. No automatic decision or refund has been made.');draw();return}
+ if(a==='reviewcomplete'&&l.dispute){const d=l.dispute;d.resolutionSummary='Demo review marked complete. Outcome and any refund must be agreed or recorded by an authorised human reviewer in a real service.';ev(d,4,'Demo review completed','A manual review-completion action was recorded in this prototype. No refund was processed.','reviewer');l.status='resolved';say(l,'system','Demo review record completed. No money moved.');draw();return}
+});
+document.addEventListener('change',e=>{if(e.target.id==='tcIssue')S.tcIssue=e.target.value;if(e.target.id!=='tcProofFile')return;const file=e.target.files&&e.target.files[0];if(!file)return;S.proofName=file.name;const box=document.getElementById('tcProofPreview');if(!box)return;if(!file.type.startsWith('image/')){box.textContent='Please select an image file.';return}const reader=new FileReader();reader.onload=()=>{S.proofData=reader.result;const img=document.createElement('img');img.alt='Local delivery proof preview';img.src=reader.result;box.innerHTML='';box.appendChild(img);const cap=document.createElement('small');cap.textContent='Selected: '+file.name;box.appendChild(cap)};reader.readAsDataURL(file)});
+document.addEventListener('submit',e=>{if(e.target.id!=='nf')return;e.preventDefault();const n=document.getElementById('cn').value.trim(),a=+document.getElementById('am').value,t=document.getElementById('nt').value.trim(),qty=Math.max(1,+document.getElementById('qty')?.value||1),hours=+(document.getElementById('exp')?.value||0),terms=document.getElementById('terms')?.value.trim()||'';
+ const createdAt=new Date().toLocaleString('en-IN');const l={id:'l'+Date.now(),linkCode:'RCH-'+Math.random().toString(36).slice(2,6).toUpperCase(),customerName:n,amount:a,note:t+(qty>1?' · Qty '+qty:''),quantity:qty,terms,createdAt,expiresAt:hours?new Date(Date.now()+hours*3600000).toLocaleString('en-IN'):null,businessName:BIZ,businessVpa:VPA,status:'pending',messages:[sm('seller',BIZ,'Hi '+n+'! Here is your Reachr payment request.')],timeline:[]};
+ go(()=>{S.links.push(l);draw();toast('Demo link '+l.linkCode+' created')})});
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;let REVEAL=true,LK='';
+function boom(x,y){if(RM)return;const E=['💸','✨','🔥','💖','🎉','⚡'];for(let i=0;i<20;i++){const s=document.createElement('span');s.className='cf';s.textContent=E[i%E.length];s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--x',(Math.random()*360-180)+'px');s.style.setProperty('--y',(-Math.random()*220-40)+'px');s.style.setProperty('--r',(Math.random()*720-360)+'deg');document.body.appendChild(s);setTimeout(()=>s.remove(),1600)}}
+function reveal(){if(RM)return;const els=[...document.querySelectorAll('.ft,.fl,.pr,.st,.card,details')];els.forEach((e,i)=>{e.classList.add('rv');e.style.setProperty('--i',i%6)});
+ const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);setTimeout(()=>{x.target.classList.remove('rv','in');x.target.style.removeProperty('--i')},1300)}}),{threshold:.12});els.forEach(e=>io.observe(e));
+ document.querySelectorAll('.st div').forEach(el=>{const t=el.textContent,n=parseInt(t.replace(/\D/g,''));if(!n)return;const pre=t.match(/^\D*/)[0],suf=t.match(/\D*$/)[0],s=performance.now();(function f(now){const p=Math.min(1,(now-s)/900);el.textContent=pre+Math.round(n*(1-Math.pow(1-p,3))).toLocaleString('en-IN')+suf;if(p<1)requestAnimationFrame(f)})(s)})}
+const _d=draw;draw=function(){_d();const k=S.view+(S.sel||'');if(k!==LK){LK=k;REVEAL=true}if(REVEAL&&(S.view==='landing'||(S.view==='seller'&&!S.sel))){REVEAL=false;reveal()}};
+if(!RM&&matchMedia('(pointer:fine)').matches){const sp=document.createElement('div');sp.className='spot';document.body.appendChild(sp);addEventListener('pointermove',e=>{sp.style.left=e.clientX+'px';sp.style.top=e.clientY+'px'})}
+document.addEventListener('input',e=>{if(e.target.id==='tcDetails')S.tcDetails=e.target.value;if(e.target.id==='q'){S.q=e.target.value.toLowerCase();const p=e.target.selectionStart;draw();const q=document.getElementById('q');q.focus();q.setSelectionRange(p,p)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='msg'){e.preventDefault();document.querySelector('[data-act="send"]').click()}});
+const deep=decodeURIComponent((location.hash.match(/#pay=([^&]+)/)||[])[1]||'');if(deep){const target=S.links.find(l=>l.linkCode===deep);if(target){S.view='customer';S.sel=target.id;}}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Reachr — Smart Payment Links & Delivery Protection",
+  "description": "Direct UPI payment links, doorstep delivery tracking, and transparent 4-stage dispute resolution for sellers and buyers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
