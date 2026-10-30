@@ -13,6 +13,7 @@ interface HeaderProps {
   onSelectOrder: (id: string | null) => void;
   isSellerAuthenticated: boolean;
   onSellerLogout: () => void;
+  sellerBusinessName?: string;
   isOwnerAuthenticated?: boolean;
   onOwnerLogout?: () => void;
   isBuyerIdentified?: boolean;
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectOrder,
   isSellerAuthenticated,
   onSellerLogout,
+  sellerBusinessName,
   isOwnerAuthenticated,
   onOwnerLogout,
   isBuyerIdentified = false,
@@ -99,44 +101,14 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </button>
 
-        {/* Center Zone: Contextual to the Active Experience */}
-        <div className="flex-1 flex items-center justify-center">
-          {/* Public Landing Navigation */}
-          {currentPortal === 'landing' && (
-            <nav className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-              <a
-                href="#features"
-                className="px-3 py-1.5 rounded-full hover:bg-white/[0.08] hover:text-white transition-colors"
-              >
-                Features
-              </a>
-              <a
-                href="#calculator"
-                className="px-3 py-1.5 rounded-full hover:bg-white/[0.08] hover:text-white transition-colors"
-              >
-                Savings Simulator
-              </a>
-              <a
-                href="#pricing"
-                className="px-3 py-1.5 rounded-full bg-pink-500/10 text-pink-300 hover:bg-pink-500/20 transition-colors font-bold"
-              >
-                3 Subscription Plans
-              </a>
-              <a
-                href="#faq"
-                className="px-3 py-1.5 rounded-full hover:bg-white/[0.08] hover:text-white transition-colors"
-              >
-                FAQ
-              </a>
-            </nav>
-          )}
-
+        {/* Center Indicator: Active Mode Badge */}
+        <div className="hidden md:flex items-center gap-2">
           {/* Buyer Experience Banner */}
           {currentPortal === 'buyer' && (
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30 flex items-center gap-1.5">
                 <ShoppingBag className="w-3.5 h-3.5 text-teal-400" />
-                <span>Buyer Portal · Zero Sign-In Required</span>
+                <span>Buyer Protection Hub</span>
               </span>
             </div>
           )}
@@ -146,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-pink-500/15 text-pink-300 border border-pink-500/30 flex items-center gap-1.5">
                 <Store className="w-3.5 h-3.5 text-pink-400" />
-                <span>Seller Studio · {isSellerAuthenticated ? "Meera's Handloom" : 'Merchant Login'}</span>
+                <span>Seller Studio · {isSellerAuthenticated ? (sellerBusinessName || "Meera's Handloom") : 'Merchant Login'}</span>
               </span>
             </div>
           )}
@@ -202,7 +174,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-pink-600/25 transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <Store className="w-3.5 h-3.5" />
-                <span>{isSellerAuthenticated ? 'Seller Studio' : 'Seller Login'}</span>
+                <span>{isSellerAuthenticated ? 'Seller Studio' : 'Seller Login / Register'}</span>
               </button>
             </>
           )}

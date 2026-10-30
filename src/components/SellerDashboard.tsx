@@ -22,7 +22,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { OrderLink, OrderStatus, PaymentRail } from '../types';
+import { OrderLink, OrderStatus, PaymentRail, SellerCredentials } from '../types';
 import { SimpleSvgQr } from '../utils/qr';
 import { sounds } from '../utils/audio';
 
@@ -37,6 +37,7 @@ interface SellerDashboardProps {
   onSignOut?: () => void;
   onSwitchPortal?: () => void;
   showToast: (msg: string) => void;
+  currentSeller?: SellerCredentials;
 }
 
 export const SellerDashboard: React.FC<SellerDashboardProps> = ({
@@ -50,6 +51,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onSignOut,
   onSwitchPortal,
   showToast,
+  currentSeller,
 }) => {
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,15 +124,15 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       terms: terms.trim(),
       createdAt: 'Just now',
       expiresAt,
-      businessName: "Meera's Handloom",
-      businessVpa: 'meera@upi',
+      businessName: currentSeller?.businessName || "Meera's Handloom",
+      businessVpa: currentSeller?.vpa || 'meera@upi',
       status: 'pending',
       deliveryStage: 0,
       messages: [
         {
           id: `msg-${Date.now()}`,
           sender: 'seller',
-          senderName: "Meera's Handloom",
+          senderName: currentSeller?.businessName || "Meera's Handloom",
           text: `Hi ${customerName.trim()}! Here is your custom payment link for ${note.trim()}.`,
           timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
         },
@@ -597,21 +599,29 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-[#0F1528]/90 backdrop-blur-xl border border-pink-500/25 shadow-xl">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center text-white font-black text-lg shadow-md shadow-pink-500/25">
-            M
+            {(currentSeller?.businessName || "M").charAt(0).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-lg text-white">Meera's Handloom</span>
+              <span className="font-display font-bold text-lg text-white">
+                {currentSeller?.businessName || "Meera's Handloom"}
+              </span>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Verified Artisan
+                <CheckCircle className="w-3 h-3" /> Verified Merchant
               </span>
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-300">
-              <span className="font-mono text-pink-300">meera@upi</span>
+              <span className="font-mono text-pink-300">
+                {currentSeller?.vpa || "meera@upi"}
+              </span>
               <span>•</span>
-              <span className="text-slate-400">GSTIN: 29AABCU9603R1ZM</span>
+              <span className="text-slate-400">
+                {currentSeller?.city || (currentSeller?.ownerName ? `Owner: ${currentSeller.ownerName}` : "GSTIN: 29AABCU9603R1ZM")}
+              </span>
               <span>•</span>
-              <span className="text-emerald-400 font-semibold">99.2% Positive Trust</span>
+              <span className="text-emerald-400 font-semibold">
+                {currentSeller?.trustScore ? `${currentSeller.trustScore}% Trust Score` : "99.2% Positive Trust"}
+              </span>
             </div>
           </div>
         </div>

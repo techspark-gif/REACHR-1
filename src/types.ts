@@ -76,13 +76,18 @@ export interface AppNotification {
 export type AppPortal = 'landing' | 'buyer' | 'seller' | 'universal-control';
 
 export interface SellerCredentials {
+  id?: string;
   email: string;
+  password?: string;
   businessName: string;
   ownerName: string;
   vpa: string;
   phone: string;
   isVerified: boolean;
   city: string;
+  category?: string;
+  gstin?: string;
+  trustScore?: number;
 }
 
 export interface MerchantAccount {
@@ -124,4 +129,3 @@ export interface BusinessProduct {
   craftDetails: string;
   orderLinkId?: string;
 }
-

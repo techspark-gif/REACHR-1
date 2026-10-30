@@ -13,7 +13,7 @@ import { BuyerPortal } from './components/BuyerPortal';
 import { UniversalControlView } from './components/UniversalControlView';
 import { OwnerLoginModal } from './components/OwnerLoginModal';
 import { INITIAL_ORDERS, INITIAL_NOTIFICATIONS } from './data/initialData';
-import { OrderLink, AppNotification, AppPortal } from './types';
+import { OrderLink, AppNotification, AppPortal, SellerCredentials } from './types';
 import { sounds } from './utils/audio';
 
 export default function App() {
@@ -47,6 +47,24 @@ export default function App() {
     } catch {
       return false;
     }
+  });
+
+  const [currentSeller, setCurrentSeller] = useState<SellerCredentials>(() => {
+    try {
+      const saved = localStorage.getItem('reachr_current_seller_v4');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      email: 'meera@handloom.in',
+      businessName: "Meera's Handloom",
+      ownerName: "Meera R.",
+      vpa: 'meera@upi',
+      phone: '+91 98451 22390',
+      isVerified: true,
+      city: 'Bengaluru, Karnataka',
+      category: 'Handloom & Textiles',
+      trustScore: 99,
+    };
   });
 
   // Owner Authentication State (Universal Control is locked until owner logs in)
@@ -177,9 +195,15 @@ export default function App() {
   };
 
   // Seller Auth Handlers
-  const handleSellerLoginSuccess = () => {
+  const handleSellerLoginSuccess = (sellerData?: SellerCredentials) => {
+    if (sellerData) {
+      setCurrentSeller(sellerData);
+      try {
+        localStorage.setItem('reachr_current_seller_v4', JSON.stringify(sellerData));
+      } catch {}
+    }
     setIsSellerAuthenticated(true);
-    showToast("Welcome back, Meera's Handloom!");
+    showToast(`Welcome to Seller Studio, ${sellerData?.businessName || sellerData?.ownerName || "Merchant"}!`);
   };
 
   const handleSellerLogout = () => {
@@ -215,8 +239,8 @@ export default function App() {
       terms: orderData.terms || 'Standard 7-day exchange window.',
       createdAt: 'Just now',
       expiresAt: orderData.expiresAt || null,
-      businessName: "Meera's Handloom",
-      businessVpa: 'meera@upi',
+      businessName: orderData.businessName || currentSeller.businessName,
+      businessVpa: orderData.businessVpa || currentSeller.vpa,
       status: 'pending',
       deliveryStage: 0,
       messages: orderData.messages || [],
@@ -287,6 +311,7 @@ export default function App() {
           onSelectOrder={setSelectedOrderId}
           isSellerAuthenticated={isSellerAuthenticated}
           onSellerLogout={handleSellerLogout}
+          sellerBusinessName={currentSeller.businessName}
           isOwnerAuthenticated={isOwnerAuthenticated}
           onOwnerLogout={handleOwnerLogout}
           isBuyerIdentified={isBuyerIdentified}
@@ -343,6 +368,7 @@ export default function App() {
                 onSignOut={handleSellerLogout}
                 onSwitchPortal={() => handleSelectPortal('landing')}
                 showToast={showToast}
+                currentSeller={currentSeller}
               />
             )}
           </>
