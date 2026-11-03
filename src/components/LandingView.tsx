@@ -389,55 +389,18 @@ export const LandingView: React.FC<LandingViewProps> = ({
         </div>
       </section>
 
-      {/* 6. TRANSPARENT PRICING WITH SUBSTANTIAL DISCOUNT & REAL GATEWAY MATH */}
+      {/* 6. TRANSPARENT PRICING WITH EXACT DIRECT NUMBERS (NO FAKE DISCOUNTS) */}
       <section className="space-y-8" id="pricing">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-wider">
-            <span>Honest Merchant Economics</span>
+            <span>Automates 75% Of Your Work</span>
           </div>
           <h2 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight">
-            Predictable flat pricing. <span className="text-pink-400">0% take rate.</span>
+            Transparent flat pricing. <span className="text-pink-400">Direct & Honest.</span>
           </h2>
           <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-            Unlike legacy payment gateways that siphon 2% to 3% off every single rupee you make, Reachr keeps your sales 100% yours.
+            Reachr does 75% of your work — automated Meta Ads, WhatsApp payment recovery, and Tinder-style swipe discovery. Direct fixed pricing with zero hidden commissions.
           </p>
-
-          {/* High-Impact Billing Mode Selector */}
-          <div className="pt-4 flex justify-center">
-            <div className="inline-flex p-1.5 rounded-2xl bg-[#0F1630] border border-white/15 shadow-xl">
-              <button
-                type="button"
-                onClick={() => {
-                  setBillingCycle('monthly');
-                  sounds.playMessage();
-                }}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  billingCycle === 'monthly'
-                    ? 'bg-white/[0.12] text-white shadow-md border border-white/20'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Pay Monthly
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setBillingCycle('annual');
-                  sounds.playSuccess();
-                }}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  billingCycle === 'annual'
-                    ? 'bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500 text-white shadow-lg shadow-pink-500/30'
-                    : 'text-pink-300 hover:text-white'
-                }`}
-              >
-                <span>Annual Pass</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 uppercase tracking-tight shadow">
-                  4 Months Free (Save 44%)
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* 3 Pricing Cards */}
@@ -447,38 +410,38 @@ export const LandingView: React.FC<LandingViewProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-display font-bold text-xl text-white">Starter Free</h3>
-                <span className="text-[11px] font-semibold text-slate-400">Zero Card Required</span>
+                <span className="text-[11px] font-semibold text-slate-400">Manual Plan</span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-1">
                   <span className="font-display font-extrabold text-4xl text-white font-mono">₹0</span>
                   <span className="text-slate-400 text-xs">/ forever free</span>
                 </div>
-                <div className="text-[11px] text-teal-400 font-semibold">0% Commission · Instant Setup</div>
+                <div className="text-[11px] text-teal-400 font-semibold">Standard Manual Payment Links</div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Ideal for home bakers, solo artisans, and new creators selling on Instagram or WhatsApp.
+                Ideal for solo artisans getting started with manual Reachr payment links and basic escrow protection.
               </p>
               <div className="space-y-2.5 pt-2 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Up to 25 SmartPay links / month</span>
+                  <span>Standard Payment Links</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Instant UPI QR code generation</span>
+                  <span>3.5% Escrow Transaction Fee</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Integrated order chat thread</span>
+                  <span>Integrated Order Chat & Terms</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Standard 4-stage dispute shield</span>
+                  <span>Standard Dispute Shield Protection</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Direct-to-bank VPA settlement</span>
+                  <span>Direct UPI Bank Settlement</span>
                 </div>
               </div>
             </div>
@@ -489,76 +452,60 @@ export const LandingView: React.FC<LandingViewProps> = ({
               }}
               className="w-full py-3.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white font-bold text-xs transition-colors cursor-pointer"
             >
-              Start Free (No Credit Card)
+              Start Free (Manual Plan)
             </button>
           </div>
 
-          {/* Growth Plan (Featured with huge discount math) */}
+          {/* Growth Pro Plan (₹2,999/mo) */}
           <div className="p-7 rounded-3xl bg-gradient-to-b from-[#2B1B54] via-[#1A1844] to-[#121936] border-2 border-violet-500/60 shadow-2xl shadow-violet-600/30 space-y-6 flex flex-col justify-between relative transform lg:-translate-y-2">
             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-lg flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{billingCycle === 'annual' ? 'Best Value · 44% Savings' : 'Most Popular Plan'}</span>
+              <span>75% Automated • Most Popular 🔥</span>
             </div>
 
             <div className="space-y-4 pt-1">
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-2xl text-white">Growth Pro</h3>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300">
-                  Unlimited Links
+                <h3 className="font-display font-bold text-2xl text-white">Pro Growth</h3>
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300">
+                  Automated Workflows
                 </span>
               </div>
 
-              {/* Dynamic Price Display */}
+              {/* Exact Price Display */}
               <div className="space-y-1">
-                {billingCycle === 'annual' ? (
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg line-through text-slate-500 font-mono">₹299</span>
-                      <span className="font-display font-extrabold text-4xl text-white font-mono">₹166</span>
-                      <span className="text-slate-300 text-xs">/ month</span>
-                    </div>
-                    <div className="text-xs text-amber-300 font-bold mt-1 flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                        Billed ₹1,999/yr
-                      </span>
-                      <span>You save ₹1,589 every year!</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-display font-extrabold text-4xl text-white font-mono">₹299</span>
-                      <span className="text-slate-400 text-xs">/ month (billed monthly)</span>
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">Switch to Annual Pass anytime to save 44%</div>
-                  </div>
-                )}
+                <div className="flex items-baseline gap-1">
+                  <span className="font-display font-extrabold text-4xl text-white font-mono">₹2,999</span>
+                  <span className="text-slate-300 text-xs">/ month</span>
+                </div>
+                <div className="text-xs text-amber-300 font-bold mt-1">
+                  Automates 75% of your ad creation & payment follow-ups
+                </div>
               </div>
 
               <p className="text-xs text-slate-300 leading-relaxed">
-                For established handloom weavers, boutique designers, and e-commerce stores who need fast turnaround and priority resolution.
+                For established weavers, boutique designers, and stores who want instant Instagram ads and automated payment pings.
               </p>
 
               <div className="space-y-2.5 pt-2 text-xs text-slate-200">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span className="font-semibold text-white">Unlimited SmartPay payment requests</span>
+                  <span className="font-semibold text-white">AI Meta Ad Studio (Instagram & FB Creatives)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>Priority Reachr Neutral Review (&lt;6h resolution)</span>
+                  <span>Custom Instagram Story (9:16) & Post (1:1) with QR</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>ProofVault image archive with EXIF geotagging</span>
+                  <span>1.2% Escrow Fee (Save 65% on fees)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>Live 7-Day cashflow velocity dashboard</span>
+                  <span>Automated WhatsApp 1-Click Payment Reminders</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>Automated WhatsApp customer share templates</span>
+                  <span>Verified Merchant Blue Shield on Checkout</span>
                 </div>
               </div>
             </div>
@@ -570,69 +517,55 @@ export const LandingView: React.FC<LandingViewProps> = ({
               }}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500 hover:opacity-95 text-white font-extrabold text-sm shadow-xl shadow-pink-500/25 transition-all cursor-pointer"
             >
-              {billingCycle === 'annual' ? 'Get Annual Growth at ₹1,999/yr' : 'Start Growth Plan at ₹299/mo'}
+              Get Pro Growth at ₹2,999/mo
             </button>
           </div>
 
-          {/* Studio Plan */}
-          <div className="p-7 rounded-3xl bg-[#121936] border border-white/10 space-y-6 flex flex-col justify-between">
+          {/* Elite Brand Plan (₹5,999/mo) */}
+          <div className="p-7 rounded-3xl bg-[#121936] border border-amber-500/40 space-y-6 flex flex-col justify-between relative shadow-2xl shadow-amber-500/10">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-xl text-white">Studio Elite</h3>
-                <span className="text-[11px] font-semibold text-slate-400">Teams & Co-ops</span>
+                <h3 className="font-display font-bold text-xl text-white">Elite Brand</h3>
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
+                  Full Autopilot 🚀
+                </span>
               </div>
 
-              {/* Dynamic Studio Price */}
+              {/* Exact Studio Elite Price */}
               <div className="space-y-1">
-                {billingCycle === 'annual' ? (
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg line-through text-slate-500 font-mono">₹999</span>
-                      <span className="font-display font-extrabold text-4xl text-white font-mono">₹583</span>
-                      <span className="text-slate-300 text-xs">/ month</span>
-                    </div>
-                    <div className="text-xs text-amber-300 font-bold mt-1 flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                        Billed ₹6,999/yr
-                      </span>
-                      <span>Save ₹4,989 / year!</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-display font-extrabold text-4xl text-white font-mono">₹999</span>
-                      <span className="text-slate-400 text-xs">/ month (billed monthly)</span>
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">Switch to Annual Pass for 41% savings</div>
-                  </div>
-                )}
+                <div className="flex items-baseline gap-1">
+                  <span className="font-display font-extrabold text-4xl text-white font-mono">₹5,999</span>
+                  <span className="text-slate-300 text-xs">/ month</span>
+                </div>
+                <div className="text-xs text-amber-400 font-bold mt-1">
+                  Includes #1 Priority in Tinder-Style Swipe Feed
+                </div>
               </div>
 
               <p className="text-xs text-slate-400 leading-relaxed">
-                Multi-staff artisan cooperatives, retail chains, and luxury apparel houses managing high volume.
+                Maximum exposure for luxury brands, high-growth artisan co-ops, and top sellers who want full autopilot sales.
               </p>
 
               <div className="space-y-2.5 pt-2 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Everything in Growth Pro</span>
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="font-semibold text-white">⭐ Top Featured in Tinder-Style Swipe Feed</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Multiple staff seats & order assignment</span>
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>VIP Same-Day (12-24h) Escrow Bank Settlement</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Custom branded checkout domain</span>
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>0.5% Escrow Fee (Lowest Industry Rate)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Dedicated compliance & arbitration concierge</span>
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Dedicated Human Dispute Concierge & Defense</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Raw CSV export & accounting integration</span>
+                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Unlimited AI Social Creatives & Video Scripts</span>
                 </div>
               </div>
             </div>
@@ -642,9 +575,9 @@ export const LandingView: React.FC<LandingViewProps> = ({
                 onGoToSeller();
                 sounds.playSuccess();
               }}
-              className="w-full py-3.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white font-bold text-xs transition-colors cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-95 text-slate-950 font-black text-xs transition-colors cursor-pointer shadow-lg shadow-amber-500/20"
             >
-              {billingCycle === 'annual' ? 'Get Studio Pass at ₹6,999/yr' : 'Start Studio at ₹999/mo'}
+              Get Elite Brand at ₹5,999/mo
             </button>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { sounds } from '../utils/audio';
 interface HeaderProps {
   currentPortal: AppPortal;
   onSelectPortal: (portal: AppPortal) => void;
+  onOpenSwipeFeed?: () => void;
   notifications: AppNotification[];
   onMarkNotificationsRead: () => void;
   orders: OrderLink[];
@@ -22,6 +23,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   currentPortal,
   onSelectPortal,
+  onOpenSwipeFeed,
   notifications,
   onMarkNotificationsRead,
   orders,
@@ -153,6 +155,21 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Public Landing or Buyer view: Quick Buyer & Seller launchers */}
           {currentPortal === 'landing' && (
             <>
+              <button
+                onClick={() => {
+                  if (onOpenSwipeFeed) {
+                    onOpenSwipeFeed();
+                  } else {
+                    onSelectPortal('buyer');
+                  }
+                  sounds.playSuccess();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500/20 to-rose-500/20 hover:from-pink-500/30 hover:to-rose-500/30 border border-pink-500/40 text-pink-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                title="Tinder-style product swipe feed and order tracking"
+              >
+                <span>Swipe & Match 🔥</span>
+              </button>
+
               <button
                 onClick={() => {
                   onSelectPortal('buyer');

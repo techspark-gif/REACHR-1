@@ -73,7 +73,9 @@ export interface AppNotification {
   linkCode?: string;
 }
 
-export type AppPortal = 'landing' | 'buyer' | 'seller' | 'universal-control';
+export type AppPortal = 'landing' | 'buyer' | 'seller' | 'universal-control' | 'swipe';
+
+export type SubscriptionTier = 'starter' | 'pro' | 'elite';
 
 export interface SellerCredentials {
   id?: string;
@@ -88,6 +90,8 @@ export interface SellerCredentials {
   category?: string;
   gstin?: string;
   trustScore?: number;
+  subscriptionTier?: SubscriptionTier;
+  subscriptionExpiresAt?: string;
 }
 
 export interface MerchantAccount {

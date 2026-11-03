@@ -12,8 +12,10 @@ import { SellerDashboard } from './components/SellerDashboard';
 import { BuyerPortal } from './components/BuyerPortal';
 import { UniversalControlView } from './components/UniversalControlView';
 import { OwnerLoginModal } from './components/OwnerLoginModal';
+import { SubscriptionModal } from './components/SubscriptionModal';
+import { ProductSwipeDeck, SwipeItem } from './components/ProductSwipeDeck';
 import { INITIAL_ORDERS, INITIAL_NOTIFICATIONS } from './data/initialData';
-import { OrderLink, AppNotification, AppPortal, SellerCredentials } from './types';
+import { OrderLink, AppNotification, AppPortal, SellerCredentials, SubscriptionTier } from './types';
 import { sounds } from './utils/audio';
 
 export default function App() {
@@ -64,8 +66,25 @@ export default function App() {
       city: 'Bengaluru, Karnataka',
       category: 'Handloom & Textiles',
       trustScore: 99,
+      subscriptionTier: 'starter',
     };
   });
+
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState<boolean>(false);
+
+  const handleUpgradeSubscription = (newTier: SubscriptionTier) => {
+    setCurrentSeller((prev) => {
+      const updated: SellerCredentials = {
+        ...prev,
+        subscriptionTier: newTier,
+      };
+      try {
+        localStorage.setItem('reachr_current_seller_v4', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    showToast(`🎉 Upgraded to Reachr ${newTier === 'elite' ? 'Elite Brand' : newTier === 'pro' ? 'Pro Growth' : 'Starter'} plan!`);
+  };
 
   // Owner Authentication State (Universal Control is locked until owner logs in)
   const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState<boolean>(() => {
@@ -106,6 +125,12 @@ export default function App() {
     }
     return 'landing';
   });
+
+  const [buyerInitialTab, setBuyerInitialTab] = useState<'checkout' | 'explore' | 'swipe' | 'track' | 'trust'>('checkout');
+
+  const handleOpenSwipeFeed = () => {
+    setCurrentPortal('swipe');
+  };
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(orders[0]?.id || 'l1');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -304,6 +329,7 @@ export default function App() {
         <Header
           currentPortal={currentPortal}
           onSelectPortal={handleSelectPortal}
+          onOpenSwipeFeed={handleOpenSwipeFeed}
           notifications={notifications}
           onMarkNotificationsRead={handleMarkNotificationsRead}
           orders={orders}
@@ -343,6 +369,42 @@ export default function App() {
             showToast={showToast}
             isBuyerIdentified={isBuyerIdentified}
             onBuyerIdentified={() => setIsBuyerIdentified(true)}
+            initialTab={buyerInitialTab}
+          />
+        )}
+
+        {currentPortal === 'swipe' && (
+          <ProductSwipeDeck
+            onExit={() => setCurrentPortal('landing')}
+            onQuickOrder={(item: SwipeItem) => {
+              const randomCode = 'RCH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+              handleCreateOrder({
+                linkCode: randomCode,
+                customerName: 'Guest Buyer',
+                amount: item.price,
+                note: item.title,
+                quantity: 1,
+                terms: 'Protected with Reachr ProofVault™ unboxing guarantee.',
+                createdAt: 'Just now',
+                businessName: item.sellerName,
+                businessVpa: item.sellerVpa,
+                status: 'pending',
+                deliveryStage: 0,
+                messages: [
+                  {
+                    id: `msg-${Date.now()}`,
+                    sender: 'system',
+                    senderName: 'Reachr Instant',
+                    text: `Instant order created for ${item.title} from Reachr Swipe Feed.`,
+                    timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+                  },
+                ],
+              });
+              setBuyerInitialTab('checkout');
+              setCurrentPortal('buyer');
+              showToast(`Created order for ${item.title}!`);
+            }}
+            showToast={showToast}
           />
         )}
 
@@ -369,6 +431,7 @@ export default function App() {
                 onSwitchPortal={() => handleSelectPortal('landing')}
                 showToast={showToast}
                 currentSeller={currentSeller}
+                onOpenSubscription={() => setShowSubscriptionModal(true)}
               />
             )}
           </>
@@ -391,6 +454,14 @@ export default function App() {
         isOpen={showOwnerLoginModal}
         onClose={() => setShowOwnerLoginModal(false)}
         onSuccessLogin={handleOwnerLoginSuccess}
+      />
+
+      {/* Seller Subscription Upgrade Modal */}
+      <SubscriptionModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+        currentTier={currentSeller.subscriptionTier || 'starter'}
+        onUpgradeSuccess={handleUpgradeSubscription}
       />
 
       {/* Toast Notification Alert */}

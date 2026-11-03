@@ -34,6 +34,7 @@ import { OrderLink, PaymentRail, AppNotification, BusinessProduct } from '../typ
 import { INITIAL_BUSINESS, INITIAL_MERCHANTS, EXPLORE_CATALOG } from '../data/initialData';
 import { sounds } from '../utils/audio';
 import { TrustCenter } from './TrustCenter';
+import { ProductSwipeDeck, SwipeItem } from './ProductSwipeDeck';
 
 interface BuyerPortalProps {
   orders: OrderLink[];
@@ -48,6 +49,7 @@ interface BuyerPortalProps {
   showToast: (msg: string) => void;
   isBuyerIdentified?: boolean;
   onBuyerIdentified?: () => void;
+  initialTab?: 'checkout' | 'explore' | 'swipe' | 'track' | 'trust';
 }
 
 export const BuyerPortal: React.FC<BuyerPortalProps> = ({
@@ -63,11 +65,21 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
   showToast,
   isBuyerIdentified = false,
   onBuyerIdentified,
+  initialTab,
 }) => {
   const currentOrder = orders.find((o) => o.id === selectedOrderId) || orders[0];
 
   // Active view tab in Buyer Experience
-  const [activeBuyerSubTab, setActiveBuyerSubTab] = useState<'checkout' | 'explore' | 'track' | 'trust'>('checkout');
+  const [activeBuyerSubTab, setActiveBuyerSubTab] = useState<'checkout' | 'explore' | 'swipe' | 'track' | 'trust'>(
+    initialTab || 'checkout'
+  );
+
+  // Sync initialTab when parent changes it
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveBuyerSubTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Order Lookup State
   const [orderQuery, setOrderQuery] = useState('');
@@ -668,6 +680,21 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
         <div className="flex items-center gap-2 p-1.5 bg-white/[0.04] border border-white/10 rounded-2xl shrink-0">
           <button
             onClick={() => {
+              setActiveBuyerSubTab('swipe');
+              sounds.playMessage();
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+              activeBuyerSubTab === 'swipe'
+                ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white font-black shadow-md shadow-pink-500/25'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>Swipe & Match 🔥</span>
+          </button>
+
+          <button
+            onClick={() => {
               setActiveBuyerSubTab('explore');
               sounds.playMessage();
             }}
@@ -737,6 +764,44 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
           </div>
         )}
       </div>
+
+      {/* VIEW: TINDER-STYLE PRODUCT SWIPE FEED */}
+      {activeBuyerSubTab === 'swipe' && (
+        <div className="animate-fadeIn py-2">
+          <ProductSwipeDeck
+            onQuickOrder={(item: SwipeItem) => {
+              if (onCreateOrder) {
+                const randomCode = 'RCH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+                onCreateOrder({
+                  linkCode: randomCode,
+                  customerName: 'Guest Buyer',
+                  amount: item.price,
+                  note: item.title,
+                  quantity: 1,
+                  terms: 'Protected with Reachr ProofVault™ unboxing guarantee.',
+                  createdAt: 'Just now',
+                  businessName: item.sellerName,
+                  businessVpa: item.sellerVpa,
+                  status: 'pending',
+                  deliveryStage: 0,
+                  messages: [
+                    {
+                      id: `msg-${Date.now()}`,
+                      sender: 'system',
+                      senderName: 'Reachr Instant',
+                      text: `Instant order created for ${item.title} from Reachr Swipe Feed.`,
+                      timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+                    },
+                  ],
+                });
+                setActiveBuyerSubTab('checkout');
+                showToast(`Generated instant order for ${item.title}! Ready to pay.`);
+              }
+            }}
+            showToast={showToast}
+          />
+        </div>
+      )}
 
       {/* 4. VIEW A: EXPLORE BUSINESSES AND THEIR PRODUCTS (WITHOUT ENTERING EMAIL) */}
       {activeBuyerSubTab === 'explore' && (

@@ -22,9 +22,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { OrderLink, OrderStatus, PaymentRail, SellerCredentials } from '../types';
+import { OrderLink, OrderStatus, PaymentRail, SellerCredentials, SubscriptionTier } from '../types';
 import { SimpleSvgQr } from '../utils/qr';
 import { sounds } from '../utils/audio';
+import { SocialAdStudio } from './SocialAdStudio';
 
 interface SellerDashboardProps {
   orders: OrderLink[];
@@ -38,6 +39,7 @@ interface SellerDashboardProps {
   onSwitchPortal?: () => void;
   showToast: (msg: string) => void;
   currentSeller?: SellerCredentials;
+  onOpenSubscription?: () => void;
 }
 
 export const SellerDashboard: React.FC<SellerDashboardProps> = ({
@@ -52,7 +54,9 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onSwitchPortal,
   showToast,
   currentSeller,
+  onOpenSubscription,
 }) => {
+  const tier: SubscriptionTier = currentSeller?.subscriptionTier || 'starter';
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -627,6 +631,27 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
+          {/* Subscription Tier Button */}
+          <button
+            onClick={onOpenSubscription}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-lg ${
+              tier === 'elite'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-amber-500/25'
+                : tier === 'pro'
+                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-indigo-500/25'
+                : 'bg-white/10 hover:bg-white/15 text-slate-200 border border-white/20'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>
+              {tier === 'elite'
+                ? '⭐ Elite Brand Plan'
+                : tier === 'pro'
+                ? '⚡ Pro Growth Plan'
+                : 'Upgrade Plan (Get Meta Ads)'}
+            </span>
+          </button>
+
           {onSwitchPortal && (
             <button
               onClick={onSwitchPortal}
@@ -694,6 +719,24 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
           <div className="font-display font-extrabold text-4xl mt-1 font-mono">{openDisputes}</div>
         </div>
       </div>
+
+      {/* Meta Ad Studio (Instagram & Facebook ad generator) */}
+      <SocialAdStudio
+        seller={currentSeller || {
+          email: 'meera@handloom.in',
+          businessName: "Meera's Handloom",
+          ownerName: "Meera R.",
+          vpa: 'meera@upi',
+          phone: '+91 98451 22390',
+          isVerified: true,
+          city: 'Bengaluru, Karnataka',
+          category: 'Handloom & Textiles',
+          trustScore: 99,
+          subscriptionTier: tier,
+        }}
+        onOpenSubscriptionModal={onOpenSubscription || (() => {})}
+        showToast={showToast}
+      />
 
       {/* 2. REVENUE VELOCITY CHART */}
       <div className="p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">

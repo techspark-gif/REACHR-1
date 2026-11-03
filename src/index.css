@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@keyframes scanLine {
+  0% {
+    top: 6%;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 92%;
+    opacity: 0.3;
+  }
+}
+
 :root {
   --bg: #0b1020;
   --ink: #f6f7ff;
