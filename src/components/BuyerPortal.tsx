@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   CreditCard,
-  QrCode,
   CheckCircle,
   AlertTriangle,
   MessageSquare,
@@ -28,6 +27,7 @@ import {
   ExternalLink,
   ChevronRight,
   Filter,
+  Zap,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { OrderLink, PaymentRail, AppNotification, BusinessProduct } from '../types';
@@ -168,23 +168,23 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
   > = {
     upi: {
       name: 'UPI Apps',
-      icon: <span className="text-base">⚡</span>,
+      icon: <Zap className="w-4 h-4 text-violet-400" />,
       apps: ['Google Pay', 'PhonePe', 'Paytm UPI', 'BHIM', 'Cred'],
-      hint: `Pay directly to ${currentOrder?.businessVpa || 'merchant@upi'} via authorized NPCI gateway.`,
+      hint: 'Direct payment to Reachr Protected Escrow (ts.mukesh007@oksbi) with 7-day doorstep guarantee.',
       cta: `Pay ₹${currentOrder?.amount.toLocaleString('en-IN') || 0} with UPI`,
     },
     card: {
       name: 'Cards',
       icon: <CreditCard className="w-4 h-4 text-pink-400" />,
       apps: ['RuPay Debit', 'Visa', 'Mastercard', 'Amex'],
-      hint: 'Supports all major Indian and international debit/credit cards with 3D Secure OTP.',
+      hint: 'Supports major debit and credit cards with 3D Secure OTP.',
       cta: `Pay ₹${currentOrder?.amount.toLocaleString('en-IN') || 0} with Card`,
     },
     netbanking: {
       name: 'Netbanking',
       icon: <Building2 className="w-4 h-4 text-cyan-400" />,
       apps: ['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak'],
-      hint: 'Direct instant bank authorization with zero gateway surcharges.',
+      hint: 'Direct instant bank authorization.',
       cta: `Pay ₹${currentOrder?.amount.toLocaleString('en-IN') || 0} via Netbanking`,
     },
     wallet: {
@@ -202,14 +202,14 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
         `6 Months (₹${Math.ceil((currentOrder?.amount || 3000) / 6)}/mo)`,
         `9 Months (₹${Math.ceil((currentOrder?.amount || 3000) / 9)}/mo)`,
       ],
-      hint: 'Zero processing fee and 0% interest with credit card pre-approval.',
+      hint: 'Zero processing fee and 0% interest on eligible cards.',
       cta: 'Confirm No-Cost EMI Plan',
     },
     cod: {
       name: 'Cash on Delivery',
       icon: <Banknote className="w-4 h-4 text-emerald-400" />,
       apps: ['Pay courier on doorstep arrival'],
-      hint: 'Pay the delivery partner via cash or UPI QR upon inspecting the parcel.',
+      hint: 'Pay the delivery partner in cash upon doorstep delivery after inspecting the parcel.',
       cta: 'Place Cash on Delivery Order',
     },
   };
@@ -228,6 +228,15 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
 
     setIsProcessingPayment(true);
     sounds.playMessage();
+
+    // Direct UPI redirect to ts.mukesh007@oksbi through selected UPI app
+    const targetUpiVpa = 'ts.mukesh007@oksbi';
+    const upiRedirectUrl = `upi://pay?pa=${targetUpiVpa}&pn=Reachr&am=${currentOrder.amount}&cu=INR&tn=${encodeURIComponent(
+      'Order ' + currentOrder.linkCode
+    )}`;
+    try {
+      window.location.href = upiRedirectUrl;
+    } catch {}
 
     setTimeout(() => {
       setIsProcessingPayment(false);
@@ -469,25 +478,16 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
   const trustScore = 96;
 
   return (
-    <div className="relative z-10 w-full max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-8">
-      {/* 1. BUYER PORTAL WELCOME & PRIMARY DUAL-GATEWAY */}
+    <div className="relative z-10 w-full max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-8 text-[var(--ink)] transition-colors duration-300">
+      {/* 1. BUYER PORTAL WELCOME */}
       <div className="space-y-6">
-        {/* Top Header Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-[#0B1528]/95 backdrop-blur-xl border border-teal-500/25 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-teal-500/15 text-teal-300 border border-teal-500/30">
-                Buyer Portal
-              </span>
-              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5" /> Zero Login Required
-              </span>
-            </div>
-            <h1 className="font-display font-black text-xl sm:text-2xl text-white">
-              Customer Trust & Discovery Portal
+            <h1 className="font-display font-bold text-xl sm:text-2xl text-[var(--ink)]">
+              Buyer Hub & Delivery Protection
             </h1>
-            <p className="text-xs text-slate-300">
-              Track your orders with verified courier ProofVault™, or explore registered businesses and artisanal products without entering an email.
+            <p className="text-xs text-[var(--mut)]">
+              Track your deliveries, complete payments, or browse verified artisanal businesses.
             </p>
           </div>
 
@@ -495,7 +495,7 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
             {onSwitchPortal && (
               <button
                 onClick={onSwitchPortal}
-                className="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-[var(--bg-warm)] hover:bg-[var(--line)] border border-[var(--line)] text-xs font-medium text-[var(--ink)] transition-all cursor-pointer"
               >
                 Back to Home
               </button>
@@ -503,27 +503,22 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
           </div>
         </div>
 
-        {/* 2. THE DUAL ENTRY GATEWAY: ORDER NUMBER/EMAIL LOOKUP & EXPLORE BUSINESSES */}
+        {/* 2. THE DUAL ENTRY GATEWAY */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* GATEWAY A: ORDER DETAILS LOOKUP */}
-          <div className="lg:col-span-7 p-6 rounded-3xl bg-[#111A34]/95 border border-teal-500/30 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+          <div className="lg:col-span-7 p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-400">
-                  <Search className="w-4 h-4" />
+              <div className="space-y-1">
+                <div className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider">
+                  Track existing order
                 </div>
-                <div>
-                  <div className="text-[11px] font-extrabold uppercase tracking-wider text-teal-400">
-                    Track Existing Order
-                  </div>
-                  <h2 className="font-display font-bold text-lg text-white">
-                    Please enter your order number or email ID to get your details
-                  </h2>
-                </div>
+                <h2 className="font-display font-semibold text-base text-[var(--ink)]">
+                  Enter your order number or email
+                </h2>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Enter your unique order link code (e.g. <b className="text-white">RCH-4F2A</b>) or registered email ID to immediately access payment receipts, courier tracking, and seller chat.
+              <p className="text-xs text-[var(--mut)] leading-relaxed">
+                Enter your order code (e.g. <span className="font-mono text-[var(--accent)] font-semibold">RCH-4F2A</span>) or email to look up payment status and tracking.
               </p>
 
               {/* Input & Search Button */}
@@ -542,14 +537,14 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
                       setOrderQuery(e.target.value);
                       if (lookupFeedback) setLookupFeedback(null);
                     }}
-                    placeholder="Enter order number (e.g. RCH-4F2A) or email ID..."
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/15 text-white placeholder-slate-400 text-xs font-medium focus:outline-none focus:border-teal-400 transition-colors"
+                    placeholder="Order number (e.g. RCH-4F2A) or email..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-xs focus:outline-none focus:border-[var(--accent)] transition-colors"
                   />
                   {orderQuery && (
                     <button
                       type="button"
                       onClick={() => setOrderQuery('')}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-white text-xs cursor-pointer"
+                      className="absolute right-3 top-2.5 text-[var(--mut)] hover:text-[var(--ink)] text-xs cursor-pointer"
                     >
                       ✕
                     </button>
@@ -558,10 +553,10 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
 
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:opacity-95 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95 shrink-0"
+                  className="px-5 py-2.5 rounded-full bg-[var(--accent)] hover:opacity-90 text-white font-medium text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm shrink-0"
                 >
-                  <Search className="w-4 h-4" />
-                  <span>Get Details</span>
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Look up</span>
                 </button>
               </form>
 
@@ -570,14 +565,14 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
                 <div
                   className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
                     lookupFeedback.type === 'success'
-                      ? 'bg-teal-500/15 border border-teal-500/30 text-teal-300'
-                      : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                      ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-500'
+                      : 'bg-amber-500/10 border border-amber-500/20 text-amber-500'
                   }`}
                 >
                   {lookupFeedback.type === 'success' ? (
-                    <CheckCircle className="w-4 h-4 shrink-0 text-teal-400" />
+                    <CheckCircle className="w-4 h-4 shrink-0 text-emerald-500" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
                   )}
                   <span>{lookupFeedback.message}</span>
                 </div>
@@ -585,9 +580,8 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
 
               {/* Clickable Quick Demo Order Chips */}
               <div className="pt-2">
-                <div className="text-[11px] font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-                  <span>Quick demo orders (click to load instantly):</span>
+                <div className="text-[11px] font-medium text-[var(--mut)] mb-1.5">
+                  Demo orders:
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {orders.slice(0, 4).map((o) => (
@@ -598,21 +592,21 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
                         setOrderQuery(o.linkCode);
                         handleOrderLookup(o.linkCode);
                       }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 border ${
                         currentOrder && currentOrder.id === o.id
-                          ? 'bg-teal-500/25 border border-teal-400 text-teal-200 shadow-sm'
-                          : 'bg-white/[0.04] border border-white/10 text-slate-300 hover:bg-white/[0.08] hover:text-white'
+                          ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                          : 'bg-[var(--bg-warm)] border-[var(--line)] text-[var(--mut)] hover:text-[var(--ink)]'
                       }`}
                     >
-                      <span className="font-mono">{o.linkCode}</span>
+                      <span className="font-mono text-[11px]">{o.linkCode}</span>
                       <span className="text-[10px] opacity-75">({o.customerName.split(' ')[0]})</span>
                       <span
-                        className={`text-[9px] px-1.5 py-0.2 rounded-full uppercase font-bold ${
+                        className={`text-[9px] px-1.5 py-0.2 rounded font-medium ${
                           o.status === 'paid'
-                            ? 'bg-teal-500/30 text-teal-300'
+                            ? 'text-emerald-500'
                             : o.status === 'disputed'
-                            ? 'bg-pink-500/30 text-pink-300'
-                            : 'bg-amber-500/30 text-amber-300'
+                            ? 'text-rose-500'
+                            : 'text-amber-500'
                         }`}
                       >
                         {o.status}
@@ -624,51 +618,46 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
             </div>
           </div>
 
-          {/* GATEWAY B: EXPLORE BUSINESSES & THEIR PRODUCTS WITHOUT ENTERING EMAIL */}
-          <div className="lg:col-span-5 p-6 rounded-3xl bg-gradient-to-br from-[#181335] via-[#1F1742] to-[#111936] border border-purple-500/30 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+          {/* GATEWAY B: EXPLORE BUSINESSES */}
+          <div className="lg:col-span-5 p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm flex flex-col justify-between space-y-4">
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
-                  <Compass className="w-4 h-4" />
+              <div className="space-y-1">
+                <div className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider">
+                  Direct artisan discovery
                 </div>
-                <div>
-                  <div className="text-[11px] font-extrabold uppercase tracking-wider text-purple-400">
-                    No Email Required
-                  </div>
-                  <h2 className="font-display font-bold text-lg text-white">
-                    Explore businesses and their products without entering email
-                  </h2>
-                </div>
+                <h2 className="font-display font-semibold text-base text-[var(--ink)]">
+                  Browse verified sellers
+                </h2>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Don’t have an order yet? Freely browse verified Indian businesses, artisanal textiles, silver jewelry, organic teas, and tribal artifacts with transparent pricing and Trust Passports.
+              <p className="text-xs text-[var(--mut)] leading-relaxed">
+                Browse independent Indian sellers across textiles, handmade crafts, and regional specialties with clear pricing.
               </p>
 
-              <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-300">
-                <div className="p-2 rounded-xl bg-white/[0.04] border border-white/5 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>GSTIN Verified Sellers</span>
+              <div className="grid grid-cols-2 gap-2 text-xs text-[var(--ink)]">
+                <div className="p-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>GSTIN verified</span>
                 </div>
-                <div className="p-2 rounded-xl bg-white/[0.04] border border-white/5 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Escrow-Protected Checkout</span>
+                <div className="p-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                  <span>Escrow protected</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2">
               <button
                 onClick={() => {
                   setActiveBuyerSubTab('explore');
                   sounds.playMessage();
-                  showToast('Opened verified businesses & products catalog (no email required)!');
+                  showToast('Opened verified businesses catalog');
                 }}
-                className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 hover:opacity-95 text-slate-950 font-black text-xs shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full py-2.5 px-4 rounded-full bg-[var(--bg-warm)] hover:bg-[var(--line)] text-[var(--ink)] font-medium text-xs border border-[var(--line)] flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
-                <ShoppingBag className="w-4 h-4" />
-                <span>Explore Businesses & Products (No Email Needed)</span>
-                <ArrowRight className="w-4 h-4" />
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Explore products</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -676,21 +665,20 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
       </div>
 
       {/* 3. NAVIGATION SUB-TABS */}
-      <div className="flex items-center justify-between gap-4 pb-2 border-b border-white/10 overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-2 p-1.5 bg-white/[0.04] border border-white/10 rounded-2xl shrink-0">
+      <div className="flex items-center justify-between gap-4 pb-2 border-b border-[var(--line)] overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 p-1 bg-[var(--bg-warm)] border border-[var(--line)] rounded-2xl shrink-0">
           <button
             onClick={() => {
               setActiveBuyerSubTab('swipe');
               sounds.playMessage();
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeBuyerSubTab === 'swipe'
-                ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white font-black shadow-md shadow-pink-500/25'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Swipe & Match 🔥</span>
+            <span>Discover Feed</span>
           </button>
 
           <button
@@ -698,14 +686,14 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
               setActiveBuyerSubTab('explore');
               sounds.playMessage();
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeBuyerSubTab === 'explore'
-                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black shadow-md'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
-            <Compass className="w-4 h-4" />
-            <span>Explore Businesses & Products</span>
+            <Compass className="w-3.5 h-3.5" />
+            <span>Browse Sellers</span>
           </button>
 
           <button
@@ -713,14 +701,14 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
               setActiveBuyerSubTab('checkout');
               sounds.playMessage();
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeBuyerSubTab === 'checkout'
-                ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-black shadow-md'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
-            <CreditCard className="w-4 h-4" />
-            <span>Order Details & Pay</span>
+            <CreditCard className="w-3.5 h-3.5" />
+            <span>Payment</span>
           </button>
 
           <button
@@ -728,14 +716,14 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
               setActiveBuyerSubTab('track');
               sounds.playMessage();
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeBuyerSubTab === 'track'
-                ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-black shadow-md'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
-            <Clock className="w-4 h-4" />
-            <span>Track Order & ProofVault™</span>
+            <Clock className="w-3.5 h-3.5" />
+            <span>Track Order</span>
           </button>
 
           <button
@@ -743,22 +731,22 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
               setActiveBuyerSubTab('trust');
               sounds.playMessage();
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeBuyerSubTab === 'trust'
-                ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-black shadow-md'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Trust Center & Passport</span>
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Trust Center</span>
           </button>
         </div>
 
         {/* Selected Order Indicator */}
         {currentOrder && (
-          <div className="hidden md:flex items-center gap-2 text-xs font-mono text-slate-300 shrink-0">
-            <span className="text-slate-500">Active Order:</span>
-            <span className="px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/10 font-bold text-teal-300">
+          <div className="hidden md:flex items-center gap-2 text-xs font-mono text-[var(--mut)] shrink-0">
+            <span>Active Order:</span>
+            <span className="px-2.5 py-1 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] font-bold text-[var(--accent)]">
               {currentOrder.linkCode}
             </span>
           </div>
@@ -991,58 +979,48 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
         </div>
       )}
 
-      {/* 5. VIEW B: ORDER DETAILS & MULTI-RAIL CHECKOUT */}
+      {/* 5. VIEW B: ORDER DETAILS & CHECKOUT */}
       {activeBuyerSubTab === 'checkout' && currentOrder && (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="space-y-6 animate-fadeIn max-w-3xl mx-auto text-[var(--ink)]">
           {/* Order Details Header */}
-          <div
-            className={`p-6 md:p-8 rounded-3xl border shadow-2xl relative overflow-hidden transition-all duration-300 ${
-              currentOrder.status === 'paid'
-                ? 'bg-gradient-to-r from-[#0C3029] via-[#0E2833] to-[#141C38] border-teal-500/30'
-                : currentOrder.status === 'disputed'
-                ? 'bg-gradient-to-r from-[#3C1126] via-[#2A1138] to-[#141A3B] border-pink-500/30'
-                : currentOrder.status === 'resolved'
-                ? 'bg-gradient-to-r from-[#21194A] via-[#1A2548] to-[#121936] border-purple-500/30'
-                : 'bg-gradient-to-r from-[#312010] via-[#2A1728] to-[#121A38] border-amber-500/30'
-            }`}
-          >
+          <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-slate-300">
-                  <span>{currentOrder.businessName}</span>
+                <div className="flex items-center gap-2 text-xs font-medium text-[var(--mut)]">
+                  <span className="font-semibold text-[var(--ink)]">{currentOrder.businessName}</span>
                   <span>·</span>
-                  <span className="font-mono bg-white/10 px-2 py-0.5 rounded-md text-teal-300">
+                  <span className="font-mono bg-[var(--bg-warm)] px-2 py-0.5 rounded border border-[var(--line)] text-[var(--accent)]">
                     {currentOrder.linkCode}
                   </span>
                 </div>
-                <h1 className="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl text-white">
+                <h1 className="font-display font-bold text-3xl sm:text-4xl text-[var(--ink)] font-mono">
                   ₹{currentOrder.amount.toLocaleString('en-IN')}
                 </h1>
-                <p className="text-slate-300 text-sm">
+                <p className="text-[var(--mut)] text-xs sm:text-sm">
                   {currentOrder.note} {currentOrder.quantity > 1 ? `(Qty: ${currentOrder.quantity})` : ''} · For{' '}
-                  <b className="text-white">{currentOrder.customerName}</b>
+                  <span className="text-[var(--ink)] font-medium">{currentOrder.customerName}</span>
                 </p>
-                <div className="text-xs text-slate-400 pt-1">
+                <div className="text-xs text-[var(--mut)] pt-1">
                   Terms: {currentOrder.terms}
                 </div>
               </div>
 
-              <div className="text-right space-y-2">
+              <div className="text-right space-y-1.5">
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                     currentOrder.status === 'paid'
-                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                      ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30'
                       : currentOrder.status === 'disputed'
-                      ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30 animate-pulse'
+                      ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30'
                       : currentOrder.status === 'resolved'
-                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      ? 'bg-purple-500/15 text-purple-500 border border-purple-500/30'
+                      : 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
                   }`}
                 >
                   ● {currentOrder.status}
                 </span>
                 {currentOrder.paymentMethod && (
-                  <div className="text-xs text-slate-300 font-mono">
+                  <div className="text-xs text-[var(--mut)] font-mono">
                     {currentOrder.paymentMethod.name} · Ref: {currentOrder.paymentMethod.ref}
                   </div>
                 )}
@@ -1050,36 +1028,25 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
             </div>
           </div>
 
-          {/* Reachr Trust Score Badge */}
-          <div className="p-5 rounded-2xl bg-[#121936] border border-white/10 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center font-display font-extrabold text-2xl text-teal-300 font-mono">
-                {trustScore}
-              </div>
-              <div>
-                <div className="font-display font-bold text-sm text-white flex items-center gap-1.5">
-                  <span>Reachr Verified Merchant Score</span>
-                  <ShieldCheck className="w-4 h-4 text-teal-400" />
-                </div>
-                <div className="text-xs text-slate-400">
-                  Evaluated on 48 completed deliveries, 4.2h resolution speed, and verified GSTIN credentials.
-                </div>
-              </div>
+          {/* Dispute Protection Shield Notice */}
+          <div className="p-4 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--mut)]">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              <span>Escrow protected with 4-stage mutual resolution</span>
             </div>
-
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-              <Lock className="w-3.5 h-3.5 text-teal-400" />
-              <span>4-Stage Dispute Escrow Shield Active</span>
+            <div className="flex items-center gap-1.5 font-mono text-[var(--ink)]">
+              <span>Merchant Trust Score:</span>
+              <span className="text-emerald-500 font-bold">{trustScore}/100</span>
             </div>
           </div>
 
           {/* Multi-Rail Checkout Card (Visible if status is pending) */}
           {currentOrder.status === 'pending' && (
-            <div className="p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-2xl space-y-6">
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-5">
               <div className="space-y-1">
-                <h2 className="font-display font-extrabold text-2xl text-white">Choose Your Payment Rail</h2>
-                <p className="text-xs text-slate-400">
-                  Select any authorized Indian payment rail. Transactions are simulated in real-time.
+                <h2 className="font-display font-semibold text-lg text-[var(--ink)]">Select payment method</h2>
+                <p className="text-xs text-[var(--mut)]">
+                  Funds held in escrow and released only after delivery is confirmed.
                 </p>
               </div>
 
@@ -1096,45 +1063,45 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
                         setSelectedApp(cfg.apps[0]);
                         sounds.playMessage();
                       }}
-                      className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-xs font-medium flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-gradient-to-b from-violet-600 to-pink-600 text-white border-transparent shadow-lg shadow-pink-500/20'
-                          : 'bg-white/[0.03] text-slate-300 border-white/10 hover:bg-white/[0.07] hover:border-white/20'
+                          ? 'bg-[var(--accent)] text-white border-[var(--accent)] shadow-xs'
+                          : 'bg-[var(--bg-warm)] text-[var(--mut)] border-[var(--line)] hover:text-[var(--ink)]'
                       }`}
                     >
                       {cfg.icon}
-                      <span className="whitespace-nowrap">{cfg.name}</span>
+                      <span className="whitespace-nowrap font-semibold">{cfg.name}</span>
                     </button>
                   );
                 })}
               </div>
 
               {/* Sub-App Selector for the Active Rail */}
-              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
-                <div className="text-xs text-slate-400 leading-relaxed">{railsConfig[activeRail].hint}</div>
+              <div className="p-4 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] space-y-3">
+                <div className="text-xs text-[var(--mut)] leading-relaxed">{railsConfig[activeRail].hint}</div>
 
                 {/* If Cards, show simple mock card fields */}
                 {activeRail === 'card' ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Card Number</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="block text-[11px] text-slate-400">Card Number</label>
                       <input
                         type="text"
                         value={cardNumber}
                         onChange={(e) => setCardNumber(e.target.value)}
-                        placeholder="4532 •••• •••• 8891 (RuPay / Visa)"
-                        className="w-full px-3 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-pink-500"
+                        placeholder="4532 •••• •••• 8891"
+                        className="w-full px-3 py-2 rounded-lg bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-violet-500"
                       />
                     </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Expiry / CVV</label>
+                    <div className="space-y-1">
+                      <label className="block text-[11px] text-slate-400">Expiry / CVV</label>
                       <div className="grid grid-cols-2 gap-2">
                         <input
                           type="text"
                           placeholder="MM/YY"
                           value={cardExpiry}
                           onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full px-2 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs font-mono text-center focus:outline-none focus:border-pink-500"
+                          className="w-full px-2 py-2 rounded-lg bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-xs font-mono text-center focus:outline-none focus:border-violet-500"
                         />
                         <input
                           type="password"
@@ -1142,7 +1109,7 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
                           maxLength={4}
                           value={cardCvv}
                           onChange={(e) => setCardCvv(e.target.value)}
-                          className="w-full px-2 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs font-mono text-center focus:outline-none focus:border-pink-500"
+                          className="w-full px-2 py-2 rounded-lg bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-xs font-mono text-center focus:outline-none focus:border-violet-500"
                         />
                       </div>
                     </div>
@@ -1156,10 +1123,10 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
                           setSelectedApp(app);
                           sounds.playMessage();
                         }}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                           selectedApp === app
-                            ? 'bg-[#F6D365] text-[#12082B] shadow-md shadow-amber-400/20'
-                            : 'bg-white/[0.05] text-slate-300 border border-white/10 hover:bg-white/[0.1]'
+                            ? 'bg-violet-600 text-white shadow-sm'
+                            : 'bg-white/[0.04] text-slate-300 border border-white/10 hover:bg-white/[0.08]'
                         }`}
                       >
                         {app}
@@ -1173,19 +1140,19 @@ export const BuyerPortal: React.FC<BuyerPortalProps> = ({
               <button
                 onClick={handleSimulatePayment}
                 disabled={isProcessingPayment}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-600 hover:opacity-95 text-[#0A1728] font-extrabold text-base shadow-xl shadow-teal-500/25 transition-all cursor-pointer flex items-center justify-center gap-2.5 disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isProcessingPayment ? (
                   <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    <span>Simulating Secure {railsConfig[activeRail].name} Authorization...</span>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Processing payment...</span>
                   </>
                 ) : (
                   <>
                     <span>
                       {railsConfig[activeRail].cta} · {selectedApp}
                     </span>
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>

@@ -1,723 +1,1293 @@
-import React, { useState } from 'react';
-import {
-  ShieldCheck,
-  Zap,
-  QrCode,
-  MessageSquare,
-  Scale,
-  TrendingUp,
-  Repeat,
-  ArrowRight,
-  Sparkles,
-  ChevronDown,
-  CheckCircle2,
-  Calculator,
-  Lock,
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import { sounds } from '../utils/audio';
 
 interface LandingViewProps {
   onGoToSeller: () => void;
   onGoToBuyer: () => void;
-  onGoToTrustCenter: () => void;
-  onOpenOwnerLogin?: () => void;
+  onGoToTrustCenter?: () => void;
+  onGoToDiscover?: () => void;
+  onOpenSubscriptionModal?: (tier?: 'starter' | 'pro' | 'elite') => void;
+  theme?: 'light' | 'purple';
 }
 
-export const LandingView: React.FC<LandingViewProps> = ({
+interface DiscoverItem {
+  name: string;
+  price: number;
+  seller: string;
+  sponsored: boolean;
+  from: string;
+  to: string;
+}
+
+const DISCOVER_DATA: Record<string, DiscoverItem[]> = {
+  Sarees: [
+    { name: 'Kalamkari silk saree', price: 3200, seller: "Asha’s Looms", sponsored: true, from: '#ffd6a8', to: '#ff9f8a' },
+    { name: 'Handloom cotton saree', price: 1450, seller: 'Vani Weaves', sponsored: false, from: '#ffe3b3', to: '#f6b78a' },
+    { name: 'Ikat dupatta', price: 980, seller: 'Rekha Textiles', sponsored: false, from: '#ffcfc0', to: '#f59f8f' },
+  ],
+  Handmade: [
+    { name: 'Terracotta planter set', price: 650, seller: 'Clay & Co', sponsored: false, from: '#bfeadf', to: '#7fcfbd' },
+    { name: 'Macramé wall hanging', price: 890, seller: 'Knot Studio', sponsored: true, from: '#e6f3d8', to: '#a9d6a0' },
+    { name: 'Brass diya pair', price: 420, seller: 'Deepa Crafts', sponsored: false, from: '#ffe9b0', to: '#e8c26b' },
+  ],
+  Food: [
+    { name: 'Homemade mango pickle', price: 320, seller: "Amma’s Kitchen", sponsored: false, from: '#fff3c4', to: '#ffc857' },
+    { name: 'Millet cookie box', price: 280, seller: 'Grain Lab', sponsored: true, from: '#ffe0c2', to: '#f2a65a' },
+    { name: 'Cold-pressed groundnut oil', price: 540, seller: 'Village Press', sponsored: false, from: '#f6efc2', to: '#d9c46a' },
+  ],
+  Jewellery: [
+    { name: 'Oxidised silver jhumkas', price: 760, seller: 'Nila Silver', sponsored: false, from: '#dcecff', to: '#9ecbff' },
+    { name: 'Beaded necklace', price: 540, seller: 'Bead Bazaar', sponsored: true, from: '#d3f0f5', to: '#8fd3e0' },
+    { name: 'Temple bangles', price: 1150, seller: 'Sri Crafts', sponsored: false, from: '#e4ecff', to: '#9fc4f0' },
+  ],
+};
+
+const CATEGORIES = Object.keys(DISCOVER_DATA);
+
+const HERO_SHOWCASE_PRODUCTS = [
+  {
+    id: 'terra',
+    brand: 'Terra Studio',
+    subtitle: 'Ceramics & Stoneware · Bengaluru',
+    item: 'Kyoto Speckled Ceramic Pour-Over & Tumbler',
+    amount: 1850,
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop',
+    tag: 'Hand-Thrown Stoneware',
+    delivery: 'Fragile Air Cushioned · Bluedart',
+    protection: 'Breakage & transit escrow guarantee',
+  },
+  {
+    id: 'vayu',
+    brand: 'Vayu Leathercraft',
+    subtitle: 'Full-Grain Leather · Jaipur',
+    item: 'Horween Chromexcel Valet & Watch Roll',
+    amount: 2950,
+    image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop',
+    tag: 'Horween Leather · Hand-Stitched',
+    delivery: 'Delhivery Express · 48h dispatch',
+    protection: '100% genuine leather guarantee',
+  },
+  {
+    id: 'johari',
+    brand: 'Johari Guild',
+    subtitle: 'Hallmarked Silver · Jaipur',
+    item: '925 Sterling Silver Moissanite Open Cuff',
+    amount: 3450,
+    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop',
+    tag: '925 Hallmarked Silver',
+    delivery: 'Insured Tamper-Proof Seal Box',
+    protection: 'Authenticity certificate enclosed',
+  },
+];
+
+const STATEMENT_TEXT =
+  "Selling online runs on trust. Reachr gives the person selling and the person buying a way across: pay in a tap, follow the order, and settle any problem fairly.";
+const STATEMENT_WORDS: string[] = STATEMENT_TEXT.split(' ');
+
+function clamp(x: number): number {
+  return Math.max(0, Math.min(1, x));
+}
+
+export const LandingView: React.FC<LandingViewProps> = React.memo(({
   onGoToSeller,
   onGoToBuyer,
-  onGoToTrustCenter,
-  onOpenOwnerLogin,
+  onGoToDiscover,
+  onOpenSubscriptionModal,
 }) => {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
-  const [monthlyVolume, setMonthlyVolume] = useState<number>(85000);
+  const [selectedHeroIndex, setSelectedHeroIndex] = useState(0);
+  const heroProduct = HERO_SHOWCASE_PRODUCTS[selectedHeroIndex];
 
-  // ROI Calculator math
-  const estimatedHoursSaved = Math.round(monthlyVolume / 5000);
-  const disputeReduction = 82; // 82% reduction
-  const savings = Math.round(monthlyVolume * 0.045);
+  /* ── 1. DOM REFS FOR SCROLL PERFORMANCE (NO REACT RE-RENDERING ON SCROLL) ── */
+  const hpRef = useRef<HTMLDivElement>(null);
+  const stElRef = useRef<HTMLElement>(null);
+  const stmRef = useRef<HTMLParagraphElement>(null);
+  const sceneRef = useRef<HTMLElement>(null);
+  const wordSpansRef = useRef<HTMLSpanElement[]>([]);
+  const chapsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const panesRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
+  // 1. Reveal-on-scroll observer (.rv -> .rv.in)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    const elements = document.querySelectorAll('.rv');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  // 2. High-performance scroll animation loop
+  useEffect(() => {
+    let tick = false;
+    let lastP = -1;
+    let lastT = -1;
+    let lastIdx = -1;
+
+    const update = () => {
+      tick = false;
+      const vh = window.innerHeight;
+      const y = window.scrollY;
+
+      // Parallax on hero phone
+      if (hpRef.current) {
+        const t = clamp(y / (vh * 0.6));
+        if (Math.abs(t - lastT) > 0.004) {
+          lastT = t;
+          hpRef.current.style.transform = `translate3d(0, ${((1 - t) * 30 - t * 20).toFixed(1)}px, 0) scale(${(0.94 + 0.06 * t).toFixed(3)})`;
+        }
+      }
+
+      // Scroll-lit statement words direct opacity update
+      if (stElRef.current && wordSpansRef.current.length > 0) {
+        const r = stElRef.current.getBoundingClientRect();
+        const p = clamp((vh * 0.85 - r.top) / (r.height * 0.9 + vh * 0.25));
+        const pk = Math.round(p * 60);
+        if (pk !== lastP) {
+          lastP = pk;
+          const n = wordSpansRef.current.length;
+          for (let i = 0; i < n; i++) {
+            const span = wordSpansRef.current[i];
+            if (span) {
+              span.style.opacity = (0.18 + 0.82 * clamp((p * (n + 4) - i) / 3)).toFixed(2);
+            }
+          }
+        }
+      }
+
+      // Sticky scroll "Four steps. One link." chapter switching
+      if (sceneRef.current) {
+        const sr = sceneRef.current.getBoundingClientRect();
+        const sp = clamp(-sr.top / (sr.height - vh));
+        const idx = Math.min(3, Math.floor(sp * 4));
+
+        if (idx !== lastIdx) {
+          lastIdx = idx;
+          chapsRef.current.forEach((chap, i) => {
+            if (chap) chap.classList.toggle('on', i === idx);
+          });
+          panesRef.current.forEach((pane, i) => {
+            if (pane) pane.classList.toggle('on', i === idx);
+          });
+        }
+      }
+    };
+
+    const req = () => {
+      if (!tick) {
+        tick = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    window.addEventListener('scroll', req, { passive: true });
+    window.addEventListener('resize', req);
+    update();
+
+    return () => {
+      window.removeEventListener('scroll', req);
+      window.removeEventListener('resize', req);
+    };
+  }, []);
+
+  const handleChapterClick = (stepIndex: number) => {
+    sounds.playMessage();
+    if (sceneRef.current) {
+      const vh = window.innerHeight;
+      const targetTop =
+        sceneRef.current.offsetTop +
+        (stepIndex / 4) * (sceneRef.current.offsetHeight - vh) +
+        10;
+      window.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }
+  };
+
+  /* ── 2. DISCOVER SWIPE DECK STATE & GESTURES (MATCHING reachr.html) ── */
+  const [curCategory, setCurCategory] = useState<string>(CATEGORIES[0]);
+  const [cardIndex, setCardIndex] = useState<number>(0);
+  const [orderSheetItem, setOrderSheetItem] = useState<DiscoverItem | null>(null);
+  const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
+
+  const topCardRef = useRef<HTMLDivElement>(null);
+  const isPointerDownRef = useRef<boolean>(false);
+  const dragStartXRef = useRef<number>(0);
+  const dragXRef = useRef<number>(0);
+  const isBusyRef = useRef<boolean>(false);
+
+  const items = DISCOVER_DATA[curCategory] || [];
+  const remainingItems = items.slice(cardIndex);
+
+  const flyCard = (dir: number) => {
+    if (isBusyRef.current || remainingItems.length === 0) return;
+    isBusyRef.current = true;
+    const card = topCardRef.current;
+    const currentItem = remainingItems[0];
+
+    if (card) {
+      card.classList.remove('drag');
+      card.style.transform = `translateX(${dir * 400}px) rotate(${dir * 18}deg)`;
+      card.style.opacity = '0';
+    }
+
+    setTimeout(() => {
+      setCardIndex((prev) => prev + 1);
+      isBusyRef.current = false;
+      if (dir > 0) {
+        setOrderSheetItem(currentItem);
+        setOrderPlaced(false);
+        sounds.playSuccess();
+      } else {
+        sounds.playMessage();
+      }
+    }, 320);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isBusyRef.current || remainingItems.length === 0) return;
+    isPointerDownRef.current = true;
+    dragStartXRef.current = e.clientX;
+    dragXRef.current = 0;
+    const card = e.currentTarget;
+    card.classList.add('drag');
+    try {
+      card.setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPointerDownRef.current) return;
+    const dx = e.clientX - dragStartXRef.current;
+    dragXRef.current = dx;
+    const card = e.currentTarget;
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+
+    const orderStamp = card.querySelector<HTMLElement>('.stamp.o');
+    const skipStamp = card.querySelector<HTMLElement>('.stamp.k');
+    if (orderStamp) orderStamp.style.opacity = clamp(dx / 80).toString();
+    if (skipStamp) skipStamp.style.opacity = clamp(-dx / 80).toString();
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPointerDownRef.current) return;
+    isPointerDownRef.current = false;
+    const card = e.currentTarget;
+    card.classList.remove('drag');
+    try {
+      card.releasePointerCapture(e.pointerId);
+    } catch {}
+
+    const dx = dragXRef.current;
+    if (dx > 90) {
+      flyCard(1);
+    } else if (dx < -90) {
+      flyCard(-1);
+    } else {
+      card.style.transform = '';
+      const orderStamp = card.querySelector<HTMLElement>('.stamp.o');
+      const skipStamp = card.querySelector<HTMLElement>('.stamp.k');
+      if (orderStamp) orderStamp.style.opacity = '0';
+      if (skipStamp) skipStamp.style.opacity = '0';
+    }
+  };
+
+  const handleCategorySelect = (cat: string) => {
+    setCurCategory(cat);
+    setCardIndex(0);
+    setOrderSheetItem(null);
     sounds.playMessage();
   };
 
+  /* ── 3. NOTIFY FORM SUBMISSION ── */
+  const [emailInput, setEmailInput] = useState('');
+  const [notifyMsg, setNotifyMsg] = useState('');
+
+  const handleNotifySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      setNotifyMsg("Thank you! You're subscribed for exclusive seller updates and feature drops.");
+      setEmailInput('');
+      sounds.playSuccess();
+    }
+  };
+
   return (
-    <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-24">
-      {/* 1. HERO SECTION */}
-      <section className="text-center pt-8 md:pt-14 pb-6 space-y-8 max-w-4xl mx-auto">
-        {/* Subtle pill kicker */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-xs md:text-sm font-semibold text-pink-300 shadow-lg shadow-pink-500/10">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Zero-Commission UPI Payment Links & Delivery Protection</span>
-        </div>
-
-        {/* Hero Headline */}
-        <h1 className="font-display font-extrabold text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.98] text-white">
-          Get paid instantly.{' '}
-          <span className="block mt-2 bg-gradient-to-r from-[#FF4F87] via-[#FF9F43] via-[#F6D365] via-[#21D4B4] to-[#43B9FF] bg-clip-text text-transparent">
-            Stay unmistakably fair.
-          </span>
+    <div>
+      {/* ── 1. HERO SECTION ── */}
+      <header className="hero" id="top">
+        <p className="k">Reachr</p>
+        <h1>
+          Sell with<br />
+          <span className="grad">confidence.</span>
         </h1>
-
-        <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Create branded payment links in ten seconds, keep order conversations in context, and settle disputes through a
-          structured 4-stage transparent protocol.
+        <p className="sub">
+          Payment links, protected delivery and promotion for sellers on Instagram, WhatsApp and YouTube.
         </p>
 
-        {/* Action CTAs */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <button
-            onClick={() => {
-              onGoToSeller();
-              sounds.playSuccess();
-            }}
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#7657FF] via-[#A855F7] to-[#EC4899] text-white font-bold text-base shadow-xl shadow-purple-600/30 hover:shadow-purple-600/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2.5 cursor-pointer"
-          >
-            <span>Launch Seller Console</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => {
-              onGoToBuyer();
+        <div className="ctas">
+          <a
+            className="btn"
+            href="#pricing"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.querySelector('#pricing');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
               sounds.playMessage();
             }}
-            className="px-8 py-4 rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-bold text-base backdrop-blur-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
-            Track Order & Explore Businesses
-          </button>
-          <button
-            onClick={() => {
-              onGoToTrustCenter();
-              sounds.playReward();
+            Start free
+          </a>
+          <a
+            className="lnk"
+            href="#how"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.querySelector('#how');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+              sounds.playMessage();
             }}
-            className="px-6 py-4 rounded-2xl bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 text-teal-300 font-bold text-base backdrop-blur-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
           >
-            <ShieldCheck className="w-5 h-5 text-teal-400" />
-            <span>Open Trust Hub</span>
-          </button>
+            See how it works ›
+          </a>
         </div>
 
-        {/* 4-Stage Dispute Shield Highlight */}
-        <div className="pt-4 flex justify-center">
-          <div className="inline-flex items-center gap-4 px-5 py-3 rounded-2xl bg-[#141C38]/90 border border-violet-500/30 shadow-xl backdrop-blur-xl">
-            <div className="w-10 h-10 rounded-xl bg-violet-600/20 border border-violet-500/40 flex items-center justify-center">
-              <Scale className="w-5 h-5 text-violet-400" />
-            </div>
-            <div className="text-left">
-              <div className="text-xs font-bold text-white uppercase tracking-wider">4-Stage FairResolve™ Protocol</div>
-              <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                <span className="text-emerald-400 font-semibold">1. Raised</span>
-                <span>→</span>
-                <span className="text-amber-400 font-semibold">2. Seller Proposal</span>
-                <span>→</span>
-                <span className="text-cyan-400 font-semibold">3. Neutral Review</span>
-                <span>→</span>
-                <span className="text-purple-400 font-semibold">4. Resolved</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        <div className="box">
+          <i
+            className="glow"
+            id="g1"
+            style={{
+              width: 440,
+              height: 440,
+              left: 'calc(50% - 320px)',
+              top: 20,
+              background: 'radial-gradient(circle, #ff9f0a 0, rgba(255,159,10,0) 65%)',
+              opacity: 0.7,
+            }}
+          />
+          <i
+            className="glow"
+            id="g2"
+            style={{
+              width: 460,
+              height: 460,
+              left: 'calc(50% - 100px)',
+              top: 0,
+              background: 'radial-gradient(circle, #2bc4b4 0, rgba(43,196,180,0) 65%)',
+              opacity: 0.65,
+            }}
+          />
+          <i
+            className="glow"
+            id="g3"
+            style={{
+              width: 400,
+              height: 400,
+              left: 'calc(50% - 200px)',
+              top: 150,
+              background: 'radial-gradient(circle, #0a84ff 0, rgba(10,132,255,0) 65%)',
+              opacity: 0.55,
+            }}
+          />
 
-      {/* 2. DUAL MARQUEE TICKERS (Calm, parallel horizontal ticker ribbons) */}
-      <div className="relative -mx-4 md:-mx-8 overflow-hidden py-3 space-y-2 select-none pointer-events-none">
-        <div className="overflow-hidden bg-gradient-to-r from-[#7657FF] via-[#C052FF] via-[#FF4F87] to-[#FF9F43] text-white font-extrabold py-2.5 text-xs md:text-sm tracking-wide uppercase shadow-sm">
-          <div className="animate-marquee whitespace-nowrap flex gap-8 items-center font-display">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <React.Fragment key={i}>
-                <span>Instant UPI ⚡</span>
-                <span>✦</span>
-                <span>RuPay & Visa 💳</span>
-                <span>✦</span>
-                <span>Netbanking 🏦</span>
-                <span>✦</span>
-                <span>Smart Wallets 👛</span>
-                <span>✦</span>
-                <span>Zero-Cost EMI 📆</span>
-                <span>✦</span>
-                <span>Verified COD 💵</span>
-                <span>✦</span>
-                <span>Scannable Order QR ▦</span>
-                <span>✦</span>
-                <span>In-Context Chat 💬</span>
-                <span>✦</span>
-                <span>Fair Disputes ⚖️</span>
-                <span>✦</span>
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-        <div className="overflow-hidden bg-[#101730] text-slate-300 font-semibold py-2 text-xs md:text-sm tracking-wider uppercase border-y border-white/10 shadow-sm">
-          <div className="animate-marquee-reverse whitespace-nowrap flex gap-8 items-center font-display">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <React.Fragment key={i}>
-                <span className="text-teal-400">fair disputes 🔥</span>
-                <span>✦</span>
-                <span className="text-pink-400">no cap ✨</span>
-                <span>✦</span>
-                <span className="text-amber-400">pay your way 💸</span>
-                <span>✦</span>
-                <span className="text-sky-400">trust the process ⚡</span>
-                <span>✦</span>
-                <span className="text-violet-400">Zero Arbitrary Freezes 🛡️</span>
-                <span>✦</span>
-                <span className="text-emerald-400">Geotagged Delivery Proof 📍</span>
-                <span>✦</span>
-                <span className="text-yellow-400">100% Indian Commerce Native 🇮🇳</span>
-                <span>✦</span>
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. CORE CAPABILITIES (Rich, vibrant glassmorphism) */}
-      <section className="space-y-6" id="features">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <h2 className="font-display font-extrabold text-3xl md:text-4xl text-white">
-            Everything your brand needs to get paid with dignity
-          </h2>
-          <p className="text-slate-400 text-sm md:text-base">
-            No convoluted developer APIs or hidden percentage take rates. Designed for modern boutique shops, creators,
-            and artisanal merchants.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {/* Card 1 */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161F42] to-[#101732] border border-violet-500/20 hover:border-violet-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white mb-5 shadow-lg shadow-violet-600/30">
-              <Zap className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-bold text-xl text-white mb-2">Instant SmartPay Links</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Generate customizable payment links with quantity, order notes, optional 24h/72h expiry, and transparent
-              exchange terms in 10 seconds flat.
-            </p>
-          </div>
-
-          {/* Card 2 */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161F42] to-[#101732] border border-teal-500/20 hover:border-teal-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white mb-5 shadow-lg shadow-teal-500/30">
-              <QrCode className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-bold text-xl text-white mb-2">Autonomous QR Matrix</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Every link generates its own high-res, autonomous scannable QR code. Print it on shipping slips or display
-              it at your counter without external service downtime.
-            </p>
-          </div>
-
-          {/* Card 3 */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161F42] to-[#101732] border border-pink-500/20 hover:border-pink-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-600 to-rose-500 flex items-center justify-center text-white mb-5 shadow-lg shadow-pink-600/30">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-bold text-xl text-white mb-2">In-Context Order Chat</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Questions regarding sizing, embroidery, or customized packaging remain permanently bound to the payment
-              record. Zero confusion across WhatsApp screenshots.
-            </p>
-          </div>
-
-          {/* Card 4 */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161F42] to-[#101732] border border-amber-500/20 hover:border-amber-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white mb-5 shadow-lg shadow-amber-500/30">
-              <Scale className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-bold text-xl text-white mb-2">4-Stage FairResolve</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Say goodbye to unilateral chargebacks. Buyers and sellers follow a clear escalation roadmap with mutual
-              proposals before Reachr neutral mediation kicks in.
-            </p>
-          </div>
-
-          {/* Card 5 */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161F42] to-[#101732] border border-cyan-500/20 hover:border-cyan-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white mb-5 shadow-lg shadow-cyan-500/30">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-bold text-xl text-white mb-2">Live Cashflow Velocity</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Track 7-day revenue velocity with tabular numerals. Monitor what arrived today, pending receivables, and
-              average payment turnaround times.
-            </p>
-          </div>
-
-          {/* Card 6 */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161F42] to-[#101732] border border-lime-500/20 hover:border-lime-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-lime-500 to-emerald-600 flex items-center justify-center text-white mb-5 shadow-lg shadow-lime-500/30">
-              <Repeat className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-bold text-xl text-white mb-2">Loyalty & Repeat Recognition</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Identify your repeat patrons instantly. Award trust points and offer fast-track dispatch to your most
-              valuable long-term buyers.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. MARKETPLACE PAIN POINTS vs REACHR GUARANTEE */}
-      <section className="p-8 md:p-12 rounded-3xl bg-[#0E152E]/90 border border-white/10 space-y-8 backdrop-blur-xl">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <div className="text-xs font-bold uppercase tracking-wider text-pink-400">Why Legacy Systems Fail</div>
-          <h2 className="font-display font-extrabold text-3xl md:text-4xl text-white">
-            Common e-commerce nightmares eliminated
-          </h2>
-          <p className="text-slate-400 text-sm">
-            Based on empirical complaint logs from major marketplaces and independent Indian direct-to-consumer stores.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            {
-              issue: 'Marked delivered, but never arrived',
-              reachr: 'Integrated live delivery timeline with verified courier proof and recipient geotag log.',
-              color: 'text-violet-400',
-            },
-            {
-              issue: 'Wrong, defective or damaged item',
-              reachr: 'AI-assisted evidence checklist with clear mutual return/exchange settlement options.',
-              color: 'text-pink-400',
-            },
-            {
-              issue: 'Refund requests that loop in circles',
-              reachr: 'Structured 48h resolution clock with clear next actions visible to both parties.',
-              color: 'text-amber-400',
-            },
-            {
-              issue: 'Passing blame between courier & seller',
-              reachr: 'Single chronological audit trail holding chat, fulfillment stages, and payments together.',
-              color: 'text-teal-400',
-            },
-            {
-              issue: 'Arbitrary merchant balance freezing',
-              reachr: 'Payment status vault with transparent release rules. No unilateral platform lockouts.',
-              color: 'text-cyan-400',
-            },
-            {
-              issue: 'Unreachable customer support bots',
-              reachr: 'Direct in-thread human escalation whenever Stage 2 negotiations hit an impasse.',
-              color: 'text-emerald-400',
-            },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors space-y-2.5"
-            >
-              <div className="text-sm font-bold text-rose-300 flex items-start gap-2">
-                <span className="text-rose-400">✕</span>
-                <span>{item.issue}</span>
-              </div>
-              <div className="text-xs text-slate-300 flex items-start gap-2 pl-4 border-l-2 border-emerald-500/40">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span className="leading-relaxed">{item.reachr}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. INTERACTIVE ROI & SAVINGS CALCULATOR */}
-      <section className="p-8 md:p-12 rounded-3xl bg-gradient-to-br from-[#15123A] via-[#101732] to-[#0A1A2E] border border-violet-500/30 space-y-8 backdrop-blur-xl" id="calculator">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-6 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
-              <Calculator className="w-3.5 h-3.5" />
-              <span>Merchant Savings Simulator</span>
-            </div>
-            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-white">
-              Calculate your time and dispute savings
-            </h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Direct-to-consumer sellers lose an average of 14 hours per month manually verifying screenshot payments,
-              tracking lost packages, and mediating angry WhatsApp voice notes.
-            </p>
-
-            <div className="pt-4 space-y-3">
-              <div className="flex justify-between items-center text-sm font-semibold">
-                <span className="text-slate-300">Your Monthly GMV</span>
-                <span className="text-pink-400 font-mono font-bold text-base">
-                  ₹{monthlyVolume.toLocaleString('en-IN')}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10000"
-                max="500000"
-                step="5000"
-                value={monthlyVolume}
-                onChange={(e) => {
-                  setMonthlyVolume(Number(e.target.value));
-                  sounds.playMessage();
-                }}
-                className="w-full accent-pink-500 cursor-pointer h-2 bg-slate-800 rounded-lg"
-              />
-              <div className="flex justify-between text-[11px] text-slate-500">
-                <span>₹10k</span>
-                <span>₹250k</span>
-                <span>₹500k+</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 text-center space-y-1">
-              <div className="text-xs text-slate-400 uppercase font-semibold">Hours Saved / Mo</div>
-              <div className="text-3xl font-display font-extrabold text-amber-400 font-mono">
-                ~{estimatedHoursSaved}h
-              </div>
-              <div className="text-[11px] text-slate-500">No screenshot chasing</div>
-            </div>
-            <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 text-center space-y-1">
-              <div className="text-xs text-slate-400 uppercase font-semibold">Dispute Drop</div>
-              <div className="text-3xl font-display font-extrabold text-teal-400 font-mono">-{disputeReduction}%</div>
-              <div className="text-[11px] text-slate-500">Clear 4-step agreement</div>
-            </div>
-            <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 text-center space-y-1">
-              <div className="text-xs text-slate-400 uppercase font-semibold">Recovered Capital</div>
-              <div className="text-3xl font-display font-extrabold text-pink-400 font-mono">
-                ₹{savings.toLocaleString('en-IN')}
-              </div>
-              <div className="text-[11px] text-slate-500">In prevented chargebacks</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. TRANSPARENT PRICING WITH EXACT DIRECT NUMBERS (NO FAKE DISCOUNTS) */}
-      <section className="space-y-8" id="pricing">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-wider">
-            <span>Automates 75% Of Your Work</span>
-          </div>
-          <h2 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight">
-            Transparent flat pricing. <span className="text-pink-400">Direct & Honest.</span>
-          </h2>
-          <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-            Reachr does 75% of your work — automated Meta Ads, WhatsApp payment recovery, and Tinder-style swipe discovery. Direct fixed pricing with zero hidden commissions.
-          </p>
-        </div>
-
-        {/* 3 Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {/* Starter Plan */}
-          <div className="p-7 rounded-3xl bg-[#121936] border border-white/10 space-y-6 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-xl text-white">Starter Free</h3>
-                <span className="text-[11px] font-semibold text-slate-400">Manual Plan</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-extrabold text-4xl text-white font-mono">₹0</span>
-                  <span className="text-slate-400 text-xs">/ forever free</span>
-                </div>
-                <div className="text-[11px] text-teal-400 font-semibold">Standard Manual Payment Links</div>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Ideal for solo artisans getting started with manual Reachr payment links and basic escrow protection.
-              </p>
-              <div className="space-y-2.5 pt-2 text-xs text-slate-300">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Standard Payment Links</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>3.5% Escrow Transaction Fee</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Integrated Order Chat & Terms</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Standard Dispute Shield Protection</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                  <span>Direct UPI Bank Settlement</span>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                onGoToSeller();
-                sounds.playSuccess();
-              }}
-              className="w-full py-3.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white font-bold text-xs transition-colors cursor-pointer"
-            >
-              Start Free (Manual Plan)
-            </button>
-          </div>
-
-          {/* Growth Pro Plan (₹2,999/mo) */}
-          <div className="p-7 rounded-3xl bg-gradient-to-b from-[#2B1B54] via-[#1A1844] to-[#121936] border-2 border-violet-500/60 shadow-2xl shadow-violet-600/30 space-y-6 flex flex-col justify-between relative transform lg:-translate-y-2">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-lg flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>75% Automated • Most Popular 🔥</span>
-            </div>
-
-            <div className="space-y-4 pt-1">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-2xl text-white">Pro Growth</h3>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300">
-                  Automated Workflows
-                </span>
-              </div>
-
-              {/* Exact Price Display */}
-              <div className="space-y-1">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-extrabold text-4xl text-white font-mono">₹2,999</span>
-                  <span className="text-slate-300 text-xs">/ month</span>
-                </div>
-                <div className="text-xs text-amber-300 font-bold mt-1">
-                  Automates 75% of your ad creation & payment follow-ups
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                For established weavers, boutique designers, and stores who want instant Instagram ads and automated payment pings.
-              </p>
-
-              <div className="space-y-2.5 pt-2 text-xs text-slate-200">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span className="font-semibold text-white">AI Meta Ad Studio (Instagram & FB Creatives)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>Custom Instagram Story (9:16) & Post (1:1) with QR</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>1.2% Escrow Fee (Save 65% on fees)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>Automated WhatsApp 1-Click Payment Reminders</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>Verified Merchant Blue Shield on Checkout</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                onGoToSeller();
-                sounds.playSuccess();
-              }}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500 hover:opacity-95 text-white font-extrabold text-sm shadow-xl shadow-pink-500/25 transition-all cursor-pointer"
-            >
-              Get Pro Growth at ₹2,999/mo
-            </button>
-          </div>
-
-          {/* Elite Brand Plan (₹5,999/mo) */}
-          <div className="p-7 rounded-3xl bg-[#121936] border border-amber-500/40 space-y-6 flex flex-col justify-between relative shadow-2xl shadow-amber-500/10">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-xl text-white">Elite Brand</h3>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                  Full Autopilot 🚀
-                </span>
-              </div>
-
-              {/* Exact Studio Elite Price */}
-              <div className="space-y-1">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-extrabold text-4xl text-white font-mono">₹5,999</span>
-                  <span className="text-slate-300 text-xs">/ month</span>
-                </div>
-                <div className="text-xs text-amber-400 font-bold mt-1">
-                  Includes #1 Priority in Tinder-Style Swipe Feed
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Maximum exposure for luxury brands, high-growth artisan co-ops, and top sellers who want full autopilot sales.
-              </p>
-
-              <div className="space-y-2.5 pt-2 text-xs text-slate-300">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="font-semibold text-white">⭐ Top Featured in Tinder-Style Swipe Feed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>VIP Same-Day (12-24h) Escrow Bank Settlement</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>0.5% Escrow Fee (Lowest Industry Rate)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Dedicated Human Dispute Concierge & Defense</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Unlimited AI Social Creatives & Video Scripts</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                onGoToSeller();
-                sounds.playSuccess();
-              }}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-95 text-slate-950 font-black text-xs transition-colors cursor-pointer shadow-lg shadow-amber-500/20"
-            >
-              Get Elite Brand at ₹5,999/mo
-            </button>
-          </div>
-        </div>
-
-        {/* Flat Fee vs 2% Gateway Commission Reality Check */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-[#171D3A] via-[#152342] to-[#121936] border border-cyan-500/20 text-xs leading-relaxed space-y-2">
-          <div className="flex items-center gap-2 text-cyan-300 font-bold uppercase tracking-wider text-[11px]">
-            <span>💡 Why Flat Pricing Beats Percentage Cut Gateways</span>
-          </div>
-          <p className="text-slate-300">
-            Standard payment gateways (like Razorpay, Stripe, or Cashfree) charge <b className="text-white">2% + 18% GST</b> on every single sale. If your shop does ₹1,50,000 in monthly sales, you pay <span className="text-rose-400 font-bold font-mono">₹3,540 every month</span> in gateway fees. With Reachr’s flat annual plan, you pay just <span className="text-emerald-400 font-bold font-mono">₹166/month</span> and keep the remaining ₹3,374 in your bank account every month!
-          </p>
-        </div>
-      </section>
-
-      {/* 7. FREQUENTLY ASKED QUESTIONS ACCORDION */}
-      <section className="max-w-3xl mx-auto space-y-4" id="faq">
-        <div className="text-center space-y-2 mb-6">
-          <h2 className="font-display font-extrabold text-3xl text-white">Frequently Asked Questions</h2>
-          <p className="text-slate-400 text-sm">Everything you need to know about the Reachr platform.</p>
-        </div>
-
-        {[
-          {
-            q: 'How do customers pay through a Reachr link?',
-            a: 'Customers click the link or scan your order QR code. They can pay via any UPI app (Google Pay, PhonePe, Paytm, BHIM, Cred), credit/debit cards (RuPay, Visa, Mastercard), netbanking across all Indian banks, wallets, or Cash on Delivery. In this interactive suite, every transaction flow is live-simulated.',
-          },
-          {
-            q: 'How does the 4-Stage FairResolve protocol work?',
-            a: 'Stage 1: The buyer raises a dispute specifying the issue and evidence. Stage 2: The seller has 48 hours to propose a solution (exchange, partial refund, or store credit). Stage 3: If either party disagrees, Reachr neutral mediators evaluate the timeline and delivery proof. Stage 4: Resolution is formally recorded in the audit log.',
-          },
-          {
-            q: 'Do customers need to download an application?',
-            a: 'No app is required! Reachr payment links, order chat, and the Trust Center render smoothly in any mobile or desktop web browser.',
-          },
-          {
-            q: 'Can I set an expiration time on custom quotes?',
-            a: 'Yes. Sellers can choose from No Expiry, 24 Hours, 3 Days, or 7 Days to protect limited artisan inventory or special promotional pricing.',
-          },
-          {
-            q: 'How does the Trust Center protect me as a seller?',
-            a: 'Reachr timestamps order fulfillment, tracks courier milestones, and preserves parcel photos in ProofVault. If a buyer claims non-delivery, your verified evidence is right there to prevent fraudulent chargebacks.',
-          },
-        ].map((faq, i) => (
+          {/* Hero Showcase Product Switcher */}
           <div
-            key={i}
-            className="rounded-2xl bg-[#121936] border border-white/10 overflow-hidden transition-all duration-200"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '8px',
+              marginBottom: '16px',
+              position: 'relative',
+              zIndex: 10,
+            }}
           >
-            <button
-              onClick={() => toggleFaq(i)}
-              className="w-full p-5 text-left flex items-center justify-between gap-4 font-semibold text-white hover:text-pink-300 transition-colors cursor-pointer"
-            >
-              <span className="text-sm md:text-base">{faq.q}</span>
-              <ChevronDown
-                className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
-                  openFaq === i ? 'rotate-180 text-pink-400' : ''
-                }`}
-              />
-            </button>
-            {openFaq === i && (
-              <div className="px-5 pb-5 text-slate-300 text-xs md:text-sm leading-relaxed border-t border-white/5 pt-3">
-                {faq.a}
-              </div>
-            )}
-          </div>
-        ))}
-      </section>
-
-      {/* 8. FOOTER */}
-      <footer className="pt-12 border-t border-white/10 text-slate-400 text-xs space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-violet-600 to-pink-500 flex items-center justify-center text-white font-extrabold text-xs">
-                R
-              </div>
-              <span className="font-display font-bold text-lg text-white">Reachr</span>
-            </div>
-            <p className="text-slate-400 leading-relaxed">
-              Empowering independent Indian commerce with trust, fair dispute settlement, and instant payments.
-            </p>
+            {HERO_SHOWCASE_PRODUCTS.map((prod, idx) => (
+              <button
+                key={prod.id}
+                type="button"
+                onClick={() => {
+                  setSelectedHeroIndex(idx);
+                  sounds.playClick();
+                }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '5px 12px',
+                  borderRadius: '999px',
+                  border: '1px solid',
+                  borderColor: selectedHeroIndex === idx ? 'var(--blue)' : 'var(--line)',
+                  background: selectedHeroIndex === idx ? 'var(--blue)' : 'var(--card)',
+                  color: selectedHeroIndex === idx ? '#fff' : 'var(--mut)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: selectedHeroIndex === idx ? '0 2px 10px rgba(10,132,255,0.3)' : 'none',
+                }}
+              >
+                {prod.brand}
+              </button>
+            ))}
           </div>
 
-          <div>
-            <h4 className="font-bold text-white mb-2 uppercase tracking-wider text-[11px]">Payment Rails</h4>
-            <ul className="space-y-1.5 text-slate-400">
-              <li>Instant UPI VPA Links</li>
-              <li>Scannable Order QR Codes</li>
-              <li>RuPay, Visa & Mastercard</li>
-              <li>Netbanking & Verified COD</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-2 uppercase tracking-wider text-[11px]">Trust & Safety</h4>
-            <ul className="space-y-1.5 text-slate-400">
-              <li>4-Stage FairResolve Protocol</li>
-              <li>Merchant Trust Passport</li>
-              <li>ProofVault Delivery Archive</li>
-              <li>Arbitration Guidelines</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-2 uppercase tracking-wider text-[11px]">Company</h4>
-            <ul className="space-y-1.5 text-slate-400">
-              <li>About Reachr India</li>
-              <li>Seller Code of Ethics</li>
-              <li>Privacy Policy</li>
-              <li>Security Disclosures</li>
-              {onOpenOwnerLogin && (
-                <li className="pt-1">
-                  <button
-                    onClick={() => {
-                      sounds.playMessage();
-                      onOpenOwnerLogin();
+          {/* Hero Phone Mockup — Aesthetic Artisan Showcase */}
+          <div className="phone" id="hp" ref={hpRef}>
+            <div className="scr" id="hs">
+              <div className="pane on">
+                <div className="sb">
+                  <span>9:41</span>
+                  <span>●●●</span>
+                </div>
+                <div className="who">
+                  <div
+                    className="av"
+                    style={{
+                      backgroundImage: `url(${heroProduct.image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
                     }}
-                    className="hover:text-violet-300 text-slate-500 transition-colors flex items-center gap-1.5 cursor-pointer text-[11px]"
-                    title="Platform administrator console for owner"
+                  />
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <b>{heroProduct.brand}</b>
+                      <span style={{ color: '#2bc4b4', fontSize: '3.4cqw', fontWeight: 'bold' }}>✓</span>
+                    </div>
+                    <small>{heroProduct.subtitle}</small>
+                  </div>
+                </div>
+                <div
+                  className="tile"
+                  style={{
+                    backgroundImage: `url(${heroProduct.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '2.5cqw',
+                      left: '3cqw',
+                      background: 'rgba(0,0,0,0.65)',
+                      backdropFilter: 'blur(8px)',
+                      color: '#fff',
+                      fontSize: '2.8cqw',
+                      padding: '0.8cqw 2.4cqw',
+                      borderRadius: '99px',
+                      fontWeight: 600,
+                    }}
                   >
-                    <Lock className="w-3 h-3 text-violet-400" />
-                    <span>Platform Owner Console</span>
-                  </button>
-                </li>
-              )}
-            </ul>
+                    {heroProduct.tag}
+                  </span>
+                </div>
+                <p className="it">{heroProduct.item}</p>
+                <p className="am">₹{heroProduct.amount.toLocaleString('en-IN')}</p>
+                <div className="rw">
+                  <span>Payment</span>
+                  <b>Direct UPI · Escrow Held</b>
+                </div>
+                <div className="rw">
+                  <span>Delivery</span>
+                  <b>{heroProduct.delivery}</b>
+                </div>
+                <div className="rw">
+                  <span>Protection</span>
+                  <b>{heroProduct.protection}</b>
+                </div>
+                <div
+                  className="pay"
+                  onClick={() => {
+                    try {
+                      window.location.href = `upi://pay?pa=ts.mukesh007@oksbi&pn=Reachr&am=${heroProduct.amount}&cu=INR&tn=${encodeURIComponent(
+                        heroProduct.item.substring(0, 30)
+                      )}`;
+                    } catch {}
+                    onGoToBuyer();
+                  }}
+                  title="Click to pay via UPI and test buyer link"
+                >
+                  Pay with UPI &amp; Protect
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </header>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/5 text-[11px]">
-          <div>© 2026 Reachr Technologies Ltd. Released under the MIT License.</div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Serverless Simulation</span>
-            <span>·</span>
-            <span>100% Client-Side Persistence</span>
-            <span>·</span>
-            <span>WCAG AA Contrast Compliant</span>
+      {/* ── 2. TRUST STATEMENT SECTION ── */}
+      <section className="st" ref={stElRef}>
+        <div className="wrap">
+          <p id="stm" ref={stmRef}>
+            {STATEMENT_WORDS.map((word, idx) => (
+              <span
+                key={idx}
+                ref={(el) => {
+                  if (el) wordSpansRef.current[idx] = el;
+                }}
+                style={{ opacity: 0.18 }}
+              >
+                {word}{' '}
+              </span>
+            ))}
+          </p>
+        </div>
+      </section>
+
+      {/* ── 3. FOUR STEPS. ONE LINK. (STICKY SCROLL SCENE) ── */}
+      <section className="scene" id="how" ref={sceneRef}>
+        <div className="stick">
+          <div>
+            <h2>
+              Four steps.<br />
+              <span className="grad">One link.</span>
+            </h2>
+
+            <div
+              className="chap on"
+              ref={(el) => { chapsRef.current[0] = el; }}
+              onClick={() => handleChapterClick(0)}
+            >
+              <h3>Share a link.</h3>
+              <p>Your buyer pays through UPI, and the money is held safely until the order arrives.</p>
+            </div>
+
+            <div
+              className="chap"
+              ref={(el) => { chapsRef.current[1] = el; }}
+              onClick={() => handleChapterClick(1)}
+            >
+              <h3>Follow the order.</h3>
+              <p>Courier updates reach buyer and seller, so nobody has to ask where it is.</p>
+            </div>
+
+            <div
+              className="chap"
+              ref={(el) => { chapsRef.current[2] = el; }}
+              onClick={() => handleChapterClick(2)}
+            >
+              <h3>Settle it fairly.</h3>
+              <p>Add photos or video, and four clear stages take over, with tracking as evidence.</p>
+            </div>
+
+            <div
+              className="chap"
+              ref={(el) => { chapsRef.current[3] = el; }}
+              onClick={() => handleChapterClick(3)}
+            >
+              <h3>Reach more buyers.</h3>
+              <p>Promote your shop on Instagram, Facebook and YouTube, and see which ad led to a real sale.</p>
+            </div>
+          </div>
+
+          <div className="phw">
+            <div className="phone">
+              <div className="scr" id="ps">
+                {/* Pane 0: Share a link */}
+                <div className="pane on" ref={(el) => { panesRef.current[0] = el; }}>
+                  <div className="sb">
+                    <span>9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <div className="who">
+                    <div
+                      className="av"
+                      style={{
+                        backgroundImage: 'url(https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop)',
+                        backgroundSize: 'cover',
+                      }}
+                    />
+                    <div>
+                      Terra Studio<small>Payment link</small>
+                    </div>
+                  </div>
+                  <div
+                    className="tile"
+                    style={{
+                      backgroundImage: 'url(https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
+                  <p className="it">Kyoto Speckled Ceramic Pour-Over</p>
+                  <p className="am">₹1,850</p>
+                  <div className="rw">
+                    <span>Payment</span>
+                    <b>Direct UPI · Escrow Held</b>
+                  </div>
+                  <div className="rw">
+                    <span>Delivery</span>
+                    <b>Bluedart Express</b>
+                  </div>
+                  <div className="rw">
+                    <span>Protection</span>
+                    <b>Held till delivery</b>
+                  </div>
+                  <div className="pay">Pay with UPI</div>
+                </div>
+
+                {/* Pane 1: Follow the order */}
+                <div className="pane" ref={(el) => { panesRef.current[1] = el; }}>
+                  <div className="sb">
+                    <span>9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <h4>Your order</h4>
+                  <small>Kyoto Ceramic Pour-Over · Terra Studio</small>
+                  <div className="tl">
+                    <div className="dn">
+                      <b>Packed</b>Seller confirmed
+                    </div>
+                    <div className="dn">
+                      <b>Shipped</b>On its way
+                    </div>
+                    <div className="lv">
+                      <b>Out for delivery</b>Nearly there
+                    </div>
+                    <div>
+                      <b>Delivered</b>Buyer confirms
+                    </div>
+                  </div>
+                  <span className="chip">Arriving today</span>
+                </div>
+
+                {/* Pane 2: Settle it fairly */}
+                <div className="pane" ref={(el) => { panesRef.current[2] = el; }}>
+                  <div className="sb">
+                    <span>9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <h4>Something wrong?</h4>
+                  <small>Dispute in progress</small>
+                  <div className="tl">
+                    <div className="dn">
+                      <b>Raise it</b>Problem flagged
+                    </div>
+                    <div className="dn">
+                      <b>Respond</b>Seller replied
+                    </div>
+                    <div className="lv">
+                      <b>Review</b>Evidence is checked
+                    </div>
+                    <div>
+                      <b>Resolve</b>Outcome recorded
+                    </div>
+                  </div>
+                  <div className="note">Your photos and the delivery tracking are attached as evidence.</div>
+                </div>
+
+                {/* Pane 3: Reach more buyers */}
+                <div className="pane" ref={(el) => { panesRef.current[3] = el; }}>
+                  <div className="sb">
+                    <span>9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <h4>Promote</h4>
+                  <small>Handloom sarees</small>
+                  <div className="plat">
+                    <span>Instagram</span>
+                    <span>Facebook</span>
+                    <span>YouTube</span>
+                  </div>
+                  <div className="ad">
+                    <div className="im" />
+                    <div className="tx">
+                      <b>Asha’s Crafts</b> <small>Sponsored</small>
+                      <div className="cta2">Shop with protection</div>
+                    </div>
+                  </div>
+                  <div className="rw">
+                    <span>Ad spend</span>
+                    <b>₹2,000</b>
+                  </div>
+                  <div className="rw">
+                    <span>Protected sales</span>
+                    <b>14</b>
+                  </div>
+                  <div className="rw">
+                    <span>Delivered</span>
+                    <b>11</b>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. BENTO FEATURE GRID ── */}
+      <section className="feat" id="features">
+        <div className="wrap">
+          <h2 className="rv">Everything it takes to close a sale.</h2>
+          <div className="bento">
+            {/* Card 1 */}
+            <article className="card c1 s2 rv">
+              <div>
+                <h3>Payments held until delivery.</h3>
+                <p>Buyers pay by UPI. The money is held safely and released to you once the order arrives.</p>
+              </div>
+              <div className="vis">
+                <div className="big">₹1,250</div>
+                <div className="chipw" style={{ marginTop: 14 }}>
+                  <span>UPI</span>
+                  <span>Held till delivery</span>
+                </div>
+              </div>
+            </article>
+
+            {/* Card 2 */}
+            <article className="card c2 rv">
+              <div>
+                <h3>Follow every order.</h3>
+                <p>Courier updates, sent to WhatsApp.</p>
+              </div>
+              <div className="vis">
+                <div className="steps">
+                  <div className="f">
+                    <i />Packed
+                  </div>
+                  <div className="f">
+                    <i />Shipped
+                  </div>
+                  <div className="f">
+                    <i />Nearby
+                  </div>
+                  <div>
+                    <i />Delivered
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Card 3 */}
+            <article className="card c3 rv">
+              <div>
+                <h3>Verified sellers.</h3>
+                <p>Buyers see exactly who they’re paying.</p>
+              </div>
+              <div className="vis">
+                <div className="vb">
+                  <i>✓</i>
+                  <div>
+                    <b>Asha’s Crafts</b>
+                    <small>Verified by Reachr</small>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Card 4 */}
+            <article className="card c4 s2 rv">
+              <div>
+                <h3>
+                  Promote your shop. <em className="soon">Soon</em>
+                </h3>
+                <p>
+                  Advertise a section on Instagram, Facebook and YouTube, and see which ad led to a real, delivered sale.
+                </p>
+              </div>
+              <div className="vis">
+                <div className="chipw">
+                  <span>Instagram</span>
+                  <span>Facebook</span>
+                  <span>YouTube</span>
+                </div>
+                <div className="big" style={{ fontSize: '2.6rem', marginTop: 18 }}>
+                  14 sales <span style={{ fontSize: '1rem', fontWeight: 600, color: '#4a4a4f', letterSpacing: 0 }}>from one ad</span>
+                </div>
+              </div>
+            </article>
+
+            {/* Card 5 */}
+            <article className="card c5 rv">
+              <div>
+                <h3>Fair disputes.</h3>
+                <p>Four stages, with photos as proof.</p>
+              </div>
+              <div className="vis">
+                <div className="four">
+                  <div>
+                    <b>1</b>Raise
+                  </div>
+                  <div>
+                    <b>2</b>Reply
+                  </div>
+                  <div>
+                    <b>3</b>Review
+                  </div>
+                  <div>
+                    <b>4</b>Resolve
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Card 6 */}
+            <article className="card c6 s2 rv">
+              <div>
+                <h3>
+                  Your sales, at a glance. <em className="soon">Soon</em>
+                </h3>
+                <p>A simple dashboard for links, payments and orders.</p>
+              </div>
+              <div className="vis">
+                <div className="bars">
+                  <i style={{ height: '35%' }} />
+                  <i style={{ height: '55%' }} />
+                  <i style={{ height: '42%' }} />
+                  <i style={{ height: '70%' }} />
+                  <i style={{ height: '60%' }} />
+                  <i style={{ height: '88%' }} />
+                  <i style={{ height: '76%' }} />
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. DISCOVER (FIND IT. SWIPE. ORDER.) ── */}
+      <section className="disc" id="discover">
+        <div className="wrap dgrid">
+          <div>
+            <h2 className="rv">
+              Find it.<br />
+              <span className="grad">Swipe. Order.</span>
+            </h2>
+            <p className="l rv">
+              Buyers browse sellers by category. Swipe right to order, swipe left to skip.
+            </p>
+            <ul className="dl rv">
+              <li>Only verified sellers appear.</li>
+              <li>Paid placements are always labelled Sponsored.</li>
+              <li>Every order is protected from the first tap.</li>
+            </ul>
+            <p className="hint rv">Try it on the phone: drag a card, or use the buttons.</p>
+
+            <div className="rv" style={{ marginTop: '28px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onGoToDiscover) onGoToDiscover();
+                  sounds.playSuccess();
+                }}
+                className="btn"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 24px',
+                  fontSize: '0.98rem',
+                }}
+              >
+                <span>Open Full Discover Page (9+ Artisans)</span>
+                <span>›</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="phw">
+            <div
+              className="phone"
+              id="dp"
+              style={{ ['--ph' as any]: 'min(70svh, 640px)' }}
+            >
+              <div className="scr">
+                <div className="pane on col" id="dpane">
+                  <div className="sb">
+                    <span>9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <h4>Discover</h4>
+
+                  {/* Category Chips */}
+                  <div className="dch">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        className={curCategory === cat ? 'on' : ''}
+                        onClick={() => handleCategorySelect(cat)}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Card Deck matching HTML DOM stack */}
+                  <div
+                    className="deck"
+                    id="deck"
+                    tabIndex={0}
+                    aria-label="Swipe deck. Right arrow orders, left arrow skips."
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowRight') flyCard(1);
+                      if (e.key === 'ArrowLeft') flyCard(-1);
+                    }}
+                  >
+                    {remainingItems.length === 0 ? (
+                      <div className="empty">
+                        <span>You’ve seen every {curCategory.toLowerCase()} seller for now.</span>
+                        <button
+                          className="pay"
+                          type="button"
+                          onClick={() => {
+                            setCardIndex(0);
+                            sounds.playSuccess();
+                          }}
+                        >
+                          Start again
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Underneath card (if available) */}
+                        {remainingItems.length > 1 && (
+                          <div
+                            key={remainingItems[1].name}
+                            className="sc"
+                            style={{
+                              background: `linear-gradient(160deg, ${remainingItems[1].from}, ${remainingItems[1].to})`,
+                              transform: 'scale(0.94) translateY(3cqw)',
+                              zIndex: 1,
+                            }}
+                          >
+                            {remainingItems[1].sponsored && <span className="sp">Sponsored</span>}
+                            <span className="stamp o">ORDER</span>
+                            <span className="stamp k">SKIP</span>
+                            <div className="in">
+                              <div className="nm">{remainingItems[1].name}</div>
+                              <div className="pr">₹{remainingItems[1].price.toLocaleString('en-IN')}</div>
+                              <div className="sl">
+                                <i>✓</i>
+                                {remainingItems[1].seller} · Verified
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Top draggable card */}
+                        <div
+                          key={remainingItems[0].name}
+                          ref={topCardRef}
+                          className="sc"
+                          onPointerDown={handlePointerDown}
+                          onPointerMove={handlePointerMove}
+                          onPointerUp={handlePointerUp}
+                          onPointerCancel={handlePointerUp}
+                          style={{
+                            background: `linear-gradient(160deg, ${remainingItems[0].from}, ${remainingItems[0].to})`,
+                            zIndex: 2,
+                          }}
+                        >
+                          {remainingItems[0].sponsored && <span className="sp">Sponsored</span>}
+                          <span className="stamp o">ORDER</span>
+                          <span className="stamp k">SKIP</span>
+                          <div className="in">
+                            <div className="nm">{remainingItems[0].name}</div>
+                            <div className="pr">₹{remainingItems[0].price.toLocaleString('en-IN')}</div>
+                            <div className="sl">
+                              <i>✓</i>
+                              {remainingItems[0].seller} · Verified
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Yes / No Action Buttons */}
+                  <div className="acts">
+                    <button
+                      className="no"
+                      type="button"
+                      aria-label="Skip"
+                      onClick={() => flyCard(-1)}
+                    >
+                      ✕
+                    </button>
+                    <button
+                      className="yes"
+                      type="button"
+                      aria-label="Order"
+                      onClick={() => flyCard(1)}
+                    >
+                      ✓
+                    </button>
+                  </div>
+
+                  {/* Slide-Up Order Sheet */}
+                  <div className={`sheet ${orderSheetItem ? 'on' : ''}`}>
+                    {orderSheetItem && !orderPlaced && (
+                      <>
+                        <h4 style={{ fontSize: '5.4cqw' }}>{orderSheetItem.name}</h4>
+                        <small>{orderSheetItem.seller} · Verified</small>
+                        <p className="am" style={{ margin: '3cqw 0 2cqw' }}>
+                          ₹{orderSheetItem.price.toLocaleString('en-IN')}
+                        </p>
+                        <div className="rw">
+                          <span>Payment</span>
+                          <b>UPI</b>
+                        </div>
+                        <div className="rw">
+                          <span>Money</span>
+                          <b>Held till delivery</b>
+                        </div>
+                        <button
+                          className="pay"
+                          type="button"
+                          onClick={() => {
+                            try {
+                              window.location.href = `upi://pay?pa=ts.mukesh007@oksbi&pn=Reachr&am=${orderSheetItem.price}&cu=INR&tn=${encodeURIComponent(
+                                orderSheetItem.name.substring(0, 30)
+                              )}`;
+                            } catch {}
+                            setOrderPlaced(true);
+                            sounds.playReward();
+                          }}
+                        >
+                          Pay with UPI (₹{orderSheetItem.price.toLocaleString('en-IN')})
+                        </button>
+                        <button
+                          className="pay ghost"
+                          type="button"
+                          onClick={() => setOrderSheetItem(null)}
+                        >
+                          Not now
+                        </button>
+                      </>
+                    )}
+
+                    {orderSheetItem && orderPlaced && (
+                      <>
+                        <h4 style={{ fontSize: '5.4cqw' }}>Order placed</h4>
+                        <small>Protected &amp; tracked to ts.mukesh007@oksbi. Funds held in escrow till verified doorstep unboxing.</small>
+                        <button
+                          className="pay"
+                          type="button"
+                          style={{ marginTop: '6cqw' }}
+                          onClick={() => {
+                            setOrderSheetItem(null);
+                            setOrderPlaced(false);
+                          }}
+                        >
+                          Keep browsing
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. PRICING ── */}
+      <section className="price" id="pricing">
+        <div className="wrap">
+          <h2 className="rv">
+            Start free.<br />
+            Grow when you’re ready.
+          </h2>
+          <p className="sub2 rv">
+            Protection is free for everyone. Paid plans add powerful tools to run, automate and scale your shop.
+          </p>
+
+          <div className="plans">
+            <article className="plan rv">
+              <h3>Free</h3>
+              <div className="pr">
+                ₹0 <small>/forever</small>
+              </div>
+              <ul>
+                <li>Payment links (Direct UPI)</li>
+                <li>Tracked delivery guarantee</li>
+                <li>Four-stage dispute resolution</li>
+                <li>Reachr verified seller badge</li>
+              </ul>
+              <a
+                className="btn"
+                href="#seller"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onGoToSeller();
+                  sounds.playSuccess();
+                }}
+              >
+                Get started free
+              </a>
+            </article>
+
+            <article className="plan rv">
+              <h3>Plus</h3>
+              <div className="pr">
+                ₹2,999 <small>/month</small>
+              </div>
+              <ul>
+                <li>Everything in Free</li>
+                <li>Seller dashboard &amp; analytics</li>
+                <li>Automated receipts and invoices</li>
+                <li>In-person QR payment codes</li>
+                <li>WhatsApp buyer order updates</li>
+              </ul>
+              <a
+                className="btn"
+                href="#pricing"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenSubscriptionModal) {
+                    onOpenSubscriptionModal('pro');
+                  } else {
+                    onGoToSeller();
+                  }
+                  sounds.playSuccess();
+                }}
+              >
+                Choose Plus
+              </a>
+            </article>
+
+            <article className="plan pro rv">
+              <h3>
+                Pro <em className="tg">For growing shops</em>
+              </h3>
+              <div className="pr">
+                ₹5,999 <small>/month</small>
+              </div>
+              <ul>
+                <li>Everything in Plus</li>
+                <li>Promote on Instagram, Facebook and YouTube</li>
+                <li>Featured placement in Discover</li>
+                <li>Sales attribution reported per ad</li>
+                <li>Priority 24/7 dispute review</li>
+                <li>Multi-user team permissions</li>
+              </ul>
+              <a
+                className="btn"
+                href="#pricing"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onOpenSubscriptionModal) {
+                    onOpenSubscriptionModal('elite');
+                  } else {
+                    onGoToSeller();
+                  }
+                  sounds.playSuccess();
+                }}
+              >
+                Choose Pro
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. CTA NOTIFY BANNER ── */}
+      <section className="cta" id="join">
+        <div className="ctab rv">
+          <h2>
+            Stay ahead with <span className="grad">exclusive updates.</span>
+          </h2>
+          <p>Join our seller circle for exclusive updates, feature drops, and early platform access delivered to your inbox.</p>
+
+          <form className="sign" onSubmit={handleNotifySubmit}>
+            <input
+              type="email"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              placeholder="Enter your email for exclusive updates"
+              aria-label="Email address"
+              required
+            />
+            <button className="btn" type="submit">
+              Get exclusive updates
+            </button>
+          </form>
+
+          {notifyMsg && (
+            <div id="msg" role="status">
+              {notifyMsg}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── 8. FOOTER WITH LICENSES & DONE BY TEAM REACHR ── */}
+      <footer style={{ borderTop: '1px solid var(--line)', background: 'var(--bg)', padding: '54px 0 36px' }}>
+        <div className="wrap" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '32px' }}>
+            <div style={{ maxWidth: '360px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontWeight: 800, fontSize: '20px', letterSpacing: '-0.02em', color: 'var(--ink)' }}>Reachr</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'rgba(43,196,180,0.15)', color: '#2bc4b4', border: '1px solid rgba(43,196,180,0.3)' }}>VERIFIED ESCROW</span>
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--mut)', lineHeight: 1.6, margin: 0 }}>
+                Smart payment links &amp; delivery protection for social sellers across Instagram, WhatsApp and YouTube. Direct instant UPI settlements with unboxing verification.
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '36px', flexWrap: 'wrap', fontSize: '13px' }}>
+              <div>
+                <b style={{ display: 'block', color: 'var(--ink)', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Portals</b>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', color: 'var(--mut)' }}>
+                  <span style={{ cursor: 'pointer' }} onClick={() => onGoToDiscover?.()}>Artisan Marketplace</span>
+                  <span style={{ cursor: 'pointer' }} onClick={() => onGoToBuyer?.()}>Buyer Order Hub</span>
+                  <span style={{ cursor: 'pointer' }} onClick={() => onGoToSeller?.()}>Seller Studio</span>
+                  <span
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      if (onOpenSubscriptionModal) {
+                        onOpenSubscriptionModal('pro');
+                      } else {
+                        const el = document.querySelector('#pricing');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    Membership Plans
+                  </span>
+                </div>
+              </div>
+              <div>
+                <b style={{ display: 'block', color: 'var(--ink)', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Licenses &amp; Security</b>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', color: 'var(--mut)' }}>
+                  <span>RBI UPI Mandate Guidelines 2024</span>
+                  <span>ISO 27001 Certified Vault Architecture</span>
+                  <span>256-Bit SSL Transit Encryption</span>
+                  <span>NPCI Unified Payments Interoperability</span>
+                </div>
+              </div>
+              <div>
+                <b style={{ display: 'block', color: 'var(--ink)', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Legal &amp; Policy</b>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', color: 'var(--mut)' }}>
+                  <span>Terms of Service</span>
+                  <span>Privacy Policy</span>
+                  <span>Dispute Resolution Protocol v2.4</span>
+                  <span>Fair Refund &amp; Escrow Policy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--line)', paddingTop: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', fontSize: '12px', color: 'var(--mut)' }}>
+            <span>© 2024 Reachr Inc. All rights reserved. Registered Indian Electronic Commerce &amp; Direct UPI Link Provider.</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontWeight: 700, color: 'var(--ink)', background: 'var(--card)', padding: '4px 12px', borderRadius: '999px', border: '1px solid var(--line)' }}>
+                Done by Team Reachr
+              </span>
+            </div>
           </div>
         </div>
       </footer>
     </div>
   );
-};
+});
+
+LandingView.displayName = 'LandingView';

@@ -264,51 +264,42 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
       {/* Return to home */}
       <button
         onClick={onBackToHub}
-        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white mb-6 transition-colors cursor-pointer group"
+        className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--mut)] hover:text-[var(--ink)] mb-6 transition-colors cursor-pointer group"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         <span>Return to Home</span>
       </button>
 
       {/* Main Container Card */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-[#0F1528]/95 backdrop-blur-2xl border border-pink-500/30 shadow-2xl space-y-6 relative overflow-hidden">
-        {/* Glow pill */}
-        <div className="absolute top-0 right-0 w-60 h-60 bg-pink-500/10 rounded-full blur-3xl -z-10" />
-
+      <div className="rounded-3xl p-6 sm:p-8 bg-[var(--card)] border border-[var(--line)] shadow-xl space-y-6 text-[var(--ink)] transition-colors duration-300">
         {/* Header Icon & Title */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/25">
-            {activeTab === 'login' ? <Lock className="w-7 h-7" /> : <Store className="w-7 h-7" />}
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-[var(--accent)]/15 border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent)]">
+            {activeTab === 'login' ? <Lock className="w-6 h-6" /> : <Store className="w-6 h-6" />}
           </div>
 
-          <div className="flex items-center justify-center gap-2">
-            <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-pink-500/15 text-pink-300 border border-pink-500/30">
-              {activeTab === 'login' ? 'Merchant Access Guard' : 'First-Time Onboarding'}
-            </span>
-          </div>
-
-          <h2 className="font-display font-bold text-2xl sm:text-3xl text-white">
-            {activeTab === 'login' ? 'Seller Studio Login' : 'Register Your Merchant Store'}
+          <h2 className="font-display font-bold text-2xl text-[var(--ink)]">
+            {activeTab === 'login' ? 'Sign in to Seller Studio' : 'Register your merchant store'}
           </h2>
-          <p className="text-xs text-slate-300 max-w-md mx-auto">
+          <p className="text-xs text-[var(--mut)] max-w-sm mx-auto">
             {activeTab === 'login'
-              ? 'Sign in to generate SmartPay escrow links, manage orders, and track your settlements.'
+              ? 'Sign in to create payment links, manage orders, and track your settlements.'
               : 'Create your merchant account to start accepting direct UPI payments with escrow protection.'}
           </p>
         </div>
 
         {/* Tab Switcher: Sign In vs Register (First Time) */}
-        <div className="p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex gap-1">
+        <div className="p-1 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] flex gap-1">
           <button
             type="button"
             onClick={() => {
               setActiveTab('login');
               setError(null);
             }}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'login'
-                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
             <Lock className="w-3.5 h-3.5" />
@@ -321,23 +312,20 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
               setActiveTab('register');
               setError(null);
             }}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'register'
-                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-[var(--accent)] text-white shadow-xs font-semibold'
+                : 'text-[var(--mut)] hover:text-[var(--ink)]'
             }`}
           >
             <UserPlus className="w-3.5 h-3.5" />
-            <span>Register Store (First Time)</span>
-            <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              New
-            </span>
+            <span>Register Store</span>
           </button>
         </div>
 
         {/* Error notification */}
         {error && (
-          <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-fadeIn">
+          <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-500 text-xs flex items-center gap-2.5 animate-fadeIn">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -347,22 +335,22 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
         {activeTab === 'login' && (
           <div className="space-y-5">
             {/* Demo Fast Login Callout */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/25 space-y-2.5">
+            <div className="p-4 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] space-y-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-pink-300 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-pink-400" /> Demo Merchant Profile
+                <span className="font-bold text-[var(--ink)] flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Demo Merchant Profile
                 </span>
-                <span className="text-[10px] text-slate-400">Pre-configured</span>
+                <span className="text-[10px] text-[var(--mut)]">Pre-configured</span>
               </div>
-              <p className="text-[11px] text-slate-300 leading-tight">
-                Quick testing credentials: <code className="text-pink-300 font-mono">meera@handloom.in</code> /{' '}
-                <code className="text-pink-300 font-mono">reachr2026</code>
+              <p className="text-[11px] text-[var(--mut)] leading-tight">
+                Quick testing credentials: <code className="text-[var(--accent)] font-mono">meera@handloom.in</code> /{' '}
+                <code className="text-[var(--accent)] font-mono">reachr2026</code>
               </p>
               <button
                 type="button"
                 onClick={handleQuickDemoLogin}
                 disabled={isLoading}
-                className="w-full py-2.5 px-3 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 border border-pink-500/40 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="w-full py-2.5 px-3 rounded-xl bg-[var(--accent)]/15 hover:bg-[var(--accent)]/25 text-[var(--accent)] border border-[var(--accent)]/30 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <span>1-Click Demo Login as Meera's Handloom</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -371,22 +359,22 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" /> Merchant Email or Phone
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-[var(--mut)]" /> Merchant Email or Phone
                 </label>
                 <input
                   type="text"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="e.g. meera@handloom.in or your registered email"
-                  className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  placeholder="e.g. meera@handloom.in"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+                <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink)]">
                   <label className="flex items-center gap-1.5">
-                    <KeyRound className="w-3.5 h-3.5 text-slate-400" /> Password or Merchant PIN
+                    <KeyRound className="w-3.5 h-3.5 text-[var(--mut)]" /> Password or Merchant PIN
                   </label>
                 </div>
                 <input
@@ -394,14 +382,14 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white font-bold text-sm shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 rounded-full bg-[var(--accent)] hover:opacity-90 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isLoading ? (
                   <span>Authenticating Session...</span>
@@ -421,7 +409,7 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
                   setActiveTab('register');
                   setError(null);
                 }}
-                className="text-xs text-pink-300 hover:text-pink-200 underline font-medium cursor-pointer"
+                className="text-xs text-[var(--accent)] hover:underline font-medium cursor-pointer"
               >
                 First time selling on Reachr? Register your store here →
               </button>
@@ -433,14 +421,14 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
         {activeTab === 'register' && (
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
             {/* Auto-fill sample button for quick testing */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-pink-500/10 border border-pink-500/20">
-              <span className="text-xs text-pink-200 font-medium flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-pink-400" /> Want to test quickly?
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)]">
+              <span className="text-xs text-[var(--ink)] font-medium flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" /> Want to test quickly?
               </span>
               <button
                 type="button"
                 onClick={handleAutoFillSampleStore}
-                className="px-3 py-1.5 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 border border-pink-500/40 text-[11px] font-bold transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-[var(--accent)]/15 hover:bg-[var(--accent)]/25 text-[var(--accent)] border border-[var(--accent)]/30 text-[11px] font-bold transition-all cursor-pointer"
               >
                 Auto-fill Sample Store
               </button>
@@ -450,44 +438,44 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Store Name */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-pink-400" /> Store / Brand Name *
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-[var(--accent)]" /> Store / Brand Name *
                 </label>
                 <input
                   type="text"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   placeholder="e.g. Arjun's Handcrafted Leather"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               {/* Owner Name */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> Merchant / Owner Name *
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-[var(--mut)]" /> Merchant / Owner Name *
                 </label>
                 <input
                   type="text"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   placeholder="e.g. Arjun Sharma"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               {/* Category */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5 text-slate-400" /> Category
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-[var(--mut)]" /> Category
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#141C33] border border-white/10 text-white text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 >
                   {CATEGORY_OPTIONS.map((cat) => (
-                    <option key={cat} value={cat} className="bg-[#141C33] text-white">
+                    <option key={cat} value={cat} className="bg-[var(--card)] text-[var(--ink)]">
                       {cat}
                     </option>
                   ))}
@@ -496,102 +484,91 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
 
               {/* Email */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" /> Business Email *
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-[var(--mut)]" /> Business Email *
                 </label>
                 <input
                   type="email"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="e.g. arjun@artisanstore.in"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               {/* Phone */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" /> Mobile / WhatsApp
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-[var(--mut)]" /> Mobile / WhatsApp
                 </label>
                 <input
                   type="text"
                   value={regPhone}
                   onChange={(e) => setRegPhone(e.target.value)}
                   placeholder="e.g. +91 98765 43210"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               {/* Payout UPI ID (VPA) */}
               <div className="space-y-1.5 sm:col-span-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+                <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink)]">
                   <label className="flex items-center gap-1.5">
-                    <CreditCard className="w-3.5 h-3.5 text-emerald-400" /> Direct Payout UPI ID (VPA) *
+                    <CreditCard className="w-3.5 h-3.5 text-emerald-500" /> Direct Payout UPI ID (VPA) *
                   </label>
-                  <span className="text-[10px] text-emerald-400 font-normal">Escrow Payout Destination</span>
+                  <span className="text-[10px] text-emerald-500 font-normal">Escrow Payout Destination</span>
                 </div>
                 <input
                   type="text"
                   value={regVpa}
                   onChange={(e) => setRegVpa(e.target.value)}
                   placeholder="e.g. yourstore@upi or 9876543210@paytm"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-emerald-500/30 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-400 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-emerald-500/30 text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-emerald-500 transition-colors"
                 />
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-[var(--mut)]">
                   Buyer payments will be released directly to this UPI address after verified order delivery.
                 </p>
               </div>
 
               {/* City / Location */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" /> City & State
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[var(--mut)]" /> City & State
                 </label>
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="e.g. Jaipur, Rajasthan"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
 
               {/* Password */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5 text-slate-400" /> Create Password / PIN *
+                <label className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-[var(--mut)]" /> Store Access PIN *
                 </label>
                 <input
                   type="password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  placeholder="At least 4 characters"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--mut)] text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
             </div>
 
-            {/* Merchant Guarantee Pill */}
-            <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-around text-[11px] text-slate-300">
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Zero Onboarding Fee
-              </span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-pink-400" /> 100% Escrow Protected
-              </span>
-            </div>
-
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white font-bold text-sm shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 rounded-full bg-[var(--accent)] hover:opacity-90 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
             >
               {isLoading ? (
-                <span>Registering Merchant Store...</span>
+                <span>Registering Merchant Account...</span>
               ) : (
                 <>
-                  <span>Complete Registration & Open Studio</span>
+                  <span>Create Merchant Account & Enter Studio</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -604,7 +581,7 @@ export const SellerLoginView: React.FC<SellerLoginViewProps> = ({
                   setActiveTab('login');
                   setError(null);
                 }}
-                className="text-xs text-slate-400 hover:text-white underline font-medium cursor-pointer"
+                className="text-xs text-[var(--accent)] hover:underline font-medium cursor-pointer"
               >
                 Already have a registered merchant account? Sign in here
               </button>

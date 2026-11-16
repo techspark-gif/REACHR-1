@@ -87,7 +87,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, onClose }) =>
                   <div className="text-slate-500">Paid at: {order.paymentMethod.paidAt}</div>
                 </div>
               ) : (
-                <div className="text-amber-700 font-semibold">Payment Pending via Reachr SmartPay Link</div>
+                <div className="text-amber-700 font-semibold">Payment pending via Reachr payment link</div>
               )}
             </div>
           </div>

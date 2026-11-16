@@ -73,7 +73,7 @@ export interface AppNotification {
   linkCode?: string;
 }
 
-export type AppPortal = 'landing' | 'buyer' | 'seller' | 'universal-control' | 'swipe';
+export type AppPortal = 'landing' | 'buyer' | 'seller' | 'universal-control' | 'swipe' | 'discover';
 
 export type SubscriptionTier = 'starter' | 'pro' | 'elite';
 

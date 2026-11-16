@@ -49,7 +49,7 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
   const steps = ['Order Placed', 'Confirmed', 'Packed', 'Dispatched', 'Out for Delivery', 'Delivered'];
   const currentStepIdx = currentOrder.deliveryStage;
 
-  // AI Assistant State
+  // Evidence Assistant State
   const [aiIssue, setAiIssue] = useState('Item not as described');
   const [aiDetails, setAiDetails] = useState('');
   const [aiChecklist, setAiChecklist] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
     currentOrder.deliveryProof?.url || null
   );
 
-  // Gamified Rewards State
+  // Rewards State
   const [pointsClaimed, setPointsClaimed] = useState(false);
   const [points, setPoints] = useState(500);
 
@@ -88,7 +88,7 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
         'Check the courier tracking AWB in the Live Tracking Center above.',
         'Confirm whether building security or neighbor accepted the parcel on your behalf.',
         'Request seller to file an inquiry with the express courier partner within the 48-hour window.',
-        'Reachr escrow funds remain protected until delivery confirmation OTP is recorded.',
+        'Reachr funds remain protected until delivery confirmation OTP is recorded.',
       ],
       'Item damaged': [
         'Take high-resolution photos of the outer cardboard box, bubble wrap, and damaged contents.',
@@ -99,7 +99,7 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
       'Payment or refund issue': [
         'Cross-reference the 12-digit UPI reference number with your bank passbook/statement.',
         'Check whether transaction was authorized via card 3D Secure or instant VPA transfer.',
-        'Escrow clearance typically completes immediately upon mutual order closure.',
+        'Settlement clearance typically completes immediately upon mutual order closure.',
       ],
     };
 
@@ -150,7 +150,9 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
     setPointsClaimed(true);
     setPoints(points + 150);
     sounds.playSuccess();
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    try {
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    } catch {}
     showToast('150 Trust Points unlocked!');
   };
 
@@ -158,38 +160,35 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
   const unreadNotices = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-10">
+    <div className="relative z-10 w-full max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-8 text-stone-900">
       {/* 1. HEADER SECTION */}
-      <div className="flex flex-wrap items-end justify-between gap-6 pb-2 border-b border-white/10">
+      <div className="flex flex-wrap items-end justify-between gap-6 pb-4 border-b border-stone-200">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-teal-400">
-            Order Tracking, Delivery Proof & Dispute Protection
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-xs text-stone-600 font-medium mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+            <span>Order verification & mutual dispute protocol</span>
           </div>
-          <h1 className="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl text-white mt-1">
-            Every transaction.{' '}
-            <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-sky-400 bg-clip-text text-transparent">
-              Total certainty.
-            </span>
+          <h1 className="font-display font-bold text-3xl sm:text-4xl text-stone-900">
+            Trust & Protection Hub
           </h1>
-          <p className="text-slate-300 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-            One synchronized console for courier waypoints, verified delivery proof, escrow transparency, and
-            transparent merchant credentials.
+          <p className="text-stone-600 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+            Synchronized courier milestones, verified package proof, and transparent resolution terms.
           </p>
         </div>
 
         {/* Order Selector */}
-        <div className="flex items-center gap-3 bg-[#121936] p-3 rounded-2xl border border-white/10">
-          <span className="text-xs font-semibold text-slate-400">Inspecting Order:</span>
+        <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl border border-stone-200 shadow-xs">
+          <span className="text-xs font-semibold text-stone-500">Order:</span>
           <select
             value={selectedOrderId || ''}
             onChange={(e) => {
               onSelectOrder(e.target.value);
               sounds.playMessage();
             }}
-            className="bg-white/[0.06] text-white border border-white/15 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-teal-500"
+            className="bg-stone-50 text-stone-900 border border-stone-200 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-stone-400"
           >
             {orders.map((o) => (
-              <option key={o.id} value={o.id} className="bg-[#121936]">
+              <option key={o.id} value={o.id}>
                 {o.linkCode} — {o.customerName} (₹{o.amount.toLocaleString('en-IN')})
               </option>
             ))}
@@ -198,71 +197,71 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
       </div>
 
       {/* 9 INTEGRATED TRUST MODULES */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
         {/* MODULE 1: LIVE GPS TRACKING CENTER (Wide 12 cols) */}
-        <section className="md:col-span-12 p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-2xl space-y-5">
+        <section className="md:col-span-12 p-6 md:p-7 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-teal-400">
-                01 / Live Logistics & Waypoints
+              <div className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                01 / Live Logistics & Milestones
               </div>
-              <h3 className="font-display font-extrabold text-2xl text-white mt-0.5">Real-Time Delivery Route</h3>
-              <p className="text-xs text-slate-400">
+              <h3 className="font-display font-bold text-xl text-stone-900 mt-0.5">Real-Time Delivery Route</h3>
+              <p className="text-xs text-stone-500">
                 Express courier simulation with road waypoints, pickup hub, and recipient destination.
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/30">
+              <span className="text-xs font-medium px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                 ● Courier Active: Delhivery Express
               </span>
-              <span className="text-xs font-mono font-semibold text-slate-400">ETA: ~24 min</span>
+              <span className="text-xs font-mono font-medium text-stone-500">ETA: ~24 min</span>
             </div>
           </div>
 
-          {/* Interactive SVG Vector Road Map */}
-          <div className="relative h-64 sm:h-72 w-full rounded-2xl overflow-hidden bg-[#0A1626] border border-white/10 shadow-inner">
+          {/* Clean Organic SVG Vector Road Map */}
+          <div className="relative h-60 sm:h-64 w-full rounded-2xl overflow-hidden bg-[#FAF7F2] border border-stone-200 shadow-inner">
             <svg
               viewBox="0 0 900 320"
               preserveAspectRatio="xMidYMid slice"
               className="w-full h-full block"
               role="img"
-              aria-label="Interactive stylized courier roadmap"
+              aria-label="Courier roadmap"
             >
-              <rect width="900" height="320" fill="#0A1626" />
+              <rect width="900" height="320" fill="#FAF7F2" />
 
               {/* Grid block roads */}
               <path
                 d="M-50 60 L240 90 L340 30 L550 95 L720 30 L950 80 M-50 240 L180 190 L340 260 L560 205 L950 270 M120 -30 L170 350 M400 -30 L430 350 M680 -30 L630 350"
                 fill="none"
-                stroke="#172740"
-                strokeWidth="24"
+                stroke="#E7E2DA"
+                strokeWidth="20"
               />
               <path
                 d="M-50 60 L240 90 L340 30 L550 95 L720 30 L950 80 M-50 240 L180 190 L340 260 L560 205 L950 270 M120 -30 L170 350 M400 -30 L430 350 M680 -30 L630 350"
                 fill="none"
-                stroke="#243B60"
-                strokeWidth="14"
+                stroke="#DDD6CA"
+                strokeWidth="10"
               />
 
-              {/* Courier Delivery Route Line (Dotted Neon) */}
+              {/* Delivery Route Line */}
               <path
                 d="M 140 240 C 240 220, 260 120, 380 135 S 520 220, 620 140 S 720 130, 780 75"
                 fill="none"
-                stroke="#8B5CF6"
-                strokeWidth="5"
+                stroke="#EAB640"
+                strokeWidth="4"
                 strokeLinecap="round"
-                strokeDasharray="9 9"
+                strokeDasharray="8 8"
               />
 
               {/* Pickup Hub Marker */}
-              <circle cx="140" cy="240" r="14" fill="#10B981" stroke="#FFFFFF" strokeWidth="4" />
-              <text x="105" y="275" fill="#10B981" fontSize="12" fontWeight="bold">
+              <circle cx="140" cy="240" r="12" fill="#2D4739" stroke="#FFFFFF" strokeWidth="3" />
+              <text x="105" y="275" fill="#2D4739" fontSize="11" fontWeight="bold">
                 PICKUP HUB
               </text>
 
               {/* Drop-off Destination Marker */}
-              <circle cx="780" cy="75" r="14" fill="#EC4899" stroke="#FFFFFF" strokeWidth="4" />
-              <text x="740" y="50" fill="#EC4899" fontSize="12" fontWeight="bold">
+              <circle cx="780" cy="75" r="12" fill="#C85A32" stroke="#FFFFFF" strokeWidth="3" />
+              <text x="740" y="50" fill="#C85A32" fontSize="11" fontWeight="bold">
                 DROP-OFF
               </text>
 
@@ -279,14 +278,14 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
                 const pos = positions[currentStepIdx] || positions[0];
                 return (
                   <g transform={`translate(${pos.x}, ${pos.y})`} className="transition-transform duration-700 ease-out">
-                    <circle r="26" fill="#8B5CF6" opacity="0.2" className="animate-ping" />
-                    <circle r="16" fill="#8B5CF6" stroke="#FFFFFF" strokeWidth="3.5" />
+                    <circle r="18" fill="#EAB640" opacity="0.3" className="animate-ping" />
+                    <circle r="14" fill="#1C1917" stroke="#FFFFFF" strokeWidth="2.5" />
                     <text
                       x="0"
                       y="4"
                       textAnchor="middle"
                       fill="#FFFFFF"
-                      fontSize="10"
+                      fontSize="9"
                       fontWeight="bold"
                     >
                       🚚
@@ -297,8 +296,8 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
             </svg>
 
             {/* Map overlay pill */}
-            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-stone-200 text-xs font-semibold text-stone-900 flex items-center gap-2 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
               <span>
                 {currentOrder.linkCode} · {steps[currentStepIdx]}
               </span>
@@ -306,22 +305,22 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
           </div>
 
           {/* Stepper Controls */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div className="text-xs text-slate-300">
-              Simulate Fulfillment Stage for Order <b className="text-white">{currentOrder.linkCode}</b>:
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div className="text-xs text-stone-600">
+              Simulate Fulfillment Stage for Order <b className="text-stone-900">{currentOrder.linkCode}</b>:
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleStepChange(currentStepIdx - 1)}
                 disabled={currentStepIdx === 0}
-                className="px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-bold text-slate-300 disabled:opacity-30 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-200 text-xs font-semibold text-stone-700 disabled:opacity-30 cursor-pointer"
               >
                 ← Previous Stage
               </button>
               <button
                 onClick={() => handleStepChange(currentStepIdx + 1)}
                 disabled={currentStepIdx === 5}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 hover:opacity-95 text-xs font-bold text-white shadow-md shadow-pink-500/20 disabled:opacity-30 cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-xs font-semibold text-white shadow-xs disabled:opacity-30 cursor-pointer flex items-center gap-1.5"
               >
                 <span>Advance Delivery</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -331,45 +330,45 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
         </section>
 
         {/* MODULE 2: DELIVERY TIMELINE (Wide 12 cols) */}
-        <section className="md:col-span-12 p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-12 p-6 md:p-7 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-pink-400">
-                02 / Delivery Journey Pipeline
+              <div className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                02 / Fulfillment Pipeline
               </div>
-              <h3 className="font-display font-bold text-xl text-white">Full Chronological Journey</h3>
+              <h3 className="font-display font-bold text-lg text-stone-900">Chronological Progress</h3>
             </div>
-            <span className="text-xs text-slate-400 font-mono">Stage {currentStepIdx + 1} of 6</span>
+            <span className="text-xs text-stone-500 font-mono">Stage {currentStepIdx + 1} of 6</span>
           </div>
 
           {/* 6 Steps Graphic */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 py-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 py-1">
             {steps.map((st, i) => {
               const isDone = i < currentStepIdx;
               const isCur = i === currentStepIdx;
               return (
                 <div
                   key={st}
-                  className={`p-3.5 rounded-2xl border text-center space-y-1.5 transition-all ${
+                  className={`p-3.5 rounded-xl border text-center space-y-1.5 transition-all ${
                     isDone
-                      ? 'bg-teal-950/30 border-teal-500/30 text-teal-300'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
                       : isCur
-                      ? 'bg-gradient-to-b from-violet-600/30 to-pink-600/30 border-pink-500/50 text-white shadow-md shadow-pink-500/20'
-                      : 'bg-white/[0.02] border-white/5 text-slate-500'
+                      ? 'bg-amber-50 border-amber-300 text-amber-950 shadow-xs'
+                      : 'bg-stone-50 border-stone-200 text-stone-400'
                   }`}
                 >
                   <div
-                    className={`w-7 h-7 mx-auto rounded-full flex items-center justify-center text-xs font-extrabold ${
+                    className={`w-6 h-6 mx-auto rounded-full flex items-center justify-center text-xs font-bold ${
                       isDone
-                        ? 'bg-teal-500 text-slate-950'
+                        ? 'bg-emerald-600 text-white'
                         : isCur
-                        ? 'bg-pink-500 text-white animate-pulse'
-                        : 'bg-white/10 text-slate-400'
+                        ? 'bg-amber-500 text-stone-950'
+                        : 'bg-stone-200 text-stone-600'
                     }`}
                   >
                     {isDone ? '✓' : i + 1}
                   </div>
-                  <div className="text-xs font-bold truncate">{st}</div>
+                  <div className="text-xs font-semibold truncate">{st}</div>
                 </div>
               );
             })}
@@ -377,138 +376,130 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
         </section>
 
         {/* MODULE 3: MERCHANT TRUST PASSPORT (6 cols) */}
-        <section className="md:col-span-6 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-6 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-teal-400">03 / Trust Passport</div>
-            <h3 className="font-display font-bold text-xl text-white">Seller Credentials</h3>
-            <p className="text-xs text-slate-400">Empirical trust metrics without marketing exaggeration.</p>
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-700">03 / Trust Passport</div>
+            <h3 className="font-display font-bold text-lg text-stone-900">Seller Credentials</h3>
+            <p className="text-xs text-stone-500">Verified artisan registration details.</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-amber-500 flex items-center justify-center font-display font-extrabold text-2xl text-white shadow-lg">
+          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-stone-900 flex items-center justify-center font-display font-bold text-lg text-white">
               MH
             </div>
             <div>
-              <div className="font-display font-bold text-base text-white">{INITIAL_BUSINESS.name}</div>
-              <div className="text-xs text-slate-400">GSTIN: {INITIAL_BUSINESS.gstin} · {INITIAL_BUSINESS.city}</div>
-              <div className="text-xs text-emerald-400 font-semibold mt-0.5">✓ Registered Handloom Co-op</div>
+              <div className="font-display font-bold text-sm text-stone-900">{INITIAL_BUSINESS.name}</div>
+              <div className="text-xs text-stone-500">GSTIN: {INITIAL_BUSINESS.gstin} · {INITIAL_BUSINESS.city}</div>
+              <div className="text-xs text-emerald-700 font-semibold mt-0.5">✓ Registered Handloom Co-op</div>
             </div>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-              <span className="text-slate-300">Identity & GSTIN Verification</span>
-              <span className="font-bold text-teal-300">Verified ✓</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+              <span className="text-stone-600">Identity & GSTIN Verification</span>
+              <span className="font-bold text-emerald-700">Verified ✓</span>
             </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-              <span className="text-slate-300">On-Time Dispatch Rate</span>
-              <span className="font-bold text-teal-300">98.4% (&lt;4h avg)</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+              <span className="text-stone-600">On-Time Dispatch Rate</span>
+              <span className="font-bold text-stone-900">98.4%</span>
             </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-              <span className="text-slate-300">Dispute Resolution Velocity</span>
-              <span className="font-bold text-violet-300">4.2 Hours</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+              <span className="text-stone-600">Dispute Resolution Velocity</span>
+              <span className="font-bold text-stone-900">4.2 Hours</span>
             </div>
           </div>
         </section>
 
         {/* MODULE 4: PAYMENT STATUS VAULT / ESCROW (6 cols) */}
-        <section className="md:col-span-6 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-6 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-violet-400">
-              04 / Payment Status Vault
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-700">
+              04 / Payment Status
             </div>
-            <h3 className="font-display font-bold text-xl text-white">Escrow & Release Terms</h3>
-            <p className="text-xs text-slate-400">Transparent payment holding and release schedule.</p>
+            <h3 className="font-display font-bold text-lg text-stone-900">Holding & Release Terms</h3>
+            <p className="text-xs text-stone-500">Transparent payment schedule.</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-[#1E1442] via-[#24133A] to-[#121A38] border border-violet-500/30 text-white space-y-2 shadow-xl">
-            <div className="text-xs text-violet-300 font-semibold">Active Order Value ({currentOrder.linkCode})</div>
-            <div className="font-display font-extrabold text-4xl font-mono text-white">
+          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 space-y-1">
+            <div className="text-xs text-stone-500 font-medium">Order Value ({currentOrder.linkCode})</div>
+            <div className="font-display font-bold text-3xl text-stone-900">
               ₹{currentOrder.amount.toLocaleString('en-IN')}
             </div>
-            <div className="text-xs text-slate-300 pt-1">
+            <div className="text-xs text-stone-600 pt-1">
               {currentOrder.status === 'paid'
-                ? 'Status: Verified payment received. Release scheduled upon delivery OTP.'
+                ? 'Status: Verified payment received. Release scheduled upon doorstep confirmation.'
                 : currentOrder.status === 'resolved'
                 ? 'Status: Settlement finalized. Funds distributed.'
-                : 'Status: Awaiting buyer payment confirmation.'}
+                : 'Status: Awaiting payment confirmation.'}
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-              <div className="text-slate-400 text-[10px]">Received</div>
-              <div className="font-bold text-white font-mono mt-1">₹{escrowAmount.toLocaleString('en-IN')}</div>
+            <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
+              <div className="text-stone-500 text-[10px]">Received</div>
+              <div className="font-bold text-stone-900 font-mono mt-1">₹{escrowAmount.toLocaleString('en-IN')}</div>
             </div>
-            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-              <div className="text-slate-400 text-[10px]">Held in Escrow</div>
-              <div className="font-bold text-amber-400 font-mono mt-1">
+            <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
+              <div className="text-stone-500 text-[10px]">Under Review</div>
+              <div className="font-bold text-amber-700 font-mono mt-1">
                 {currentOrder.status === 'disputed' ? `₹${currentOrder.amount.toLocaleString('en-IN')}` : '₹0'}
               </div>
             </div>
-            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-              <div className="text-slate-400 text-[10px]">Refunds</div>
-              <div className="font-bold text-teal-400 font-mono mt-1">₹0</div>
+            <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
+              <div className="text-stone-500 text-[10px]">Refunds</div>
+              <div className="font-bold text-stone-900 font-mono mt-1">₹0</div>
             </div>
           </div>
         </section>
 
         {/* MODULE 5: EVIDENCE CHECKLIST & AI ASSISTANT (6 cols) */}
-        <section className="md:col-span-6 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-6 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-pink-400">
-              05 / Evidence Checklist Generator
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-700">
+              05 / Evidence Checklist
             </div>
-            <h3 className="font-display font-bold text-xl text-white">AI-Assisted Resolution Helper</h3>
-            <p className="text-xs text-slate-400">
-              Get an impartial evidence checklist before escalating into arbitration.
+            <h3 className="font-display font-bold text-lg text-stone-900">Structured Resolution Helper</h3>
+            <p className="text-xs text-stone-500">
+              Get an evidence checklist before escalating into arbitration.
             </p>
           </div>
 
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Issue Category</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">Issue Category</label>
               <select
                 value={aiIssue}
                 onChange={(e) => setAiIssue(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white text-xs focus:outline-none focus:border-pink-500"
+                className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs focus:outline-none focus:border-stone-400"
               >
-                <option value="Item not as described" className="bg-[#121936]">
-                  Item not as described
-                </option>
-                <option value="Item not received" className="bg-[#121936]">
-                  Item not received
-                </option>
-                <option value="Item damaged" className="bg-[#121936]">
-                  Item damaged in transit
-                </option>
-                <option value="Payment or refund issue" className="bg-[#121936]">
-                  Payment or refund issue
-                </option>
+                <option value="Item not as described">Item not as described</option>
+                <option value="Item not received">Item not received</option>
+                <option value="Item damaged">Item damaged in transit</option>
+                <option value="Payment or refund issue">Payment or refund issue</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Case Notes (Optional)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">Case Notes (Optional)</label>
               <textarea
                 rows={2}
                 value={aiDetails}
                 onChange={(e) => setAiDetails(e.target.value)}
                 placeholder="Mention specifics: timestamps, package condition, photos taken..."
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
+                className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 text-xs focus:outline-none focus:border-stone-400"
               />
             </div>
 
             <button
               onClick={handleGenerateAiChecklist}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-violet-600 hover:opacity-95 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-amber-400" />
               <span>Generate Evidence Checklist</span>
             </button>
 
             {aiChecklist && (
-              <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 text-xs text-slate-200 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto font-sans">
+              <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto font-sans">
                 {aiChecklist}
               </div>
             )}
@@ -516,23 +507,23 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
         </section>
 
         {/* MODULE 6: DELIVERY PROOF CENTER (6 cols) */}
-        <section className="md:col-span-6 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-6 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-teal-400">
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-700">
               06 / Delivery Proof Center
             </div>
-            <h3 className="font-display font-bold text-xl text-white">ProofVault Verification</h3>
-            <p className="text-xs text-slate-400">
+            <h3 className="font-display font-bold text-lg text-stone-900">ProofVault Verification</h3>
+            <p className="text-xs text-stone-500">
               Upload doorstep receipt, signed slip, or unboxing photograph.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl border-2 border-dashed border-white/20 hover:border-teal-500/50 bg-white/[0.02] text-center space-y-3 transition-colors">
-            <UploadCloud className="w-8 h-8 mx-auto text-teal-400" />
+          <div className="p-5 rounded-2xl border-2 border-dashed border-stone-200 hover:border-stone-300 bg-stone-50/50 text-center space-y-3 transition-colors">
+            <UploadCloud className="w-8 h-8 mx-auto text-stone-500" />
             <div>
               <label
                 htmlFor="proof-upload"
-                className="inline-block px-4 py-2 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 font-bold text-xs cursor-pointer border border-teal-500/30 transition-colors"
+                className="inline-block px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs cursor-pointer shadow-xs transition-colors"
               >
                 Choose Photo / Proof Slip
               </label>
@@ -544,19 +535,19 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
                 className="hidden"
               />
             </div>
-            <div className="text-[11px] text-slate-400">JPG, PNG, WebP · Local browser preview</div>
+            <div className="text-[11px] text-stone-500">JPG, PNG, WebP · Local browser preview</div>
 
             {/* Proof Preview */}
             {uploadedProofUrl && (
-              <div className="mt-3 p-3 rounded-xl bg-black/30 border border-white/10 space-y-2">
+              <div className="mt-3 p-3 rounded-xl bg-white border border-stone-200 space-y-2">
                 <img
                   src={uploadedProofUrl}
                   alt="Delivery Proof"
-                  className="max-h-36 mx-auto rounded-lg object-contain shadow-md"
+                  className="max-h-36 mx-auto rounded-lg object-contain shadow-xs"
                 />
-                <div className="text-xs text-teal-300 font-semibold">{uploadedProofName}</div>
-                <div className="text-[10px] text-slate-400">
-                  Attached to order {currentOrder.linkCode} · EXIF Geotag Verified
+                <div className="text-xs text-stone-900 font-semibold">{uploadedProofName}</div>
+                <div className="text-[10px] text-stone-500">
+                  Attached to order {currentOrder.linkCode}
                 </div>
               </div>
             )}
@@ -564,91 +555,91 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
         </section>
 
         {/* MODULE 7: GAMIFIED REWARDS DASHBOARD (4 cols) */}
-        <section className="md:col-span-4 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-4 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-amber-400">07 / Trust Rewards</div>
-            <h3 className="font-display font-bold text-xl text-white">Trust Points</h3>
-            <p className="text-xs text-slate-400">Earn points for on-time delivery and clean disputes.</p>
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-700">07 / Trust Rewards</div>
+            <h3 className="font-display font-bold text-lg text-stone-900">Trust Points</h3>
+            <p className="text-xs text-stone-500">Points for prompt delivery and clean records.</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-[#3D290F] via-[#281832] to-[#141C38] border border-amber-500/30 text-white space-y-2 shadow-xl">
-            <div className="text-xs text-amber-300 font-semibold">Your Balance</div>
-            <div className="font-display font-extrabold text-4xl font-mono text-amber-300">{points} pts</div>
-            <div className="text-xs text-slate-300">Tier: Gold Merchant Ambassador</div>
+          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-stone-900 space-y-1">
+            <div className="text-xs text-amber-800 font-semibold">Your Balance</div>
+            <div className="font-display font-bold text-3xl text-stone-900">{points} pts</div>
+            <div className="text-xs text-stone-600">Tier: Gold Ambassador</div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-center text-xs">
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-              <div className="text-slate-400 text-[10px]">Next Perk</div>
-              <div className="font-bold text-white mt-0.5">750 pts</div>
+            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+              <div className="text-stone-500 text-[10px]">Next Milestone</div>
+              <div className="font-bold text-stone-900 mt-0.5">750 pts</div>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-              <div className="text-slate-400 text-[10px]">Clean Streak</div>
-              <div className="font-bold text-teal-400 mt-0.5">14 Orders</div>
+            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200">
+              <div className="text-stone-500 text-[10px]">Clean Streak</div>
+              <div className="font-bold text-emerald-700 mt-0.5">14 Orders</div>
             </div>
           </div>
 
           <button
             onClick={handleClaimPoints}
             disabled={pointsClaimed}
-            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-md transition-all cursor-pointer disabled:opacity-40"
+            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-40"
           >
             {pointsClaimed ? '✓ Points Claimed Today' : 'Claim +150 Daily Points'}
           </button>
         </section>
 
         {/* MODULE 8: ENHANCED BUSINESS ANALYTICS (4 cols) */}
-        <section className="md:col-span-4 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-4 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-cyan-400">08 / Merchant Health</div>
-            <h3 className="font-display font-bold text-xl text-white">Fulfillment Health</h3>
-            <p className="text-xs text-slate-400">Real-time delivery benchmarks.</p>
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-700">08 / Merchant Health</div>
+            <h3 className="font-display font-bold text-lg text-stone-900">Fulfillment Benchmarks</h3>
+            <p className="text-xs text-stone-500">Performance across recent orders.</p>
           </div>
 
           <div className="space-y-3 pt-1 text-xs">
             <div>
               <div className="flex justify-between font-semibold mb-1">
-                <span className="text-slate-300">Payment Clearance</span>
-                <span className="text-teal-400 font-mono">92%</span>
+                <span className="text-stone-600">Payment Clearance</span>
+                <span className="text-stone-900 font-mono">92%</span>
               </div>
-              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-teal-400 to-cyan-400 w-[92%]" />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between font-semibold mb-1">
-                <span className="text-slate-300">Same-Day Dispatch</span>
-                <span className="text-violet-400 font-mono">84%</span>
-              </div>
-              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-violet-400 to-pink-400 w-[84%]" />
+              <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
+                <div className="h-full bg-emerald-600 w-[92%]" />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between font-semibold mb-1">
-                <span className="text-slate-300">Dispute Defense Win</span>
-                <span className="text-pink-400 font-mono">96%</span>
+                <span className="text-stone-600">Same-Day Dispatch</span>
+                <span className="text-stone-900 font-mono">84%</span>
               </div>
-              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-pink-400 to-rose-400 w-[96%]" />
+              <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
+                <div className="h-full bg-amber-500 w-[84%]" />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between font-semibold mb-1">
+                <span className="text-stone-600">Dispute Defense Win</span>
+                <span className="text-stone-900 font-mono">96%</span>
+              </div>
+              <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
+                <div className="h-full bg-stone-800 w-[96%]" />
               </div>
             </div>
           </div>
         </section>
 
         {/* MODULE 9: SMART NOTIFICATIONS HUB (4 cols) */}
-        <section className="md:col-span-4 p-6 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
+        <section className="md:col-span-4 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-teal-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-amber-700">
                 09 / Activity Feed
               </div>
-              <h3 className="font-display font-bold text-xl text-white">Audit Log</h3>
+              <h3 className="font-display font-bold text-lg text-stone-900">Audit Log</h3>
             </div>
             {unreadNotices > 0 && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
                 {unreadNotices} new
               </span>
             )}
@@ -659,14 +650,14 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
               <div
                 key={item.id}
                 className={`p-2.5 rounded-xl border text-xs space-y-0.5 ${
-                  item.read ? 'bg-white/[0.02] border-white/5 text-slate-400' : 'bg-violet-950/30 border-violet-500/30 text-white'
+                  item.read ? 'bg-stone-50 border-stone-200 text-stone-500' : 'bg-amber-50/60 border-amber-200 text-stone-900'
                 }`}
               >
-                <div className="flex items-center justify-between font-bold text-white text-[11px]">
+                <div className="flex items-center justify-between font-bold text-stone-900 text-[11px]">
                   <span>{item.title}</span>
-                  <span className="text-[9px] text-slate-500 font-normal">{item.timestamp}</span>
+                  <span className="text-[9px] text-stone-500 font-normal">{item.timestamp}</span>
                 </div>
-                <p className="text-slate-300 text-[11px] leading-tight">{item.text}</p>
+                <p className="text-stone-600 text-[11px] leading-tight">{item.text}</p>
               </div>
             ))}
           </div>
@@ -676,7 +667,7 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
               onMarkNotificationsRead();
               sounds.playMessage();
             }}
-            className="w-full py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+            className="w-full py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-stone-700 transition-colors cursor-pointer"
           >
             Mark All Read
           </button>

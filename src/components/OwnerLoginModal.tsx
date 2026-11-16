@@ -53,8 +53,8 @@ export const OwnerLoginModal: React.FC<OwnerLoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#0F162B] border border-violet-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-purple-950/60 text-white space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-[#12182b] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl text-white space-y-5">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -65,16 +65,16 @@ export const OwnerLoginModal: React.FC<OwnerLoginModalProps> = ({
         </button>
 
         {/* Modal Header */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/40 text-[11px] font-extrabold uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
             <Lock className="w-3.5 h-3.5" />
-            <span>Platform Owner Authentication</span>
+            <span>Platform Admin Access</span>
           </div>
-          <h2 className="font-display font-black text-2xl text-white">
-            Universal Control Desk
+          <h2 className="font-display font-bold text-xl text-white">
+            Universal Control
           </h2>
-          <p className="text-xs text-slate-300 leading-relaxed">
-            Restricted access for platform owner governance: Stage 3 FairResolve™ dispute mediation, escrow custody, and merchant verification.
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Restricted access for dispute mediation, escrow custody, and merchant verification.
           </p>
         </div>
 

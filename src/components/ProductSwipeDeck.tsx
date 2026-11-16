@@ -146,53 +146,53 @@ export const ProductSwipeDeck: React.FC<ProductSwipeDeckProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between overflow-hidden p-4 sm:p-6">
-      {/* Immersive Fullscreen Header */}
+    <div className="fixed inset-0 z-50 bg-stone-950/85 backdrop-blur-md flex flex-col justify-between overflow-hidden p-4 sm:p-6">
+      {/* Organic Header */}
       <div className="w-full max-w-md mx-auto flex items-center justify-between z-10 shrink-0">
         <button
           onClick={onExit}
-          className="p-2.5 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5 text-xs font-semibold"
+          className="p-2.5 rounded-full bg-stone-900 border border-stone-800 text-stone-300 hover:text-white hover:bg-stone-800 transition flex items-center gap-1.5 text-xs font-semibold"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Exit</span>
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-600 text-white shadow-lg">
-            <Flame className="w-4 h-4 fill-white" />
+          <div className="p-1.5 rounded-xl bg-amber-500 text-stone-950 shadow-md">
+            <Flame className="w-4 h-4 fill-stone-950" />
           </div>
-          <span className="font-bold text-white text-sm sm:text-base tracking-wide">
-            Reachr Match 🔥
+          <span className="font-display font-bold text-white text-sm sm:text-base tracking-wide">
+            Artisan Discover
           </span>
         </div>
 
-        <div className="px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-semibold text-rose-400">
-          {likedItems.length} Saved ❤️
+        <div className="px-3 py-1 rounded-full bg-stone-900 border border-stone-800 text-xs font-semibold text-amber-300">
+          {likedItems.length} Saved
         </div>
       </div>
 
       {/* Main Fullscreen Card Area */}
       <div className="w-full max-w-md mx-auto flex-1 flex items-center justify-center py-2 relative">
         {isEnd ? (
-          <div className="w-full rounded-3xl border border-slate-800 bg-slate-900/90 backdrop-blur-xl p-8 text-center text-white shadow-2xl">
-            <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+          <div className="w-full rounded-3xl border border-stone-800 bg-stone-900/95 backdrop-blur-xl p-8 text-center text-white shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
               <Check className="w-8 h-8" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">You're All Caught Up!</h3>
-            <p className="text-xs text-slate-400 mb-6 max-w-xs mx-auto leading-relaxed">
+            <h3 className="text-2xl font-bold mb-2">You're All Caught Up</h3>
+            <p className="text-xs text-stone-400 mb-6 max-w-xs mx-auto leading-relaxed">
               You've explored all curated featured artisan products for today. Check your saved favorites or restart your feed.
             </p>
             <div className="flex flex-col gap-2.5">
               <button
                 onClick={handleReset}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-xs shadow-lg transition"
+                className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md transition"
               >
-                Restart Swipe Feed ↺
+                Restart Feed ↺
               </button>
               {onExit && (
                 <button
                   onClick={onExit}
-                  className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition"
+                  className="w-full py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs transition"
                 >
                   Return to Store Hub
                 </button>
@@ -202,7 +202,7 @@ export const ProductSwipeDeck: React.FC<ProductSwipeDeckProps> = ({
         ) : (
           /* Single Screen Viewport Card */
           <div
-            className={`relative w-full h-[72vh] max-h-[640px] rounded-3xl border border-slate-800 bg-slate-900 overflow-hidden shadow-2xl flex flex-col justify-between transition-all duration-300 ${
+            className={`relative w-full h-[72vh] max-h-[640px] rounded-3xl border border-stone-800 bg-stone-900 overflow-hidden shadow-2xl flex flex-col justify-between transition-all duration-300 ${
               swipeAction === 'like'
                 ? 'translate-x-28 rotate-8 opacity-0'
                 : swipeAction === 'pass'
@@ -219,19 +219,19 @@ export const ProductSwipeDeck: React.FC<ProductSwipeDeckProps> = ({
                 alt={currentItem.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent" />
             </div>
 
             {/* Top Badges */}
             <div className="relative z-10 p-4 flex items-center justify-between gap-2">
               <div className="flex flex-wrap gap-2">
                 {currentItem.sellerTier === 'elite' && (
-                  <span className="px-2.5 py-1 rounded-full bg-amber-500/90 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1 backdrop-blur-md">
-                    <Sparkles className="w-3 h-3 fill-slate-950" />
-                    <span>Featured Elite Seller</span>
+                  <span className="px-2.5 py-1 rounded-full bg-amber-400 text-stone-950 text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1 backdrop-blur-md">
+                    <Sparkles className="w-3 h-3 fill-stone-950" />
+                    <span>Featured Maker</span>
                   </span>
                 )}
-                <span className="px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-full bg-stone-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
                   <span>{currentItem.trustScore}% Trust Score</span>
                 </span>
@@ -239,31 +239,31 @@ export const ProductSwipeDeck: React.FC<ProductSwipeDeckProps> = ({
             </div>
 
             {/* Bottom Content & Controls Overlay */}
-            <div className="relative z-10 p-5 space-y-4 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pt-12">
+            <div className="relative z-10 p-5 space-y-4 bg-gradient-to-t from-stone-950 via-stone-950/90 to-transparent pt-12">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-pink-300">{currentItem.sellerName}</span>
-                  <span className="text-xs text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded">
+                  <span className="text-xs font-semibold text-amber-300">{currentItem.sellerName}</span>
+                  <span className="text-xs text-stone-400 bg-stone-800/80 px-2 py-0.5 rounded">
                     {currentItem.deliveryDays}
                   </span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                <h3 className="text-xl sm:text-2xl font-black text-white leading-tight font-display">
                   {currentItem.title}
                 </h3>
-                <div className="text-2xl font-black text-amber-300 mt-1">
+                <div className="text-2xl font-black text-amber-400 mt-1 font-display">
                   ₹{currentItem.price.toLocaleString('en-IN')}
                 </div>
-                <p className="text-xs text-slate-300 mt-2 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-stone-300 mt-2 line-clamp-2 leading-relaxed">
                   {currentItem.description}
                 </p>
               </div>
 
-              {/* Tinder-Style Action Buttons */}
+              {/* Action Buttons */}
               <div className="flex items-center justify-center gap-5 pt-2">
                 {/* Reject / Pass */}
                 <button
                   onClick={handlePass}
-                  className="w-14 h-14 rounded-full bg-slate-900/90 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/50 flex items-center justify-center shadow-xl transition active:scale-90"
+                  className="w-14 h-14 rounded-full bg-stone-900/90 hover:bg-stone-800 text-stone-400 hover:text-stone-200 border border-stone-700 flex items-center justify-center shadow-xl transition active:scale-90"
                   title="Pass"
                 >
                   <X className="w-7 h-7" />
@@ -272,17 +272,17 @@ export const ProductSwipeDeck: React.FC<ProductSwipeDeckProps> = ({
                 {/* Instant 1-Tap Order */}
                 <button
                   onClick={handleInstantBuy}
-                  className="px-6 h-14 rounded-full bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white font-bold text-xs flex items-center gap-2 shadow-xl shadow-rose-600/30 transition active:scale-95"
-                  title="Instant Escrow Order"
+                  className="px-6 h-14 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-2 shadow-xl transition active:scale-95"
+                  title="Direct Order"
                 >
-                  <Zap className="w-5 h-5 fill-white text-white" />
+                  <Zap className="w-5 h-5 fill-stone-950 text-stone-950" />
                   <span>1-Tap Order</span>
                 </button>
 
                 {/* Favorite / Like */}
                 <button
                   onClick={handleLike}
-                  className="w-14 h-14 rounded-full bg-slate-900/90 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 border border-slate-700 hover:border-emerald-500/50 flex items-center justify-center shadow-xl transition active:scale-90"
+                  className="w-14 h-14 rounded-full bg-stone-900/90 hover:bg-stone-800 text-stone-400 hover:text-amber-400 border border-stone-700 flex items-center justify-center shadow-xl transition active:scale-90"
                   title="Save to Favorites"
                 >
                   <Heart className="w-7 h-7" />

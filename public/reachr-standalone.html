@@ -6,553 +6,1227 @@
 <title>Reachr — Smart Payment Links & Delivery Protection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+
+/* ─── TOKENS ─────────────────────────────────────────────── */
 :root {
-  --bg: #0b1020;
-  --ink: #f6f7ff;
-  --mut: #a5b0d1;
-  --card: rgba(20, 29, 56, 0.85);
-  --line: rgba(166, 184, 255, 0.18);
-  --violet: #8b5cf6;
-  --pink: #ff4f87;
-  --tang: #ff9f43;
-  --teal: #21d4b4;
-  --lemon: #f6d365;
-  --sky: #43b9ff;
-  color-scheme: dark;
+  --bg:       #F9F5ED;
+  --bg2:      #F2EDE2;
+  --bg3:      #EDE7D9;
+  --ink:      #191410;
+  --ink2:     #3D3730;
+  --mut:      #7A7268;
+  --line:     #E0D9CE;
+  --yolk:     #E8A818;
+  --yolk-d:   #C48910;
+  --yolk-s:   #FDF5DC;
+  --terra:    #BF4D28;
+  --olive:    #2A4535;
+  --olive-s:  #EDF2EE;
+  --card:     #FFFFFF;
+  color-scheme: light;
 }
-* { box-sizing: border-box; }
-html { scroll-padding-top: 80px; scroll-behavior: smooth; }
+
+/* ─── RESET & BASE ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  font-size: 16px;
+}
+
 body {
-  margin: 0;
-  background: radial-gradient(ellipse at 8% 0%, rgba(139, 92, 246, 0.23), transparent 35%),
-              radial-gradient(ellipse at 100% 24%, rgba(255, 79, 135, 0.15), transparent 32%),
-              radial-gradient(ellipse at 55% 100%, rgba(33, 212, 180, 0.12), transparent 38%),
-              var(--bg);
+  background: var(--bg);
   color: var(--ink);
-  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
-  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
-/* Background Morphing Blobs - Vibrant, No Grid */
-.blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: 0.65; }
-.b { position: absolute; filter: blur(60px); opacity: 0.75; animation: morphBlob 14s ease-in-out infinite alternate; }
-.b1 { width: 46vmax; height: 46vmax; background: #ff4f87; left: -12vmax; top: -10vmax; }
-.b2 { width: 40vmax; height: 40vmax; background: #f6d365; right: -10vmax; top: 18vh; animation-delay: -4s; }
-.b3 { width: 44vmax; height: 44vmax; background: #6d5dfc; left: 20vw; bottom: -22vmax; animation-delay: -8s; opacity: 0.55; }
-.b4 { width: 26vmax; height: 26vmax; background: #21d4b4; right: 25vw; top: -8vmax; animation-delay: -2s; }
-@keyframes morphBlob {
-  0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: translate(0, 0) rotate(0deg); }
-  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  100% { border-radius: 50% 50% 40% 60% / 30% 70% 60% 40%; transform: translate(4vmax, 3vmax) rotate(40deg); }
+/* ─── SCROLL REVEAL ──────────────────────────────────────── */
+.r {
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity  0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.r.on { opacity: 1; transform: translateY(0); }
+
+.r-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition:
+    opacity  0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.r-left.on { opacity: 1; transform: translateX(0); }
+
+.r-scale {
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity  0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.r-scale.on { opacity: 1; transform: scale(1); }
+
+/* delay helpers */
+.d1 { transition-delay: 0.08s; }
+.d2 { transition-delay: 0.16s; }
+.d3 { transition-delay: 0.24s; }
+.d4 { transition-delay: 0.32s; }
+.d5 { transition-delay: 0.40s; }
+.d6 { transition-delay: 0.48s; }
+
+/* ─── NAVIGATION ─────────────────────────────────────────── */
+#nav-wrap {
+  position: sticky;
+  top: 12px;
+  z-index: 90;
+  padding: 0 20px;
+  pointer-events: none;
 }
 
-/* Cursor glow spotlight */
-.spot {
-  position: fixed; width: 420px; height: 420px; border-radius: 50%; pointer-events: none; z-index: 0;
-  background: radial-gradient(circle, rgba(255, 79, 135, 0.25), rgba(139, 92, 246, 0.1) 40%, transparent 70%);
-  transform: translate(-50%, -50%); left: -999px; top: -999px;
-}
-
-/* App Container */
-.app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 18px 20px 80px; }
-
-/* Sticky Top Navigation */
 nav {
-  position: sticky; top: 12px; z-index: 50; display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; margin-bottom: 26px; padding: 10px 16px; background: rgba(12, 17, 36, 0.85);
-  backdrop-filter: blur(20px); border: 1px solid var(--line); border-radius: 99px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35); flex-wrap: wrap;
+  pointer-events: all;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(249, 245, 237, 0.88);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 2px 20px rgba(25, 20, 16, 0.07);
 }
-.logo {
-  font-weight: 800; font-size: 24px; letter-spacing: -0.04em; cursor: pointer; display: flex;
-  align-items: center; gap: 8px; background: none; border: 0; color: #fff; font-family: inherit;
+
+.brand {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
 }
-.dot {
-  width: 20px; height: 20px; border-radius: 6px;
-  background: linear-gradient(135deg, var(--pink), var(--tang) 48%, var(--lemon));
-  animation: morphBlob 6s ease-in-out infinite alternate; box-shadow: 0 0 16px rgba(255, 79, 135, 0.4);
+.brand-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--yolk);
 }
-.nl { display: flex; gap: 4px; }
-.nl button {
-  border: 0; background: none; color: var(--mut); font-family: inherit; font-size: 13px; font-weight: 600;
-  padding: 6px 12px; border-radius: 99px; cursor: pointer; transition: all 0.2s;
-}
-.nl button:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
-@media (max-width: 820px) { .nl { display: none; } }
 
 .tabs {
-  display: flex; gap: 4px; background: rgba(255, 255, 255, 0.06); padding: 4px;
-  border-radius: 99px; border: 1px solid var(--line);
+  display: flex;
+  gap: 2px;
+  background: var(--bg2);
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
 }
 .tab {
-  border: 0; background: none; color: var(--mut); font: 700 13px inherit; font-family: inherit;
-  padding: 8px 16px; border-radius: 99px; cursor: pointer; transition: all 0.2s;
+  border: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: none;
+  color: var(--mut);
+  transition: all 0.2s ease;
 }
-.tab:hover { color: #fff; }
+.tab:hover { color: var(--ink); }
 .tab.on {
-  color: #fff; background: linear-gradient(115deg, #7757ff, #c052ff 55%, #ff4f87);
-  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 6px rgba(25,20,16,0.08);
 }
 
-.nav-actions { display: flex; align-items: center; gap: 8px; }
-.dl-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 99px;
-  background: rgba(33, 212, 180, 0.15); border: 1px solid rgba(33, 212, 180, 0.4);
-  color: #5ff2d7; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; transition: all 0.2s;
+.nav-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mut);
+  background: none;
+  border: 1px solid var(--line);
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
-.dl-btn:hover { background: rgba(33, 212, 180, 0.25); transform: translateY(-1px); }
+.nav-save:hover { background: var(--bg2); color: var(--ink); }
 
-/* Typography & Hero */
-h1 {
-  font-size: clamp(38px, 7vw, 76px); line-height: 0.98; letter-spacing: -0.05em;
-  margin: 24px 0 16px; font-weight: 800; max-width: 14ch;
+/* ─── TYPOGRAPHY ─────────────────────────────────────────── */
+.display {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: clamp(50px, 9.5vw, 112px);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  color: var(--ink);
 }
-h1 span {
-  background: linear-gradient(100deg, #ff4f87 0%, #ff9f43 35%, #f6d365 60%, #21d4b4 85%, #43b9ff 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+.display em {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--terra);
 }
-.lead { font-size: 18px; color: var(--mut); max-width: 52ch; line-height: 1.5; margin-bottom: 24px; }
-.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 
-/* Buttons */
+.heading {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 44px);
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  color: var(--ink);
+}
+
+.subhead {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 2.5vw, 24px);
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.lead {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--mut);
+  max-width: 52ch;
+}
+.lead strong { color: var(--ink2); font-weight: 600; }
+
+/* ─── PILL BADGE ─────────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink2);
+}
+.pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--olive);
+}
+.pill-yolk { background: var(--yolk-s); border-color: #F0D280; color: #7A5500; }
+.pill-terra { background: #FDF0EB; border-color: #EAC0B0; color: var(--terra); }
+
+/* ─── BUTTONS ────────────────────────────────────────────── */
 .btn {
-  border: 0; font: 700 15px inherit; font-family: inherit; color: #fff; padding: 13px 24px;
-  border-radius: 99px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-radius 0.3s;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  border: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 12px 24px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  white-space: nowrap;
 }
-.btn:hover { transform: translateY(-2px) scale(1.02); border-radius: 20px 45px 20px 45px; box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3); }
-.btn:active { transform: scale(0.96); }
-.btn:disabled { opacity: 0.45; cursor: default; transform: none; }
-.bv { background: linear-gradient(120deg, var(--violet), var(--sky)); }
-.bp { background: linear-gradient(120deg, var(--pink), var(--tang)); }
-.bt { background: linear-gradient(120deg, var(--teal), var(--sky)); color: #12082b; }
-.bl { background: linear-gradient(120deg, var(--lemon), var(--tang)); color: #1d1340; }
-.ghost { background: rgba(255, 255, 255, 0.04); border: 1.5px solid var(--line); color: var(--ink); }
-.ghost:hover { background: rgba(255, 255, 255, 0.08); }
+.btn:active { transform: scale(0.97); }
 
-/* The Moving Straps - Straight, Parallel, Slow Gentle Glide */
-.straps-wrap { margin: 40px 0 30px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-@keyframes marquee-scroll {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
+.btn-ink {
+  background: var(--ink);
+  color: #fff;
 }
-@keyframes marquee-scroll-reverse {
-  0% { transform: translate3d(-50%, 0, 0); }
-  100% { transform: translate3d(0, 0, 0); }
+.btn-ink:hover { background: #2E2920; }
+
+.btn-yolk {
+  background: var(--yolk);
+  color: var(--ink);
+  font-weight: 700;
 }
-.strap-1 {
-  overflow: hidden; background: linear-gradient(90deg, #7657ff, #c052ff, #ff4f87, #ff9f43);
-  color: white; padding: 10px 0; border-radius: 12px;
+.btn-yolk:hover { background: var(--yolk-d); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--mut);
 }
-.strap-1-track {
-  display: flex !important; width: max-content !important; min-width: 200% !important;
-  animation: marquee-scroll 70s linear infinite !important; font-weight: 800; font-size: 14px;
-  letter-spacing: 0.02em; text-transform: uppercase; gap: 32px; will-change: transform;
+.btn-ghost:hover { color: var(--ink); background: var(--bg2); }
+
+.btn-outline {
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink2);
 }
-.strap-2 {
-  overflow: hidden; background: #11182e; border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a5b0d1; padding: 9px 0; border-radius: 12px;
-}
-.strap-2-track {
-  display: flex !important; width: max-content !important; min-width: 200% !important;
-  animation: marquee-scroll-reverse 85s linear infinite !important; font-weight: 700; font-size: 13px;
-  letter-spacing: 0.02em; text-transform: uppercase; gap: 32px; will-change: transform;
+.btn-outline:hover { background: var(--bg2); border-color: #CDC6BA; color: var(--ink); }
+
+.btn-sm {
+  font-size: 12.5px;
+  padding: 8px 16px;
 }
 
-/* Cards & Grid Containers */
-.card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 24px;
-  padding: 24px; backdrop-filter: blur(20px); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.25);
+/* ─── LAYOUT HELPERS ─────────────────────────────────────── */
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.wrap-narrow {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ─── HERO SECTION ───────────────────────────────────────── */
+.hero {
+  padding: 72px 24px 60px;
+  text-align: center;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(232, 168, 24, 0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 20%, rgba(191, 77, 40, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner { position: relative; max-width: 820px; margin: 0 auto; }
+.hero-pill { margin-bottom: 24px; }
+.hero h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: clamp(50px, 9.5vw, 112px);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+.hero h1 em {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--terra);
+}
+.hero-lead {
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.6;
+  color: var(--mut);
+  max-width: 50ch;
+  margin: 0 auto 32px;
+}
+.hero-cta {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ─── MARQUEE ────────────────────────────────────────────── */
+.marquee-outer {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg2);
+  overflow: hidden;
+  padding: 11px 0;
+  margin: 0;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: scroll-left 60s linear infinite;
+  gap: 0;
+}
+.marquee-track span {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink2);
+  padding: 0 20px;
+  border-right: 1px solid var(--line);
+  white-space: nowrap;
+}
+.marquee-track span.sep {
+  color: var(--line);
+  padding: 0 8px;
+  border: none;
+}
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── EDITORIAL FEATURES ─────────────────────────────────── */
+.features-section {
+  padding: 80px 0;
+}
+.features-header {
+  max-width: 1000px;
+  margin: 0 auto 60px;
+  padding: 0 24px;
+}
+
+.feat-item {
+  border-top: 1px solid var(--line);
+  padding: 48px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+.feat-item:last-child { border-bottom: 1px solid var(--line); }
+
+.feat-num {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(48px, 6vw, 72px);
+  line-height: 1;
+  color: var(--terra);
+  opacity: 0.65;
+  letter-spacing: -0.02em;
+}
+
+.feat-body h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: clamp(20px, 2.8vw, 28px);
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.feat-body p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--mut);
+  max-width: 55ch;
+}
+
+@media (max-width: 600px) {
+  .feat-item { grid-template-columns: 60px 1fr; gap: 20px; }
+  .feat-num { font-size: 40px; }
+}
+
+/* ─── PRICING ────────────────────────────────────────────── */
+.pricing-section {
+  padding: 80px 24px;
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.pricing-toggle {
+  display: flex;
+  gap: 3px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  width: fit-content;
+  margin: 20px auto 48px;
+}
+.tog-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 18px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background: none;
+  color: var(--mut);
+  transition: all 0.18s ease;
+}
+.tog-btn.on {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 6px rgba(25,20,16,0.08);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+.price-card {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+}
+.price-card.feat {
+  border-color: var(--yolk);
+  background: #FFFEF9;
+  position: relative;
+}
+.price-card.feat::before {
+  content: 'POPULAR';
+  position: absolute;
+  top: -1px; right: 24px;
+  background: var(--yolk);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 0 0 8px 8px;
+}
+.price-tier {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+}
+.price-sub {
+  font-size: 12.5px;
+  color: var(--mut);
+  margin-top: 2px;
+}
+.price-val {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: var(--ink);
+  line-height: 1;
+  margin: 16px 0 4px;
+}
+.price-period {
+  font-size: 12px;
+  color: var(--mut);
   margin-bottom: 20px;
 }
-.flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 36px; }
-.fl {
-  padding: 22px; color: #fff; font-weight: 600; line-height: 1.35; border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
-  transition: transform 0.3s, border-radius 0.5s;
+.price-feats {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.fl:hover { transform: translateY(-4px) scale(1.02); border-radius: 40px 18px 40px 18px; }
-.fl b { display: block; font-size: 20px; margin-bottom: 6px; }
+.price-feats li {
+  font-size: 13.5px;
+  color: var(--ink2);
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.4;
+}
+.price-feats li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--olive);
+  font-weight: 800;
+}
 
-.g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
-.ft {
-  padding: 24px; color: #fff; min-height: 180px; border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12); transition: transform 0.3s, border-radius 0.5s;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.15);
+/* ─── CARDS (app views) ──────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(25,20,16,0.04);
 }
-.ft:hover { transform: translateY(-4px) scale(1.02); border-radius: 45px 20px 45px 20px; }
-.ft i { font-style: normal; font-size: 32px; display: inline-block; margin-bottom: 8px; }
-.ft b { font-size: 20px; display: block; margin: 4px 0 6px; letter-spacing: -0.02em; }
-.ft p { margin: 0; color: rgba(255, 255, 255, 0.85); font-size: 14px; line-height: 1.45; }
 
-/* 4-Stage Dispute Shield Badge */
-.esc {
-  display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px 10px 14px;
-  background: var(--card); border: 1.5px solid var(--violet); border-radius: 99px 24px 24px 99px;
-  margin-top: 14px; backdrop-filter: blur(14px);
+/* ─── FORM ELEMENTS ──────────────────────────────────────── */
+label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink2);
+  margin-bottom: 5px;
 }
-.esc svg { width: 36px; height: 42px; flex: none; }
-.esc b { display: block; font-size: 14px; color: #fff; margin: 0; }
-.esc small { display: block; color: var(--mut); font-size: 11px; }
-
-/* Pricing Cards & 44% Annual Savings */
-.pricing-toggle {
-  display: flex; align-items: center; justify-content: center; gap: 12px; margin: 24px 0;
-}
-.toggle-btn {
-  padding: 8px 18px; border-radius: 99px; font-weight: 700; font-size: 13px; cursor: pointer;
-  border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); color: var(--mut); transition: all 0.2s;
-}
-.toggle-btn.active {
-  background: linear-gradient(120deg, var(--violet), var(--pink)); color: #fff; border-color: transparent;
-  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.3);
-}
-.pr {
-  padding: 26px; border-radius: 28px; background: var(--card); border: 1px solid var(--line);
-  backdrop-filter: blur(14px); transition: transform 0.2s;
-}
-.pr:hover { transform: translateY(-4px); }
-.pr.hot {
-  background: linear-gradient(150deg, rgba(139, 92, 246, 0.85), rgba(255, 79, 135, 0.85));
-  border: 1.5px solid rgba(255, 255, 255, 0.3); box-shadow: 0 18px 45px rgba(139, 92, 246, 0.35);
-}
-.pr h3 { margin: 0; font-size: 20px; color: #fff; }
-.pr .pz { font-size: 44px; font-weight: 800; letter-spacing: -0.05em; margin: 8px 0; color: #fff; }
-.pr ul { padding-left: 18px; line-height: 1.7; color: var(--mut); font-size: 13px; margin: 16px 0; }
-.pr.hot ul { color: #fff; }
-
-/* Interactive Form & Inputs */
 input, select, textarea {
-  width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line);
-  border-radius: 12px; padding: 11px 14px; color: var(--ink); font-family: inherit; font-size: 14px;
-  margin: 6px 0 14px; outline: none; transition: border-color 0.2s;
+  display: block;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.15s;
 }
-input:focus, select, textarea:focus { border-color: var(--violet); }
-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mut); }
-.inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 540px) { .inline-fields { grid-template-columns: 1fr; } }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--ink);
+}
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .row-2 { grid-template-columns: 1fr; } }
 
-/* Order Chat & Timeline */
-.chat { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 12px 0; padding: 4px; }
-.m { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.35; }
-.m small { display: block; opacity: 0.7; font-size: 10px; margin-top: 3px; font-family: monospace; }
-.m.customer { background: #168be5; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
-.m.seller { background: linear-gradient(135deg, #ff4f87, #c052ff); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-.m.system { background: var(--lemon); color: #1d1340; align-self: center; font-size: 12px; text-align: center; border-radius: 10px; }
+/* ─── STATUS BADGE ───────────────────────────────────────── */
+.status {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.status-pending  { background: var(--yolk-s); color: #7A5500; }
+.status-paid     { background: var(--olive-s); color: var(--olive); }
+.status-disputed { background: #FDF0EB; color: var(--terra); }
+.status-resolved { background: var(--olive-s); color: var(--olive); }
 
-/* 4 Dispute Steps Indicator */
-.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 14px 0; }
-.sp { padding: 9px 4px; text-align: center; font-size: 11px; font-weight: 700; border-radius: 10px; background: rgba(255, 255, 255, 0.05); color: var(--mut); border: 1px solid var(--line); }
-.sp.done { background: var(--teal); color: #12082b; border-color: transparent; }
-.sp.cur { background: linear-gradient(120deg, var(--pink), var(--tang)); color: #fff; border-color: transparent; transform: scale(1.04); }
-.tl { margin: 12px 0; padding-left: 14px; border-left: 3px solid var(--violet); }
-.tl p { margin: 0 0 8px; font-size: 13px; }
-.tl b { color: #c8b8ff; }
+/* ─── STEPS BAR ──────────────────────────────────────────── */
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 14px 0;
+}
+.step-cell {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 4px;
+  border-radius: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  color: var(--mut);
+}
+.step-cell.done { background: var(--olive-s); color: var(--olive); border-color: #BACFC1; }
+.step-cell.cur  { background: var(--yolk-s); color: #7A5500; border-color: var(--yolk); }
 
-/* Toast Notification */
+/* ─── COURIER TRACK ──────────────────────────────────────── */
+.courier-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin: 18px 0;
+}
+.c-cell { text-align: center; font-size: 11px; color: var(--mut); font-weight: 600; }
+.c-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 5px;
+  font-size: 11px;
+}
+.c-cell.done .c-dot { background: var(--olive); color: #fff; border-color: var(--olive); }
+.c-cell.cur  .c-dot { background: var(--yolk); color: var(--ink); border-color: var(--ink); }
+
+/* ─── CHAT ───────────────────────────────────────────────── */
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 12px;
+  background: var(--bg2);
+  border-radius: 12px;
+  margin: 12px 0;
+}
+.msg {
+  max-width: 80%;
+  padding: 10px 13px;
+  border-radius: 13px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.msg.seller   { background: var(--ink); color: #fff; align-self: flex-end; }
+.msg.customer { background: var(--card); border: 1px solid var(--line); color: var(--ink); align-self: flex-start; }
+.msg.system   {
+  background: var(--yolk-s);
+  border: 1px solid #EDD87A;
+  color: #6D4B00;
+  font-size: 12px;
+  align-self: center;
+  text-align: center;
+  max-width: 100%;
+}
+.msg small { display: block; margin-top: 4px; font-size: 10px; opacity: 0.6; }
+
+/* ─── UPI PAYMENT PANEL ──────────────────────────────────── */
+.pay-panel {
+  margin: 24px 0;
+  padding: 24px;
+  background: #FFFEF9;
+  border: 1.5px solid var(--yolk);
+  border-radius: 18px;
+}
+.pay-method-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+.pay-method-tab {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pay-method-tab:hover { border-color: var(--ink); }
+.pay-method-tab.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.upi-apps-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+.upi-app-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.upi-app-btn:hover { border-color: var(--yolk); background: var(--yolk-s); }
+.upi-app-btn.on { background: var(--yolk); border-color: var(--yolk-d); color: var(--ink); }
+
+.pay-hint {
+  font-size: 13px;
+  color: var(--mut);
+  line-height: 1.5;
+  margin: 12px 0;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border-radius: 10px;
+}
+
+.pay-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.vpa-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--card);
+  border: 1.5px dashed #C8BFB0;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 10px 0;
+}
+.vpa-copy code {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--olive);
+}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
 .toast {
-  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
-  background: linear-gradient(120deg, var(--violet), var(--pink)); color: #fff;
-  padding: 11px 22px; border-radius: 99px; font-weight: 700; font-size: 13px; z-index: 99;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); animation: toastPop 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 11px 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999;
+  box-shadow: 0 8px 28px rgba(25,20,16,0.18);
+  animation: toast-pop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
-@keyframes toastPop { from { transform: translate(-50%, 20px) scale(0.8); opacity: 0; } }
+@keyframes toast-pop {
+  from { opacity: 0; transform: translate(-50%, 12px) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
 
-/* Trust Center Panels */
-.tc-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; margin: 20px 0; }
-.tc-panel {
-  grid-column: span 6; background: var(--card); border: 1px solid var(--line);
-  border-radius: 22px; padding: 20px; backdrop-filter: blur(14px);
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer {
+  padding: 32px 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--mut);
+  max-width: 1000px;
+  margin: 40px auto 0;
 }
-.tc-panel.wide { grid-column: span 12; }
-@media (max-width: 820px) { .tc-panel { grid-column: span 12; } }
-.tc-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--violet); }
-.tc-map { height: 200px; position: relative; overflow: hidden; border-radius: 16px; background: #122b3a; margin: 12px 0; }
-.tc-track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 16px 0 10px; }
-.tc-step { text-align: center; color: var(--mut); font-size: 10px; font-weight: 700; }
-.tc-step .tc-dot {
-  width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.05);
-  border: 2px solid var(--line); display: grid; place-items: center; margin: 0 auto 6px;
-}
-.tc-step.done .tc-dot { background: var(--teal); border-color: var(--teal); color: #12082b; font-weight: 900; }
-.tc-step.current .tc-dot { background: var(--violet); border-color: var(--violet); color: #fff; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3); }
+footer strong { color: var(--ink2); }
 
-/* Details Accordion */
-details { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px 18px; margin-top: 10px; }
-summary { font-weight: 700; font-size: 16px; cursor: pointer; color: #fff; }
-details p { color: var(--mut); line-height: 1.5; margin: 8px 0 0; font-size: 14px; }
-footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--mut); font-size: 13px; }
+/* ─── FAQ ────────────────────────────────────────────────── */
+details {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+}
+details:last-of-type { border-bottom: 1px solid var(--line); }
+summary {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.015em;
+  cursor: pointer;
+  color: var(--ink);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+summary::after { content: '+'; font-size: 20px; font-weight: 300; color: var(--mut); }
+details[open] summary::after { content: '−'; }
+details p {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--mut);
+  margin-top: 12px;
+  max-width: 60ch;
+}
+
+/* ─── APP VIEW WRAPPERS ──────────────────────────────────── */
+.app-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* ─── LINK ROW (seller/buyer list) ──────────────────────── */
+.link-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  gap: 12px;
+}
+.link-row:hover { background: var(--bg3); border-color: #CDC6BA; }
+
+/* ─── STAT CARDS ─────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+}
+.stat-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mut);
+  margin-bottom: 6px;
+}
+.stat-val {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* ─── SELLER GRID ────────────────────────────────────────── */
+.seller-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 20px;
+}
+@media (max-width: 680px) { .seller-grid { grid-template-columns: 1fr; } }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .hero { padding: 56px 20px 48px; }
+  .pricing-section { padding: 56px 16px; }
+  .features-section { padding: 56px 0; }
+  .feat-item { padding: 32px 20px; }
+}
+
 </style>
 </head>
 <body>
-<div class="blobs"><i class="b b1"></i><i class="b b2"></i><i class="b b3"></i><i class="b b4"></i></div>
-<div class="app" id="app"></div>
+
+<div id="nav-wrap"></div>
+<div id="root"></div>
 
 <script>
-const esc = t => String(t || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+/* ─── HELPERS ──────────────────────────────────────────── */
+const esc = t => String(t || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const inr = n => '₹' + Number(n).toLocaleString('en-IN');
-const clock = () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-const sm = (s, n, t) => ({ id: Math.random().toString(36).slice(2), sender: s, senderName: n, text: t, timestamp: clock() });
+const clk = () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+const msg = (s, n, t) => ({ id: Math.random().toString(36).slice(2), sender: s, senderName: n, text: t, ts: clk() });
 
-const BIZ = 'Meera’s Handloom', VPA = 'meera@upi';
+/* ─── BUSINESS CONFIG ──────────────────────────────────── */
+const BIZ = "Meera's Handloom";
+const VPA = 'meera@upi';
 
+/* ─── PAYMENT METHODS ──────────────────────────────────── */
 const PM = {
-  upi: { name: 'UPI', icon: '⚡', pre: 'UPI', opts: ['GPay', 'PhonePe', 'Paytm', 'BHIM'], hint: l => 'Direct UPI to ' + l.businessVpa, cta: l => 'Pay ' + inr(l.amount) },
-  card: { name: 'Cards', icon: '💳', pre: 'CRD', opts: ['Visa', 'Mastercard', 'RuPay', 'Amex'], hint: () => 'Simulated card checkout. No card numbers stored.', cta: l => 'Pay ' + inr(l.amount) },
-  bank: { name: 'Netbanking', icon: '🏦', pre: 'NBK', opts: ['HDFC', 'SBI', 'ICICI', 'Axis'], hint: () => 'Simulated direct bank authorization.', cta: l => 'Pay ' + inr(l.amount) },
-  wallet: { name: 'Wallets', icon: '👛', pre: 'WLT', opts: ['Paytm Wallet', 'Amazon Pay', 'Mobikwik'], hint: () => 'Pay instantly from balance.', cta: l => 'Pay ' + inr(l.amount) },
-  emi: { name: 'EMI', icon: '📆', pre: 'EMI', opts: ['3 months', '6 months', '9 months'], hint: l => { const n = parseInt(S.app) || 6; return '~' + inr(Math.ceil(l.amount / n)) + '/month for ' + n + ' months'; }, cta: () => 'Confirm EMI' },
-  cod: { name: 'COD', icon: '💵', pre: 'COD', opts: ['Cash on delivery'], hint: () => 'Pay cash to the delivery executive when the parcel arrives.', cta: () => 'Confirm Cash on Delivery' }
+  upi: {
+    label: 'UPI',
+    apps: ['Google Pay', 'PhonePe', 'Paytm', 'BHIM'],
+    hint: l => `Tap to open your UPI app and pay ₹${l.amount} directly to ${l.businessVpa}. No redirect, no cut.`,
+    cta: (l, app) => `Pay ${inr(l.amount)} via ${app}`
+  },
+  card: {
+    label: 'Card',
+    apps: ['Visa', 'Mastercard', 'RuPay'],
+    hint: () => 'Secure 3D-authenticated card payment. Card numbers never stored.',
+    cta: (l) => `Authorize ${inr(l.amount)}`
+  },
+  bank: {
+    label: 'Netbanking',
+    apps: ['HDFC Bank', 'SBI', 'ICICI Bank', 'Axis Bank', 'Kotak'],
+    hint: () => 'Direct bank authorization via your internet banking portal.',
+    cta: () => 'Authorize via Netbanking'
+  },
+  cod: {
+    label: 'Cash on Delivery',
+    apps: ['Pay on doorstep'],
+    hint: () => 'Verified COD — pay the delivery executive in cash once you receive and verify the parcel.',
+    cta: () => 'Confirm Cash on Delivery'
+  }
 };
 
+/* ─── STATE ────────────────────────────────────────────── */
 const S = {
-  view: 'landing', sel: null, app: 'GPay', method: 'upi', toast: '', q: '', f: 'all',
-  billingAnnual: true, trackStep: 3, readNotices: false, rewardClaimed: false, aiResult: '', proofName: '', proofData: '',
-  tcIssue: 'Item not as described', tcDetails: '',
+  view: 'landing',
+  sel: null,
+  method: 'upi',
+  app: 'Google Pay',
+  toast: '',
+  q: '',
+  billingAnnual: true,
+  trackStep: 3,
+  tcIssue: 'Item not as described',
+  tcDetails: '',
+  aiResult: '',
+  proofData: '',
   links: [
     {
-      id: 'l1', linkCode: 'RCH-4F2A', customerName: 'Ananya Rao', amount: 2400, note: 'Kalamkari dupatta set',
+      id: 'l1', linkCode: 'RCH-4F2A',
+      customerName: 'Ananya Rao', amount: 2400,
+      note: 'Kalamkari dupatta set',
       businessName: BIZ, businessVpa: VPA, status: 'pending',
-      messages: [sm('seller', BIZ, 'Hi Ananya! Here is your Reachr smart payment link with delivery protection.')]
+      messages: [msg('seller', BIZ, 'Hi Ananya! Your Reachr payment link is ready — includes 4-stage delivery protection.')]
     },
     {
-      id: 'l2', linkCode: 'RCH-9K1D', customerName: 'Rohit Sharma', amount: 1150, note: 'Cotton kurta, size M',
+      id: 'l2', linkCode: 'RCH-9K1D',
+      customerName: 'Rohit Sharma', amount: 1150,
+      note: 'Cotton kurta, size M',
       businessName: BIZ, businessVpa: VPA, status: 'paid', upiRef: 'UPI4096211873',
-      messages: [sm('system', 'Reachr', 'Payment confirmed via GPay. Order moved to processing.')]
+      messages: [msg('system', 'Reachr', 'Payment of ₹1,150 confirmed via Google Pay. Order moved to processing.')]
     },
     {
-      id: 'l3', linkCode: 'RCH-2Z7C', customerName: 'Priya Nair', amount: 3900, note: 'Handwoven Chanderi saree',
+      id: 'l3', linkCode: 'RCH-2Z7C',
+      customerName: 'Priya Nair', amount: 3900,
+      note: 'Handwoven Chanderi saree',
       businessName: BIZ, businessVpa: VPA, status: 'disputed', upiRef: 'UPI4096200412',
       dispute: {
-        id: 'd1', raisedAt: '10:30 AM', reason: 'Color variation from photo', currentStage: 2,
-        proposedSolution: 'Free matching blouse piece + 25% store credit coupon',
+        id: 'd1', raisedAt: '10:30 AM',
+        reason: 'Color variation from photo', currentStage: 2,
+        proposedSolution: 'Free matching blouse piece + 25% store credit voucher',
         timeline: [
-          { stage: 1, title: 'Dispute Raised', description: 'Buyer reported color variation.', timestamp: '10:30 AM', actor: 'customer' },
-          { stage: 2, title: 'Seller Proposed Solution', description: 'Offered free matching blouse piece + 25% coupon.', timestamp: '10:45 AM', actor: 'seller' }
+          { stage: 1, title: 'Dispute Raised', description: 'Buyer reported color variation from listing photo.', ts: '10:30 AM', actor: 'customer' },
+          { stage: 2, title: 'Seller Proposed Solution', description: 'Offered free matching blouse piece + 25% voucher.', ts: '10:45 AM', actor: 'seller' }
         ]
       },
       messages: [
-        sm('customer', 'Priya Nair', 'Hi Meera, the saree arrived but the border color is darker than shown.'),
-        sm('seller', BIZ, 'I understand Priya! I just submitted a replacement proposal in the dispute tab.')
+        msg('customer', 'Priya Nair', 'Hi Meera, the saree arrived but the border color looks darker than the photo.'),
+        msg('seller', BIZ, 'I completely understand, Priya. I\'ve submitted a resolution proposal in the dispute tab.')
       ]
     }
   ]
 };
 
-// Sound Synthesizer via Web Audio API
-const ctx = window.AudioContext ? new (window.AudioContext || window.webkitAudioContext)() : null;
-function playChime() {
-  if (!ctx) return;
-  try {
-    const osc = ctx.createOscillator(); const g = ctx.createGain();
-    osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-    g.gain.setValueAtTime(0.12, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-    osc.connect(g); g.connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime + 0.36);
-  } catch(e) {}
-}
-
 const cur = () => S.links.find(l => l.id === S.sel);
-const toast = t => { S.toast = t; draw(); playChime(); setTimeout(() => { S.toast = ''; draw(); }, 2400); };
-const ev = (d, stage, title, description, actor) => { d.currentStage = stage; d.timeline.push({ stage, title, description, timestamp: clock(), actor }); };
+const toast = t => { S.toast = t; draw(); setTimeout(() => { S.toast = ''; draw(); }, 2200); };
+const addEv = (d, stage, title, description, actor) => {
+  d.currentStage = stage;
+  d.timeline.push({ stage, title, description, ts: clk(), actor });
+};
 
-function shield() {
-  return `<div class="esc">
-    <svg viewBox="0 0 40 46" aria-hidden="true">
-      <path d="M20 2 L37 8 V22 C37 33 29 41 20 44 C11 41 3 33 3 22 V8 Z" fill="var(--violet)"/>
-      <path d="M12 19 L18 25 L28 13" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="11.5" cy="33" r="2.3" fill="var(--pink)"/>
-      <circle cx="17" cy="35" r="2.3" fill="var(--tang)"/>
-      <circle cx="23" cy="35" r="2.3" fill="var(--lemon)"/>
-      <circle cx="28.5" cy="33" r="2.3" fill="var(--teal)"/>
-    </svg>
-    <div>
-      <b>4-Stage FairResolve™ Protocol</b>
-      <small>Raised → Seller proposal → Reachr review → Resolved</small>
-    </div>
-  </div>`;
+/* ─── UPI DEEP LINK ──────────────────────────────────── */
+function triggerUPI(vpa, biz, amount, note, appChoice) {
+  const params = `pa=${encodeURIComponent(vpa)}&pn=${encodeURIComponent(biz)}&am=${Number(amount).toFixed(2)}&cu=INR&tn=${encodeURIComponent(note)}`;
+  let scheme = 'upi';
+  if (appChoice === 'Google Pay') scheme = 'tez';
+  else if (appChoice === 'PhonePe') scheme = 'phonepe';
+  else if (appChoice === 'Paytm') scheme = 'paytmmp';
+
+  const link = document.createElement('a');
+  link.href = `${scheme}://upi/pay?${params}`;
+  link.click();
 }
 
-function landing() {
-  const annual = S.billingAnnual;
-  return `
-  <section style="text-align:center; padding: 20px 0 10px;">
-    <h1>Get paid. <span>Stay fair.</span></h1>
-    <p class="lead" style="margin: 0 auto 24px;">Send smart payment links on WhatsApp or Instagram, chat in one thread, and resolve delivery disputes in 4 clear steps.</p>
-    <div class="row" style="justify-content:center; gap: 14px;">
-      <button class="btn bp" data-act="role" data-v="seller">Open Seller Studio</button>
-      <button class="btn bv" data-act="role" data-v="customer">Try Buyer Checkout</button>
-      <button class="btn bt" data-act="role" data-v="center">Explore Trust Center</button>
-    </div>
-    <div style="margin-top: 20px;">${shield()}</div>
+/* ─── VIEWS ──────────────────────────────────────────── */
 
-    <div class="flow">
-      <div class="fl" style="background:var(--pink);"><b>1. Instant Smart Link</b>Generate customized payment requests with optional expiry in 10 seconds.</div>
-      <div class="fl" style="background:var(--violet);"><b>2. Multi-Rail Pay</b>UPI (GPay/PhonePe/Paytm), Cards, EMI, Netbanking & Verified COD.</div>
-      <div class="fl" style="background:var(--teal); color:#12082b;"><b>3. In-Context Chat</b>Customer queries and order updates stay directly pinned to the payment.</div>
-      <div class="fl" style="background:var(--tang); color:#12082b;"><b>4. 4-Stage FairResolve</b>Clear steps for both parties. No unfair payment freezes or arbitrary chargebacks.</div>
+function navHTML(v) {
+  return `
+    <nav>
+      <button class="brand" data-act="role" data-v="landing">
+        <span class="brand-dot"></span>Reachr
+      </button>
+      <div class="tabs">
+        <button class="tab ${v==='landing'?'on':''}" data-act="role" data-v="landing">Home</button>
+        <button class="tab ${v==='seller'?'on':''}" data-act="role" data-v="seller">Seller</button>
+        <button class="tab ${v==='customer'?'on':''}" data-act="role" data-v="customer">Buyer</button>
+        <button class="tab ${v==='center'?'on':''}" data-act="role" data-v="center">Trust Hub</button>
+      </div>
+      <button class="nav-save" data-act="download-file">↓ Save HTML</button>
+    </nav>`;
+}
+
+function footerHTML() {
+  return `
+    <footer>
+      <div><strong>Reachr</strong> — Smart payment links & delivery protection.</div>
+      <div>Standalone Edition · 2026</div>
+    </footer>`;
+}
+
+function landingHTML() {
+  const ann = S.billingAnnual;
+  const items = [
+    ['01', 'Custom Payment Links', 'Generate links with item details, custom notes, quantities, and exchange terms in under 15 seconds — no account required for buyers.'],
+    ['02', 'Direct UPI & Card Rails', 'One tap opens your customer\'s UPI app of choice — Google Pay, PhonePe, Paytm. No QR to scan, no redirect chains. Money lands directly in your VPA.'],
+    ['03', 'Order-Bound Chat', 'Size notes, packaging preferences, and delivery instructions stay permanently attached to the payment record — not buried in WhatsApp.'],
+    ['04', '4-Stage FairResolve™', 'A bilateral protocol: raise, propose, counter-review, resolve. Clear structure replaces heated arguments when things go wrong.'],
+    ['05', 'ProofVault™ Records', 'Dispatch photos, packaging receipts, and tracking screenshots attached directly to the order — the strongest defence against false non-delivery claims.'],
+    ['06', 'Sales Turnover Monitor', 'Weekly receivables, settled balances, and gateway fees saved — in plain numbers, not buried inside a dashboard nobody opens.']
+  ];
+
+  const featsHTML = items.map(([n, h, p], i) => `
+    <div class="feat-item r d${Math.min(i%3+1,6)}">
+      <div class="feat-num">${n}</div>
+      <div class="feat-body">
+        <h3>${h}</h3>
+        <p>${p}</p>
+      </div>
+    </div>`).join('');
+
+  const tickers = ['Direct UPI Links','RuPay & Cards','Netbanking','Doorstep COD Protection','Order-Bound Notes','4-Stage FairResolve™','ProofVault™','Zero Gateway Cuts','WhatsApp Share'];
+  const tickerHTML = (tickers.map(t=>`<span>${t}</span>`).join('<span class="sep">·</span>')).repeat(4);
+
+  return `
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-pill r"><span class="pill"><span class="pill-dot"></span>Crafted for independent makers &amp; direct sellers</span></div>
+      <h1 class="r d1">Get paid directly.<br><em>Keep orders protected.</em></h1>
+      <p class="hero-lead r d2">Create payment links for custom orders, keep records clear, and settle delivery disputes through a structured, mutual resolution process — with zero percentage cuts.</p>
+      <div class="hero-cta r d3">
+        <button class="btn btn-ink" data-act="role" data-v="seller">Open Seller Studio →</button>
+        <button class="btn btn-outline" data-act="role" data-v="customer">Customer View</button>
+        <button class="btn btn-ghost" data-act="role" data-v="center">Trust Hub</button>
+      </div>
     </div>
   </section>
 
-  <!-- Moving Straps: Parallel, Straight, Slow Movement -->
-  <div class="straps-wrap" aria-hidden="true">
-    <div class="strap-1">
-      <div class="strap-1-track">
-        ${'<span>Instant UPI ⚡</span><span>✦</span><span>RuPay & Visa 💳</span><span>✦</span><span>Netbanking 🏦</span><span>✦</span><span>Smart Wallets 👛</span><span>✦</span><span>Zero-Cost EMI 📆</span><span>✦</span><span>Verified COD 💵</span><span>✦</span><span>Order Chat 💬</span><span>✦</span><span>4-Stage Disputes ⚖️</span><span>✦</span>'.repeat(6)}
-      </div>
-    </div>
-    <div class="strap-2">
-      <div class="strap-2-track">
-        ${'<span style="color:#21d4b4">fair disputes 🔥</span><span>✦</span><span style="color:#ff4f87">no cap ✨</span><span>✦</span><span style="color:#ff9f43">pay your way 💸</span><span>✦</span><span style="color:#43b9ff">trust the process ⚡</span><span>✦</span><span>Zero Arbitrary Freezes 🛡️</span><span>✦</span><span>Geotagged Delivery Proof 📍</span><span>✦</span><span>100% Indian Commerce Native 🇮🇳</span><span>✦</span>'.repeat(6)}
-      </div>
-    </div>
+  <!-- MARQUEE -->
+  <div class="marquee-outer">
+    <div class="marquee-track">${tickerHTML}</div>
   </div>
 
-  <!-- Features Section -->
-  <section id="features" style="margin-top: 50px;">
-    <h2>Everything a small shop needs to get paid with dignity</h2>
-    <div class="g3">
-      <div class="ft" style="background:var(--violet);"><i>⚡</i><b>Direct UPI & Cards</b><p>Zero redirect drops. Buyers pay using their favorite installed UPI apps or debit cards.</p></div>
-      <div class="ft" style="background:var(--teal); color:#12082b;"><i>▦</i><b>Dynamic QR for Orders</b><p>Every link generates an instant scannable QR code for in-person or parcel counter pickup.</p></div>
-      <div class="ft" style="background:var(--pink);"><i>💬</i><b>Order-Bound Chat</b><p>No separate WhatsApp confusion. Order specifications and color notes stay attached to the invoice.</p></div>
-      <div class="ft" style="background:var(--tang); color:#12082b;"><i>⚖️</i><b>4-Stage FairResolve™</b><p>Structured resolution workflow protects sellers from fraudulent buyer claims and chargeback penalties.</p></div>
-      <div class="ft" style="background:var(--sky); color:#12082b;"><i>📊</i><b>7-Day Velocity Chart</b><p>Monitor your shop’s daily revenue in real time as payments roll in from various channels.</p></div>
-      <div class="ft" style="background:var(--lemon); color:#1d1340;"><i>🛡️</i><b>ProofVault Evidence</b><p>Attach package dispatch photos and courier geotags directly to avoid false non-delivery claims.</p></div>
+  <!-- EDITORIAL FEATURES -->
+  <section class="features-section">
+    <div class="features-header r">
+      <div class="pill" style="margin-bottom:16px;"><span class="pill-dot"></span>What it does</div>
+      <h2 class="heading">Everything direct sellers need<br>to get paid with dignity</h2>
+      <p class="lead" style="margin-top:12px;">No surprise 2–3% take-rates. No unilateral account freezes. No explain-yourself emails to a support bot.</p>
     </div>
+    ${featsHTML}
   </section>
 
-  <!-- Pricing Section with 44% Annual Savings -->
-  <section id="pricing" style="margin-top: 60px;">
-    <div style="text-align:center;">
-      <h2>Honest pricing. Zero gateway percentage traps.</h2>
-      <p style="color:var(--mut);">Keep 100% of your earnings. No 2% or 3% payment gateway commission cuts.</p>
-      
+  <!-- PRICING -->
+  <section class="pricing-section">
+    <div style="text-align:center;" class="r">
+      <div class="pill" style="margin-bottom:16px;"><span class="pill-dot"></span>Pricing</div>
+      <h2 class="heading">Transparent, predictable pricing</h2>
+      <p class="lead" style="margin:12px auto 0;">Keep 100% of your earnings. Zero payment gateway percentage deductions.</p>
       <div class="pricing-toggle">
-        <button class="toggle-btn ${!annual ? 'active' : ''}" data-act="toggle-bill" data-v="monthly">Monthly Billing</button>
-        <button class="toggle-btn ${annual ? 'active' : ''}" data-act="toggle-bill" data-v="annual">Annual (Save 44% 🎉)</button>
+        <button class="tog-btn ${!ann?'on':''}" data-act="toggle-bill" data-v="monthly">Monthly</button>
+        <button class="tog-btn ${ann?'on':''}" data-act="toggle-bill" data-v="annual">Annual &mdash; Save 44%</button>
       </div>
     </div>
 
-    <div class="g3">
-      <div class="pr">
-        <h3>Starter</h3>
-        <div class="pz">₹0</div>
-        <small style="color:var(--mut);">Forever free</small>
-        <ul>
-          <li>20 SmartPay links / month</li>
+    <div class="pricing-grid">
+      <div class="price-card r d1">
+        <div class="price-tier">Starter</div>
+        <div class="price-sub">For emerging shops</div>
+        <div class="price-val">₹0</div>
+        <div class="price-period">Forever free</div>
+        <ul class="price-feats">
+          <li>20 payment links / month</li>
           <li>Order-bound customer chat</li>
-          <li>Basic 4-stage dispute shield</li>
-          <li>Standard UPI & QR generator</li>
+          <li>Basic 4-stage dispute resolution</li>
+          <li>Direct UPI intent support</li>
+          <li>Buyer payment portal</li>
         </ul>
-        <button class="btn ghost" style="width:100%;" data-act="role" data-v="seller">Start Free</button>
+        <button class="btn btn-outline" style="justify-content:center;" data-act="role" data-v="seller">Start Free</button>
       </div>
 
-      <div class="pr hot">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3>Growth</h3>
-          <span style="background:#fff; color:#12082b; font-size:11px; font-weight:800; padding:3px 8px; border-radius:99px;">MOST POPULAR</span>
-        </div>
-        <div class="pz">${annual ? '₹167' : '₹299'}</div>
-        <small style="color:#fff;">${annual ? 'billed ₹1,999 annually (44% discount)' : 'per month, billed monthly'}</small>
-        <ul>
-          <li>Unlimited SmartPay links</li>
+      <div class="price-card feat r d2">
+        <div class="price-tier">Growth</div>
+        <div class="price-sub">For active independent sellers</div>
+        <div class="price-val">${ann ? '₹167' : '₹299'}</div>
+        <div class="price-period">${ann ? 'billed ₹1,999 annually' : 'per month, billed monthly'}</div>
+        <ul class="price-feats">
+          <li>Unlimited payment links</li>
           <li>ProofVault photo attachments</li>
-          <li>7-Day sales velocity charts</li>
+          <li>7-day sales velocity summaries</li>
           <li>WhatsApp 1-click share templates</li>
-          <li>Priority FairResolve mediation</li>
+          <li>Priority mediation assistance</li>
+          <li>Custom expiry & link controls</li>
         </ul>
-        <button class="btn bl" style="width:100%;" data-act="role" data-v="seller">Try Growth Free</button>
+        <button class="btn btn-yolk" style="justify-content:center;" data-act="role" data-v="seller">Get Growth</button>
       </div>
 
-      <div class="pr">
-        <h3>Studio</h3>
-        <div class="pz">${annual ? '₹583' : '₹999'}</div>
-        <small style="color:var(--mut);">${annual ? 'billed ₹6,999 annually (42% discount)' : 'per month, billed monthly'}</small>
-        <ul>
+      <div class="price-card r d3">
+        <div class="price-tier">Studio</div>
+        <div class="price-sub">For established artisan brands</div>
+        <div class="price-val">${ann ? '₹583' : '₹999'}</div>
+        <div class="price-period">${ann ? 'billed ₹6,999 annually' : 'per month, billed monthly'}</div>
+        <ul class="price-feats">
           <li>Everything in Growth</li>
-          <li>5 Staff / assistant logins</li>
+          <li>5 Staff assistant accounts</li>
           <li>Custom brand VPA display</li>
-          <li>Repeat customer retention CRM</li>
+          <li>Repeat customer retention log</li>
           <li>Dedicated trust specialist</li>
+          <li>API access for catalog integrations</li>
         </ul>
-        <button class="btn bv" style="width:100%;" data-act="role" data-v="seller">Upgrade to Studio</button>
+        <button class="btn btn-outline" style="justify-content:center;" data-act="role" data-v="seller">Get Studio</button>
       </div>
     </div>
   </section>
 
-  <!-- FAQ Accordion -->
-  <section id="faq" style="margin-top: 60px;">
-    <h2>Frequently answered questions</h2>
-    <details open>
-      <summary>How is Reachr different from payment gateway links?</summary>
-      <p>Standard payment gateways charge 2% to 3% plus GST on every transaction and freeze seller payouts immediately upon any dispute. Reachr charges flat zero gateway commission and provides a 4-stage bilateral FairResolve™ protocol to settle issues fairly.</p>
+  <!-- FAQ -->
+  <section style="padding: 72px 24px 24px; max-width: 700px; margin: 0 auto;">
+    <div class="r" style="margin-bottom: 36px;">
+      <div class="pill" style="margin-bottom:16px;"><span class="pill-dot"></span>Questions</div>
+      <h2 class="heading">Frequently answered</h2>
+    </div>
+
+    <details open class="r d1">
+      <summary>How is Reachr different from standard payment gateways?</summary>
+      <p>Standard gateways take 2–3% on every transaction and unilaterally freeze seller accounts during disputes. Reachr charges zero percentage cuts and gives buyers and sellers a clear 4-stage bilateral resolution framework instead of a black-box support ticket.</p>
     </details>
-    <details>
-      <summary>Do my customers need to install an app?</summary>
-      <p>No! Reachr links and QR codes open directly in mobile browsers. Customers can complete payment using any installed UPI app (GPay, PhonePe, Paytm), debit/credit card, or netbanking with a single tap.</p>
+    <details class="r d2">
+      <summary>Do customers need to scan a QR code to pay?</summary>
+      <p>No QR. The customer opens the link on their phone, taps their UPI app of choice — Google Pay, PhonePe, Paytm — and the payment goes directly to the seller's UPI VPA. Card and netbanking options are also available.</p>
     </details>
-    <details>
-      <summary>Can this HTML file run offline on my computer or phone?</summary>
-      <p>Yes! This is a 100% self-contained standalone HTML application. You can double click it anytime in any browser on your laptop or phone without needing any server.</p>
+    <details class="r d3">
+      <summary>Is this standalone HTML file fully self-contained?</summary>
+      <p>Yes. No external dependencies, no analytics trackers, no cloud logins. This single-file edition runs fully offline on any browser. Click "Save HTML" to download your own copy.</p>
+    </details>
+    <details class="r d4">
+      <summary>What is ProofVault and how does it protect me?</summary>
+      <p>ProofVault lets sellers attach parcel dispatch photos and packaging receipts directly to the payment record. This creates a timestamped, immutable evidence chain that protects against false "item not received" claims.</p>
     </details>
   </section>
   `;
 }
 
-function seller() {
+function sellerHTML() {
   const l = cur();
-  if (l) {
-    return `<button class="btn ghost" style="margin-bottom:16px;" data-act="back">← Back to all links</button>` + detail(l, 'seller');
-  }
-  const total = S.links.filter(x => x.status === 'paid').reduce((a, b) => a + b.amount, 0);
+  if (l) return `<button class="btn btn-outline btn-sm" style="margin-bottom:20px;" data-act="back">← All links</button>` + orderDetailHTML(l, 'seller');
+
+  const settled = S.links.filter(x => x.status === 'paid').reduce((a,b) => a+b.amount, 0);
+  const filtered = S.links.filter(x =>
+    (x.customerName + ' ' + x.note).toLowerCase().includes(S.q.toLowerCase())
+  );
+
   return `
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
     <div>
-      <h2 style="margin:0;">Seller Dashboard</h2>
-      <p style="color:var(--mut); margin:4px 0 0; font-size:14px;">Logged in as <b>${BIZ}</b> (${VPA})</p>
+      <h2 class="subhead" style="margin:0;">Seller Studio</h2>
+      <p style="color:var(--mut); font-size:13.5px; margin:4px 0 0;">Store: <strong>${esc(BIZ)}</strong> &nbsp;·&nbsp; UPI VPA: <code style="font-family:monospace; font-size:13px; color:var(--olive);">${esc(VPA)}</code></p>
     </div>
-    <button class="btn bp" data-act="scroll-create">+ Create Smart Link</button>
+    <button class="btn btn-ink btn-sm" data-act="scroll-create">+ New Payment Link</button>
   </div>
 
-  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:24px;">
-    <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px;">
-      <small style="color:var(--mut);">Total Revenue</small>
-      <div style="font-size:30px; font-weight:800; color:var(--teal);">${inr(total)}</div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Settled</div>
+      <div class="stat-val" style="color:var(--olive);">${inr(settled)}</div>
     </div>
-    <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px;">
-      <small style="color:var(--mut);">Active Links</small>
-      <div style="font-size:30px; font-weight:800; color:var(--violet);">${S.links.length}</div>
+    <div class="stat-card">
+      <div class="stat-label">Active Links</div>
+      <div class="stat-val">${S.links.length}</div>
     </div>
-    <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px;">
-      <small style="color:var(--mut);">Open Disputes</small>
-      <div style="font-size:30px; font-weight:800; color:var(--pink);">${S.links.filter(x => x.status === 'disputed').length}</div>
+    <div class="stat-card">
+      <div class="stat-label">Open Disputes</div>
+      <div class="stat-val" style="color:var(--terra);">${S.links.filter(x=>x.status==='disputed').length}</div>
     </div>
-    <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px;">
-      <small style="color:var(--mut);">Gateway Fees Saved</small>
-      <div style="font-size:30px; font-weight:800; color:var(--lemon);">${inr(Math.round(total * 0.0236))}</div>
+    <div class="stat-card">
+      <div class="stat-label">Fees Saved</div>
+      <div class="stat-val" style="color:var(--yolk-d);">${inr(Math.round(settled*0.0236))}</div>
     </div>
   </div>
 
-  <div style="display:grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr); gap: 20px;">
-    <!-- Form to create link -->
+  <div class="seller-grid">
     <div class="card" id="create-card">
-      <h3 style="margin-top:0;">Generate SmartPay Link</h3>
+      <h3 class="subhead" style="font-size:17px; margin:0 0 18px;">New Payment Link</h3>
       <form id="nf">
         <label for="cn">Customer Name</label>
         <input id="cn" required placeholder="e.g. Ananya Rao">
 
         <label for="am">Amount (₹)</label>
-        <input id="am" type="number" min="1" required placeholder="e.g. 1850">
+        <input id="am" type="number" min="1" required placeholder="e.g. 2400">
 
-        <label for="nt">Item / Purpose Note</label>
-        <input id="nt" required placeholder="e.g. Handcrafted Ikkat dupatta">
+        <label for="nt">Item / Purpose</label>
+        <input id="nt" required placeholder="e.g. Kalamkari dupatta set">
 
-        <div class="inline-fields">
+        <div class="row-2">
           <div>
             <label for="qty">Quantity</label>
             <input id="qty" type="number" min="1" value="1" required>
@@ -561,31 +1235,29 @@ function seller() {
             <label for="exp">Link Expiry</label>
             <select id="exp">
               <option value="0">Never expires</option>
-              <option value="24">Expires in 24 hours</option>
-              <option value="72">Expires in 3 days</option>
+              <option value="24">24 hours</option>
+              <option value="72">3 days</option>
             </select>
           </div>
         </div>
 
-        <button class="btn bp" style="width:100%; margin-top:10px;">Create SmartPay Link</button>
+        <button class="btn btn-ink" style="width:100%; justify-content:center; margin-top:4px;">Generate Direct Link</button>
       </form>
     </div>
 
-    <!-- Links List -->
     <div class="card">
-      <h3 style="margin-top:0;">Your Orders & Links</h3>
-      <input id="q" value="${esc(S.q)}" placeholder="Search customer or item..." style="margin-bottom:12px;">
-
+      <h3 class="subhead" style="font-size:17px; margin:0 0 14px;">Recent Links</h3>
+      <input id="q" value="${esc(S.q)}" placeholder="Search customer or item..." style="margin-bottom:14px;">
       <div style="display:flex; flex-direction:column; gap:8px;">
-        ${S.links.filter(x => (S.f === 'all' || x.status === S.f) && (x.customerName + ' ' + x.note).toLowerCase().includes(S.q)).map(l => `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:14px; cursor:pointer;" data-act="open" data-id="${l.id}">
+        ${filtered.map(l => `
+          <div class="link-row" data-act="open" data-id="${l.id}">
             <div>
-              <div style="font-weight:700; color:#fff;">${esc(l.customerName)}</div>
-              <small style="color:var(--mut);">${esc(l.note)} · <span style="font-family:monospace;">${l.linkCode}</span></small>
+              <div style="font-weight:700; color:var(--ink); font-size:14px;">${esc(l.customerName)}</div>
+              <div style="font-size:12.5px; color:var(--mut); margin-top:2px;">${esc(l.note)} &nbsp;·&nbsp; <span style="font-family:monospace;">${l.linkCode}</span></div>
             </div>
-            <div style="text-align:right;">
-              <div style="font-weight:800; color:#fff;">${inr(l.amount)}</div>
-              <span style="display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase; padding:2px 8px; border-radius:99px; background:${l.status === 'paid' ? 'rgba(33,212,180,0.2)' : l.status === 'disputed' ? 'rgba(255,79,135,0.2)' : 'rgba(255,159,67,0.2)'}; color:${l.status === 'paid' ? '#5ff2d7' : l.status === 'disputed' ? '#ff4f87' : '#ffc17d'};">${l.status}</span>
+            <div style="text-align:right; flex-shrink:0;">
+              <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px; color:var(--ink);">${inr(l.amount)}</div>
+              <span class="status status-${l.status}">${l.status}</span>
             </div>
           </div>
         `).join('')}
@@ -595,25 +1267,24 @@ function seller() {
   `;
 }
 
-function customer() {
+function customerHTML() {
   const l = cur();
-  if (l) {
-    return `<button class="btn ghost" style="margin-bottom:16px;" data-act="back">← Back to orders</button>` + detail(l, 'customer');
-  }
+  if (l) return `<button class="btn btn-outline btn-sm" style="margin-bottom:20px;" data-act="back">← Back to orders</button>` + orderDetailHTML(l, 'customer');
+
   return `
   <div class="card">
-    <h2 style="margin-top:0;">Buyer Checkout & Payments</h2>
-    <p style="color:var(--mut);">Select any order to test checkout, review delivery tracking, talk to seller, or raise a dispute.</p>
-    <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+    <h2 class="subhead" style="margin:0 0 6px;">Buyer Order Portal</h2>
+    <p style="color:var(--mut); font-size:13.5px; margin:0 0 20px;">Select an order to pay, track delivery, or coordinate with the maker.</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
       ${S.links.map(l => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:16px; cursor:pointer;" data-act="open" data-id="${l.id}">
+        <div class="link-row" data-act="open" data-id="${l.id}">
           <div>
-            <div style="font-weight:800; font-size:16px; color:#fff;">${esc(l.businessName)}</div>
-            <div style="color:var(--mut); font-size:13px;">${esc(l.note)} for ${esc(l.customerName)}</div>
+            <div style="font-weight:800; font-size:15px; color:var(--ink);">${esc(l.businessName)}</div>
+            <div style="font-size:13px; color:var(--mut); margin-top:2px;">${esc(l.note)} for ${esc(l.customerName)}</div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-weight:800; font-size:16px; color:#fff;">${inr(l.amount)}</div>
-            <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:${l.status === 'paid' ? '#21d4b4' : l.status === 'disputed' ? '#ff4f87' : '#ff9f43'};">${l.status}</span>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px; color:var(--ink);">${inr(l.amount)}</div>
+            <span class="status status-${l.status}">${l.status}</span>
           </div>
         </div>
       `).join('')}
@@ -622,254 +1293,275 @@ function customer() {
   `;
 }
 
-function detail(l, role) {
+function orderDetailHTML(l, role) {
   const d = l.dispute;
   const isPaid = l.status === 'paid';
   const isDisputed = l.status === 'disputed';
-  const isResolved = l.status === 'resolved';
+  const method = PM[S.method];
 
   return `
-  <div class="card" style="border-left: 5px solid ${isPaid ? 'var(--teal)' : isDisputed ? 'var(--pink)' : 'var(--tang)'};">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; padding-bottom:18px; border-bottom:1px solid var(--line); margin-bottom:18px;">
       <div>
-        <h2 style="margin:0;">${esc(l.note)}</h2>
-        <small style="color:var(--mut);">Order ID: ${l.linkCode} · Customer: ${esc(l.customerName)}</small>
+        <span class="pill" style="margin-bottom:8px; display:inline-flex;">Order #${l.linkCode}</span>
+        <h2 class="subhead" style="margin:4px 0 4px;">${esc(l.note)}</h2>
+        <p style="color:var(--mut); font-size:13.5px; margin:0;">Seller: <strong>${esc(l.businessName)}</strong> &nbsp;·&nbsp; Buyer: <strong>${esc(l.customerName)}</strong></p>
       </div>
       <div style="text-align:right;">
-        <div style="font-size:32px; font-weight:800; color:#fff;">${inr(l.amount)}</div>
-        <span style="font-size:11px; font-weight:800; text-transform:uppercase; padding:3px 10px; border-radius:99px; background:rgba(255,255,255,0.1);">${l.status}</span>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:36px; letter-spacing:-0.04em; line-height:1; color:var(--ink);">${inr(l.amount)}</div>
+        <span class="status status-${l.status}" style="margin-top:6px; display:inline-block;">${l.status}</span>
       </div>
     </div>
 
-    <!-- Buyer Multi-Rail Checkout (if pending & customer) -->
+    <!-- ── UPI PAYMENT (pending + customer only) ───────── -->
     ${l.status === 'pending' && role === 'customer' ? `
-      <div style="margin: 24px 0; padding: 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 20px;">
-        <h3 style="margin-top:0;">Choose Payment Method</h3>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
-          ${Object.keys(PM).map(k => `
-            <button class="btn ${S.method === k ? 'bp' : 'ghost'}" style="padding:8px 16px; font-size:13px;" data-act="method" data-v="${k}">
-              ${PM[k].icon} ${PM[k].name}
-            </button>
-          `).join('')}
-        </div>
-        <p style="color:var(--mut); font-size:13px; margin:4px 0 12px;">${PM[S.method].hint(l)}</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-          ${PM[S.method].opts.map(opt => `
-            <button class="btn ${S.app === opt ? 'bl' : 'ghost'}" style="padding:6px 14px; font-size:12px;" data-act="app" data-v="${opt}">${opt}</button>
-          `).join('')}
-        </div>
-        <button class="btn bt" data-act="pay" style="width:100%; justify-content:center;">${PM[S.method].cta(l)} via ${S.app}</button>
+    <div class="pay-panel">
+      <h3 class="subhead" style="font-size:16px; margin:0 0 4px;">Complete Payment</h3>
+      <p style="font-size:13px; color:var(--mut); margin:0 0 14px;">Pay directly to the seller — no third-party cut, no redirect.</p>
+
+      <div class="pay-method-tabs">
+        ${Object.entries(PM).map(([k,v]) =>
+          `<button class="pay-method-tab ${S.method===k?'on':''}" data-act="method" data-v="${k}">${v.label}</button>`
+        ).join('')}
       </div>
+
+      <p class="pay-hint">${method.hint(l)}</p>
+
+      ${S.method === 'upi' ? `
+      <div class="upi-apps-row">
+        ${method.apps.map(a =>
+          `<button class="upi-app-btn ${S.app===a?'on':''}" data-act="app" data-v="${a}">${a}</button>`
+        ).join('')}
+      </div>
+      <div class="vpa-copy">
+        <span>Paying to:</span>
+        <code>${esc(l.businessVpa)}</code>
+        <button class="btn btn-outline btn-sm" data-act="copyvpa" style="padding:4px 10px; font-size:11.5px; border-radius:6px;">Copy</button>
+      </div>
+      <div class="pay-actions">
+        <button class="btn btn-yolk" data-act="pay-upi" style="flex:1; justify-content:center; padding:14px 24px; font-size:15px;">
+          ${method.cta(l, S.app)}
+        </button>
+      </div>
+      <p style="font-size:11.5px; color:var(--mut); margin-top:10px; line-height:1.5;">
+        On mobile, this opens your UPI app directly. On desktop, open this page on your phone to pay.
+      </p>
+      ` : S.method === 'cod' ? `
+      <div class="pay-actions" style="margin-top:0;">
+        <button class="btn btn-ink" data-act="pay" style="justify-content:center;">${method.cta(l, S.app)}</button>
+      </div>
+      ` : `
+      <div class="upi-apps-row">
+        ${method.apps.map(a =>
+          `<button class="upi-app-btn ${S.app===a?'on':''}" data-act="app" data-v="${a}">${a}</button>`
+        ).join('')}
+      </div>
+      <div class="pay-actions">
+        <button class="btn btn-ink" data-act="pay" style="justify-content:center;">${method.cta(l, S.app)}</button>
+      </div>
+      `}
+    </div>
     ` : ''}
 
-    <!-- Seller WhatsApp & QR Tools (if seller) -->
+    <!-- ── SELLER QUICK ACTIONS ────────────────────────── -->
     ${role === 'seller' ? `
-      <div style="margin: 20px 0; padding: 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 18px;">
-        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-          <button class="btn bv" data-act="copy" style="font-size:13px; padding:9px 18px;">📋 Copy Link</button>
-          <a class="btn bt" style="font-size:13px; padding:9px 18px; text-decoration:none;" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Hi ' + l.customerName + ', please pay ' + inr(l.amount) + ' for ' + l.note + ' via Reachr: ' + location.href)}">💬 Share on WhatsApp</a>
-          ${l.status === 'pending' ? `<button class="btn bl" data-act="cashin" style="font-size:13px; padding:9px 18px;">💵 Record Offline Cash</button>` : ''}
-        </div>
-      </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin:16px 0; padding:16px; background:var(--bg2); border-radius:12px; border:1px solid var(--line);">
+      <button class="btn btn-outline btn-sm" data-act="copy">📋 Copy Link</button>
+      <a class="btn btn-outline btn-sm" style="text-decoration:none;" target="_blank"
+        href="https://wa.me/?text=${encodeURIComponent('Hi '+l.customerName+', here\'s your Reachr payment link for '+l.note+'. Click to pay directly — no QR, no redirects.')}">
+        💬 Share on WhatsApp
+      </a>
+      ${l.status === 'pending' ? `<button class="btn btn-outline btn-sm" data-act="cashin">💵 Record Cash Payment</button>` : ''}
+    </div>
     ` : ''}
 
-    <!-- 4-Stage FairResolve Dispute Panel -->
+    <!-- ── DISPUTE PANEL ───────────────────────────────── -->
     ${d ? `
-      <div style="margin: 24px 0; padding: 20px; background: rgba(255,79,135,0.06); border: 1.5px solid rgba(255,79,135,0.3); border-radius: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="margin:0; color:#ff4f87;">Dispute: ${esc(d.reason)}</h3>
-          <span style="font-size:11px; font-weight:800; color:#ffc17d;">Stage ${d.currentStage} of 4</span>
-        </div>
-        <div class="steps">
-          ${['1. Raised', '2. Seller Proposal', '3. Reachr Review', '4. Resolved'].map((n, i) => `
-            <div class="sp ${i + 1 < d.currentStage || d.currentStage === 4 ? 'done' : i + 1 === d.currentStage ? 'cur' : ''}">${n}</div>
-          `).join('')}
-        </div>
-        <div class="tl">
-          ${d.timeline.map(e => `<p><b>${esc(e.title)}</b> · <small>${e.timestamp}</small><br>${esc(e.description)}</p>`).join('')}
-        </div>
-
-        ${d.currentStage === 1 && role === 'seller' ? `
-          <div style="margin-top:14px;">
-            <label for="sol">Propose a fair fix for the buyer</label>
-            <input id="sol" placeholder="e.g. Free replacement dispatched tomorrow, or 40% partial refund">
-            <button class="btn bp" data-act="propose">Send Proposal</button>
-          </div>
-        ` : ''}
-
-        ${d.currentStage === 2 && role === 'customer' ? `
-          <div style="margin-top:14px; background:rgba(255,255,255,0.05); padding:14px; border-radius:14px;">
-            <b>Seller Proposed:</b> ${esc(d.proposedSolution)}
-            <div class="row" style="margin-top:12px;">
-              <button class="btn bt" data-act="accept">Accept Proposal</button>
-              <button class="btn ghost" data-act="reject">Request Reachr Neutral Review</button>
-            </div>
-          </div>
-        ` : ''}
-
-        ${d.currentStage === 3 ? `
-          <div style="margin-top:12px; font-size:13px; color:var(--mut);">
-            Reachr mediator is examining photos and messages. Both parties protected.
-            <div style="margin-top:10px;"><button class="btn bv" data-act="reviewcomplete">Simulate Mediation Complete</button></div>
-          </div>
-        ` : ''}
+    <div style="margin:16px 0; padding:20px; background:#FEFBFA; border:1.5px solid #EAD0C8; border-radius:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-size:15px; color:var(--terra);">Dispute: ${esc(d.reason)}</h3>
+        <span style="font-size:12px; font-weight:700; color:var(--mut);">Stage ${d.currentStage} of 4</span>
       </div>
-    ` : isPaid && role === 'customer' ? `
-      <div style="margin-top:20px; padding:16px; background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:16px;">
-        <b>Have an issue with this order?</b>
-        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-          <select id="rsn" style="max-width:280px; margin:0;">
-            <option>Item not as described</option>
-            <option>Damage during transit</option>
-            <option>Wrong quantity or variant</option>
-          </select>
-          <button class="btn bp" data-act="dispute" style="padding:9px 18px; font-size:13px;">Raise FairResolve Dispute</button>
-        </div>
+      <div class="steps-row">
+        ${['1 Raised','2 Proposal','3 Mediation','4 Resolved'].map((n,i) => `
+          <div class="step-cell ${i+1<d.currentStage||d.currentStage===4?'done':i+1===d.currentStage?'cur':''}">${n}</div>
+        `).join('')}
       </div>
+      <div style="margin:14px 0; padding-left:14px; border-left:2px solid var(--line);">
+        ${d.timeline.map(e => `
+          <p style="margin:0 0 10px; font-size:13px;">
+            <strong>${esc(e.title)}</strong> &nbsp;<small style="color:var(--mut);">${e.ts}</small><br>
+            <span style="color:var(--ink2);">${esc(e.description)}</span>
+          </p>
+        `).join('')}
+      </div>
+      ${d.currentStage===1&&role==='seller' ? `
+        <label for="sol" style="margin-top:12px;">Propose a fair solution</label>
+        <input id="sol" placeholder="e.g. Free replacement dispatched tomorrow, or 40% partial refund">
+        <button class="btn btn-ink btn-sm" data-act="propose">Send Proposal to Buyer</button>
+      ` : ''}
+      ${d.currentStage===2&&role==='customer' ? `
+        <div style="margin-top:12px; background:var(--card); padding:14px; border:1px solid var(--line); border-radius:10px;">
+          <strong style="font-size:13.5px;">Seller offered:</strong>
+          <span style="font-size:13.5px; color:var(--ink2);"> ${esc(d.proposedSolution)}</span>
+          <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+            <button class="btn btn-ink btn-sm" data-act="accept">Accept Proposal</button>
+            <button class="btn btn-outline btn-sm" data-act="reject">Request Neutral Review</button>
+          </div>
+        </div>
+      ` : ''}
+      ${d.currentStage===3 ? `
+        <p style="font-size:13px; color:var(--mut); margin-top:12px;">
+          Reachr mediator is reviewing parcel receipts and dispatch photos.
+          <button class="btn btn-outline btn-sm" data-act="reviewcomplete" style="margin-top:10px;">Simulate Mediation Complete</button>
+        </p>
+      ` : ''}
+    </div>
+    ` : isPaid && role==='customer' ? `
+    <div style="margin:16px 0; padding:16px; background:var(--bg2); border:1px solid var(--line); border-radius:12px;">
+      <strong style="font-size:14px;">Have an issue with this order?</strong>
+      <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:center;">
+        <select id="rsn" style="max-width:260px; margin:0;">
+          <option>Item not as described</option>
+          <option>Transit damage</option>
+          <option>Wrong variant or quantity</option>
+        </select>
+        <button class="btn btn-outline btn-sm" data-act="dispute">Raise FairResolve Inquiry</button>
+      </div>
+    </div>
     ` : ''}
 
-    <!-- In-Order Chat Thread -->
-    <h3 style="margin: 24px 0 10px;">Order Discussion</h3>
-    <div class="chat" id="chat">
+    <!-- ── ORDER CHAT ──────────────────────────────────── -->
+    <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-size:15px; font-weight:700; margin:20px 0 8px; letter-spacing:-0.015em;">Order Discussion</h3>
+    <div class="chat-thread" id="chat">
       ${l.messages.map(m => `
-        <div class="m ${m.sender}">
+        <div class="msg ${m.sender}">
           ${esc(m.text)}
-          <small>${esc(m.senderName)} · ${m.timestamp}</small>
+          <small>${esc(m.senderName)} · ${m.ts}</small>
         </div>
       `).join('')}
     </div>
     <div style="display:flex; gap:8px;">
-      <input id="msg" placeholder="Write message as ${role}..." style="margin:0;">
-      <button class="btn bp" data-act="send">Send</button>
+      <input id="msgbox" placeholder="Write as ${role}..." style="margin:0; flex:1;">
+      <button class="btn btn-ink btn-sm" data-act="send">Send</button>
     </div>
   </div>
   `;
 }
 
-function trustCenter() {
-  const current = S.trackStep;
-  const steps = ['Order placed', 'Confirmed', 'Packed', 'Dispatched', 'Out for delivery', 'Delivered'];
+function trustCenterHTML() {
+  const step = S.trackStep;
+  const milestones = ['Order placed', 'Confirmed', 'Packed', 'Dispatched', 'Out for delivery', 'Delivered'];
   return `
-  <div style="margin-bottom:20px;">
-    <div style="font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--violet);">REACHR TRUST CENTER</div>
-    <h1 style="margin:6px 0 10px;">Every order. <span>Zero ambiguity.</span></h1>
-    <p class="lead">Live route simulation, escrow release safeguards, proof upload and bilateral evidence checklists.</p>
+  <div style="margin-bottom:32px;">
+    <span class="pill" style="margin-bottom:16px; display:inline-flex;"><span class="pill-dot"></span>REACHR TRUST HUB</span>
+    <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:clamp(32px,5vw,52px); letter-spacing:-0.04em; line-height:1; color:var(--ink); margin:8px 0 10px;">
+      Order protection.<br><em style="font-family:'Newsreader',serif; font-weight:300; font-style:italic; color:var(--terra);">Zero ambiguity.</em>
+    </h1>
+    <p class="lead">Courier milestones, evidence checklists, and bilateral proof uploads — all in one place.</p>
   </div>
 
-  <div class="tc-grid">
-    <!-- Live Route Tracker -->
-    <section class="tc-panel wide">
-      <div class="row" style="justify-content:space-between;">
-        <div>
-          <div class="tc-label">01 / Live Courier Simulation</div>
-          <h3 style="margin:4px 0 6px;">Real-Time Dispatch Progress</h3>
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+      <div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--mut); margin-bottom:4px;">Milestone 01</div>
+        <h3 class="subhead" style="font-size:17px; margin:0;">Doorstep Dispatch &amp; Courier Progress</h3>
+      </div>
+      <span class="pill">Simulated Transit</span>
+    </div>
+    <div class="courier-row">
+      ${milestones.map((x,i) => `
+        <div class="c-cell ${i<step?'done':i===step?'cur':''}">
+          <div class="c-dot">${i<step?'✓':i+1}</div>
+          ${x}
         </div>
-        <span style="background:rgba(33,212,180,0.15); color:#5ff2d7; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:700;">Simulated GPS</span>
-      </div>
+      `).join('')}
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px;">
+      <button class="btn btn-outline btn-sm" data-act="trackprev" ${step===0?'disabled':''}>← Prev Stage</button>
+      <button class="btn btn-ink btn-sm" data-act="tracknext" ${step===5?'disabled':''}>Advance Stage →</button>
+      <span style="font-size:13px; color:var(--mut); margin-left:auto;">Current: <strong>${milestones[step]}</strong></span>
+    </div>
+  </div>
 
-      <div class="tc-map">
-        <svg viewBox="0 0 700 240" preserveAspectRatio="xMidYMid slice" style="width:100%; height:100%;">
-          <rect width="700" height="240" fill="#0f192b"/>
-          <path d="M-20 40 L170 70 L240 20 L410 70 L540 20 L730 60 M-20 180 L130 150 L260 200 L420 160 L720 210" stroke="#1c2d47" stroke-width="16" fill="none"/>
-          <path d="M110 180 C190 160 200 90 286 100 S390 160 465 110 S540 90 590 60" fill="none" stroke="var(--violet)" stroke-width="4" stroke-dasharray="8 8"/>
-          <circle cx="110" cy="180" r="10" fill="var(--teal)"/>
-          <circle cx="590" cy="60" r="10" fill="var(--pink)"/>
-          <circle cx="${110 + current * 96}" cy="${180 - current * 24}" r="12" fill="var(--lemon)" stroke="#fff" stroke-width="3"/>
-          <text x="80" y="210" fill="#a5b0d1" font-size="11" font-weight="700">SHOP PICKUP</text>
-          <text x="560" y="40" fill="#a5b0d1" font-size="11" font-weight="700">DESTINATION</text>
-        </svg>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:16px;">
+    <div class="card">
+      <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--mut); margin-bottom:6px;">Milestone 02</div>
+      <h3 class="subhead" style="font-size:17px; margin:0 0 8px;">ProofVault™ Record</h3>
+      <p style="color:var(--mut); font-size:13.5px; line-height:1.5; margin:0 0 14px;">Attach unboxing or dispatch photos to permanently log item condition.</p>
+      <input type="file" id="tcProofFile" accept="image/*" style="margin-bottom:12px;">
+      <div id="tcProofPreview">
+        ${S.proofData ? `<img src="${S.proofData}" style="max-width:100%; max-height:160px; border-radius:10px; border:1px solid var(--line);" alt="Proof">` : `<p style="color:var(--mut); font-size:13px;">No proof image attached yet.</p>`}
       </div>
+    </div>
 
-      <div class="tc-track">
-        ${steps.map((x, i) => `
-          <div class="tc-step ${i < current ? 'done' : i === current ? 'current' : ''}">
-            <div class="tc-dot">${i < current ? '✓' : i + 1}</div>
-            ${x}
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="row" style="margin-top:14px;">
-        <button class="btn ghost" data-act="trackprev" ${current === 0 ? 'disabled' : ''} style="font-size:12px; padding:8px 16px;">← Previous Step</button>
-        <button class="btn bp" data-act="tracknext" ${current === 5 ? 'disabled' : ''} style="font-size:12px; padding:8px 16px;">Advance Courier Stage →</button>
-        <span style="color:var(--mut); font-size:12px; margin-left:auto;">Current: <b>${steps[current]}</b></span>
-      </div>
-    </section>
-
-    <!-- ProofVault Center -->
-    <section class="tc-panel">
-      <div class="tc-label">02 / ProofVault™ Center</div>
-      <h3 style="margin:4px 0 8px;">Delivery & Dispatch Proof</h3>
-      <p style="color:var(--mut); font-size:13px; line-height:1.4;">Attach parcel packing or delivery receipt images. Image renders instantly in local memory.</p>
-      <input type="file" id="tcProofFile" accept="image/*">
-      <div id="tcProofPreview" style="margin-top:8px;">
-        ${S.proofData ? `<img src="${S.proofData}" style="max-width:100%; max-height:140px; border-radius:12px;" alt="Delivery Proof">` : '<small style="color:var(--mut);">No proof uploaded yet</small>'}
-      </div>
-    </section>
-
-    <!-- AI Evidence Checklist -->
-    <section class="tc-panel">
-      <div class="tc-label">03 / FairResolve Evidence Builder</div>
-      <h3 style="margin:4px 0 8px;">AI Evidence Checklist</h3>
-      <select id="tcIssue">
+    <div class="card">
+      <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--mut); margin-bottom:6px;">Milestone 03</div>
+      <h3 class="subhead" style="font-size:17px; margin:0 0 8px;">Evidence Checklist</h3>
+      <select id="tcIssue" style="margin-bottom:8px;">
         <option>Item not as described</option>
         <option>Parcel missing in transit</option>
-        <option>Broken / defective upon opening</option>
+        <option>Transit damage</option>
       </select>
-      <textarea id="tcDetails" rows="2" placeholder="Describe the dispute situation...">${esc(S.tcDetails)}</textarea>
-      <button class="btn bv" data-act="aiassist" style="width:100%; justify-content:center; font-size:13px;">Generate Evidence Checklist</button>
-      <div style="margin-top:10px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:12px; padding:12px; font-size:12px; line-height:1.5; white-space:pre-wrap;">
-        ${S.aiResult ? esc(S.aiResult) : 'Click generate to view required evidence checklist.'}
+      <textarea id="tcDetails" rows="2" placeholder="Brief note about the issue...">${esc(S.tcDetails)}</textarea>
+      <button class="btn btn-outline" data-act="aiassist" style="width:100%; justify-content:center; font-size:13px;">Generate Evidence Checklist</button>
+      <div style="margin-top:12px; background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:12px; font-size:12.5px; line-height:1.6; white-space:pre-wrap; color:var(--ink2);">
+        ${S.aiResult ? esc(S.aiResult) : 'Select an issue type above to generate requirements.'}
       </div>
-    </section>
+    </div>
   </div>
   `;
 }
 
+/* ─── DRAW ───────────────────────────────────────────── */
 function draw() {
   const v = S.view;
-  document.getElementById('app').innerHTML = `
-    <nav>
-      <button class="logo" data-act="role" data-v="landing">
-        <i class="dot"></i>Reachr
-      </button>
 
-      ${v === 'landing' ? `
-        <div class="nl">
-          <button data-act="jump" data-v="features">Features</button>
-          <button data-act="jump" data-v="pricing">Pricing</button>
-          <button data-act="jump" data-v="faq">FAQ</button>
-        </div>
-      ` : ''}
+  document.getElementById('nav-wrap').innerHTML = navHTML(v);
 
-      <div class="tabs">
-        <button class="tab ${v === 'landing' ? 'on' : ''}" data-act="role" data-v="landing">Home</button>
-        <button class="tab ${v === 'seller' ? 'on' : ''}" data-act="role" data-v="seller">Seller</button>
-        <button class="tab ${v === 'customer' ? 'on' : ''}" data-act="role" data-v="customer">Buyer</button>
-        <button class="tab ${v === 'center' ? 'on' : ''}" data-act="role" data-v="center">Trust Hub</button>
-      </div>
+  if (v === 'landing') {
+    document.getElementById('root').innerHTML = landingHTML() + footerHTML();
+  } else {
+    document.getElementById('root').innerHTML = `<div class="app-wrap">` +
+      (v === 'seller' ? sellerHTML() : v === 'customer' ? customerHTML() : trustCenterHTML()) +
+      footerHTML() + `</div>`;
+  }
 
-      <div class="nav-actions">
-        <button class="dl-btn" data-act="download-file" title="Download this standalone HTML file">
-          <span>📥</span> Download HTML
-        </button>
-      </div>
-    </nav>
-    ${v === 'landing' ? landing() : v === 'seller' ? seller() : v === 'center' ? trustCenter() : customer()}
-    ${S.toast ? `<div class="toast">${esc(S.toast)}</div>` : ''}
-    <footer>
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <div><b>Reachr</b> — Smart Payment Links & 4-Stage Delivery Protection.</div>
-        <div>Offline Standalone Edition · MIT License 2026</div>
-      </div>
-    </footer>
-  `;
+  if (S.toast) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = S.toast;
+    document.body.appendChild(t);
+  }
 
   const c = document.getElementById('chat');
   if (c) c.scrollTop = c.scrollHeight;
+
+  // Wire search live
+  const q = document.getElementById('q');
+  if (q) q.addEventListener('input', e => { S.q = e.target.value; draw(); });
+
+  // Scroll reveals
+  requestAnimationFrame(() => {
+    const els = document.querySelectorAll('.r, .r-left, .r-scale');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    els.forEach(el => {
+      // Elements already in view should fire immediately
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 30) {
+        el.classList.add('on');
+      } else {
+        io.observe(el);
+      }
+    });
+  });
 }
 
-// Global click event dispatcher
+/* ─── EVENT BUS ──────────────────────────────────────── */
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if (!b) return;
@@ -878,62 +1570,71 @@ document.addEventListener('click', e => {
   const role = S.view === 'seller' ? 'seller' : 'customer';
 
   if (a === 'download-file') {
-    // Generates a native download of the current HTML document
     const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.href = url;
-    downloadAnchor.download = 'Reachr_Standalone.html';
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const lnk = Object.assign(document.createElement('a'), { href: url, download: 'Reachr.html' });
+    document.body.appendChild(lnk); lnk.click(); lnk.remove();
     URL.revokeObjectURL(url);
-    toast('Downloaded Reachr_Standalone.html to your device!');
+    toast('Saved Reachr.html');
     return;
   }
 
-  if (a === 'role') { S.view = b.dataset.v; S.sel = null; draw(); return; }
-  if (a === 'open') { S.sel = b.dataset.id; draw(); return; }
-  if (a === 'back') { S.sel = null; draw(); return; }
-  if (a === 'method') { S.method = b.dataset.v; S.app = PM[S.method].opts[0]; draw(); return; }
-  if (a === 'app') { S.app = b.dataset.v; draw(); return; }
-  if (a === 'jump') { document.getElementById(b.dataset.v)?.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (a === 'scroll-create') { document.getElementById('create-card')?.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (a === 'toggle-bill') { S.billingAnnual = b.dataset.v === 'annual'; draw(); return; }
-  if (a === 'tracknext') { S.trackStep = Math.min(5, S.trackStep + 1); draw(); return; }
-  if (a === 'trackprev') { S.trackStep = Math.max(0, S.trackStep - 1); draw(); return; }
+  if (a === 'role')         { S.view = b.dataset.v; S.sel = null; draw(); return; }
+  if (a === 'open')         { S.sel = b.dataset.id; draw(); return; }
+  if (a === 'back')         { S.sel = null; draw(); return; }
+  if (a === 'method')       { S.method = b.dataset.v; S.app = PM[S.method].apps[0]; draw(); return; }
+  if (a === 'app')          { S.app = b.dataset.v; draw(); return; }
+  if (a === 'toggle-bill')  { S.billingAnnual = b.dataset.v === 'annual'; draw(); return; }
+  if (a === 'tracknext')    { S.trackStep = Math.min(5, S.trackStep + 1); draw(); return; }
+  if (a === 'trackprev')    { S.trackStep = Math.max(0, S.trackStep - 1); draw(); return; }
+  if (a === 'scroll-create') { document.getElementById('create-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
 
   if (a === 'copy' && l) {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(location.href).then(() => toast('Payment link copied!')).catch(() => toast('Link copied!'));
-    } else {
-      toast('Payment link copied!');
-    }
+    navigator.clipboard?.writeText(location.href).catch(() => {});
+    toast('Payment link copied!');
     return;
   }
 
-  if (a === 'cashin' && l) {
-    l.status = 'paid';
-    l.messages.push(sm('system', 'Reachr', 'Seller recorded full cash payment upon parcel delivery.'));
-    toast('Recorded cash payment of ' + inr(l.amount));
-    draw();
+  if (a === 'copyvpa' && l) {
+    navigator.clipboard?.writeText(l.businessVpa).catch(() => {});
+    toast('UPI VPA copied: ' + l.businessVpa);
+    return;
+  }
+
+  // ── REAL UPI DEEP LINK ──────────────────────────────
+  if (a === 'pay-upi' && l) {
+    triggerUPI(l.businessVpa, l.businessName, l.amount, l.note, S.app);
+    // Optimistically mark paid after a moment (demo)
+    setTimeout(() => {
+      l.status = 'paid';
+      l.messages.push(msg('system', 'Reachr', `Payment of ${inr(l.amount)} initiated via ${S.app}.`));
+      toast(`Opening ${S.app}…`);
+      draw();
+    }, 600);
     return;
   }
 
   if (a === 'pay' && l) {
     l.status = 'paid';
-    l.messages.push(sm('system', 'Reachr', 'Payment of ' + inr(l.amount) + ' confirmed via ' + S.app + '.'));
-    toast('Payment confirmed via ' + S.app);
+    l.messages.push(msg('system', 'Reachr', `Payment of ${inr(l.amount)} confirmed via ${S.app}.`));
+    toast('Payment confirmed!');
+    draw();
+    return;
+  }
+
+  if (a === 'cashin' && l) {
+    l.status = 'paid';
+    l.messages.push(msg('system', 'Reachr', 'Seller recorded doorstep cash payment.'));
+    toast('Cash payment recorded — ' + inr(l.amount));
     draw();
     return;
   }
 
   if (a === 'send' && l) {
-    const input = document.getElementById('msg');
-    if (!input || !input.value.trim()) return;
-    const txt = input.value.trim();
-    l.messages.push(sm(role, role === 'seller' ? l.businessName : l.customerName, txt));
-    input.value = '';
+    const inp = document.getElementById('msgbox');
+    if (!inp?.value.trim()) return;
+    l.messages.push(msg(role, role === 'seller' ? l.businessName : l.customerName, inp.value.trim()));
+    inp.value = '';
     draw();
     return;
   }
@@ -943,51 +1644,49 @@ document.addEventListener('click', e => {
     l.status = 'disputed';
     l.dispute = {
       id: 'd' + Date.now(),
-      raisedAt: clock(),
+      raisedAt: clk(),
       reason: rsn,
       currentStage: 1,
-      timeline: [
-        { stage: 1, title: 'Dispute Raised', description: 'Buyer reported: ' + rsn, timestamp: clock(), actor: 'customer' }
-      ]
+      timeline: [{ stage: 1, title: 'Inquiry Raised', description: 'Buyer reported: ' + rsn, ts: clk(), actor: 'customer' }]
     };
-    l.messages.push(sm('system', 'Reachr', 'Dispute initiated: ' + rsn + '. Seller notified to submit proposal.'));
-    toast('Dispute initiated');
+    l.messages.push(msg('system', 'Reachr', 'FairResolve inquiry started: ' + rsn));
+    toast('Inquiry raised — seller notified');
     draw();
     return;
   }
 
-  if (a === 'propose' && l && l.dispute) {
+  if (a === 'propose' && l?.dispute) {
     const sol = document.getElementById('sol')?.value.trim();
-    if (!sol) return toast('Please enter a proposal');
+    if (!sol) return toast('Please enter a proposal first');
     l.dispute.proposedSolution = sol;
-    ev(l.dispute, 2, 'Seller Proposal', 'Seller offered: ' + sol, 'seller');
-    l.messages.push(sm('seller', l.businessName, 'Proposed resolution: ' + sol));
-    toast('Proposal submitted to buyer');
+    addEv(l.dispute, 2, 'Seller Proposal', 'Seller offered: ' + sol, 'seller');
+    l.messages.push(msg('seller', l.businessName, 'Proposed: ' + sol));
+    toast('Proposal sent to buyer');
     draw();
     return;
   }
 
-  if (a === 'accept' && l && l.dispute) {
-    ev(l.dispute, 4, 'Resolved by Agreement', 'Buyer accepted seller proposal.', 'customer');
+  if (a === 'accept' && l?.dispute) {
+    addEv(l.dispute, 4, 'Resolved by Agreement', 'Buyer accepted seller proposal.', 'customer');
     l.status = 'resolved';
-    l.messages.push(sm('system', 'Reachr', 'Dispute resolved amicably by mutual agreement.'));
-    toast('Dispute successfully resolved!');
+    l.messages.push(msg('system', 'Reachr', 'Dispute resolved amicably.'));
+    toast('Dispute resolved!');
     draw();
     return;
   }
 
-  if (a === 'reject' && l && l.dispute) {
-    ev(l.dispute, 3, 'Reachr Review Requested', 'Buyer requested Reachr neutral mediator review.', 'customer');
-    l.messages.push(sm('system', 'Reachr', 'Neutral mediation assigned. Proof review in progress.'));
-    toast('Mediator review requested');
+  if (a === 'reject' && l?.dispute) {
+    addEv(l.dispute, 3, 'Neutral Review Requested', 'Buyer requested mediator review.', 'customer');
+    l.messages.push(msg('system', 'Reachr', 'Neutral mediation assigned. Proof review in progress.'));
+    toast('Neutral review requested');
     draw();
     return;
   }
 
-  if (a === 'reviewcomplete' && l && l.dispute) {
-    ev(l.dispute, 4, 'Resolved via Mediation', 'Review completed with balanced resolution.', 'reviewer');
+  if (a === 'reviewcomplete' && l?.dispute) {
+    addEv(l.dispute, 4, 'Resolved via Mediation', 'Balanced resolution by Reachr Trust & Safety.', 'reviewer');
     l.status = 'resolved';
-    l.messages.push(sm('system', 'Reachr', 'Dispute concluded by Reachr Trust & Safety.'));
+    l.messages.push(msg('system', 'Reachr', 'Dispute concluded by Reachr Trust & Safety.'));
     toast('Mediation completed');
     draw();
     return;
@@ -995,64 +1694,44 @@ document.addEventListener('click', e => {
 
   if (a === 'aiassist') {
     const issue = document.getElementById('tcIssue')?.value || 'Issue';
-    const detail = document.getElementById('tcDetails')?.value.trim() || 'No specifics';
-    S.aiResult = `FAIRRESOLVE EVIDENCE CHECKLIST for ${issue}:\n\n1. Timestamped photos of unboxing or package state.\n2. Original product description & promised specifications.\n3. Courier tracking number and geotagged delivery log.\n4. Prior chat communications regarding the defect or delay.\n\nSummary note: ${detail}`;
-    toast('Checklist generated!');
+    const det = document.getElementById('tcDetails')?.value.trim() || 'No notes';
+    S.aiResult = `EVIDENCE CHECKLIST — ${issue}\n\n1. Timestamped unboxing or package-state photos\n2. Original product listing specifications screenshot\n3. Courier tracking number and geotagged delivery receipt\n4. Order chat communications log\n5. Payment confirmation screenshot\n\nNote: ${det}`;
+    toast('Checklist generated');
     draw();
     return;
   }
 });
 
-// Image upload preview for ProofVault
 document.addEventListener('change', e => {
   if (e.target.id === 'tcProofFile') {
-    const file = e.target.files && e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      S.proofData = reader.result;
-      toast('Photo attached to ProofVault');
-      draw();
-    };
+    reader.onload = () => { S.proofData = reader.result; toast('Photo attached to ProofVault'); draw(); };
     reader.readAsDataURL(file);
   }
 });
 
-// Form submit for link creation
 document.addEventListener('submit', e => {
   if (e.target.id === 'nf') {
     e.preventDefault();
     const name = document.getElementById('cn').value.trim();
-    const amt = +document.getElementById('am').value;
+    const amt  = +document.getElementById('am').value;
     const note = document.getElementById('nt').value.trim();
     const link = {
       id: 'l' + Date.now(),
-      linkCode: 'RCH-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-      customerName: name,
-      amount: amt,
-      note: note,
-      businessName: BIZ,
-      businessVpa: VPA,
+      linkCode: 'RCH-' + Math.random().toString(36).slice(2,6).toUpperCase(),
+      customerName: name, amount: amt, note,
+      businessName: BIZ, businessVpa: VPA,
       status: 'pending',
-      messages: [sm('seller', BIZ, 'Hi ' + name + '! Here is your Reachr payment link: ' + note)]
+      messages: [msg('seller', BIZ, `Hi ${name}! Payment link ready for: ${note}. Includes 4-stage delivery protection.`)]
     };
     S.links.unshift(link);
-    toast('Created SmartPay link ' + link.linkCode);
     S.sel = link.id;
+    toast('Created link ' + link.linkCode);
     draw();
   }
 });
-
-// Cursor glow
-if (window.matchMedia && matchMedia('(pointer:fine)').matches) {
-  const sp = document.createElement('div');
-  sp.className = 'spot';
-  document.body.appendChild(sp);
-  window.addEventListener('pointermove', e => {
-    sp.style.left = e.clientX + 'px';
-    sp.style.top = e.clientY + 'px';
-  });
-}
 
 draw();
 </script>

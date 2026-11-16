@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reachr | Smart Payment Links & Delivery Protection</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop stop-color=%22%23a855f7%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ec4899%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2240%22 height=%2240%22 rx=%2211%22 fill=%22%230e091c%22/%3E%3Cpath d=%22M13 31V9H21C27.5 9 28 13.5 28 16C28 19 25.5 22 21 22H13%22 fill=%22none%22 stroke=%22url(%23g)%22 stroke-width=%225.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M20 22L28.5 31%22 fill=%22none%22 stroke=%22%23c084fc%22 stroke-width=%225.6%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Base Tokens */
+:root {
+  --ph: min(60svh, 580px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Light Theme (Apple Clean) */
+html[data-theme="light"] {
+  --bg: #fbfbfd;
+  --bg2: #f5f5f7;
+  --nav-bg: rgba(251, 251, 253, 0.86);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: #d2d2d7;
+  --fg: #1d1d1f;
+  --fg-sub: #424245;
+  --mut: #6e6e73;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --grad: linear-gradient(90deg, #ff9f0a, #ff6b57 35%, #2bc4b4 70%, #0a84ff);
+  --phone-bezel: #161617;
+  --phone-rim: #3a3a3c;
+  --scr-bg: #ffffff;
+  --scr-fg: #1d1d1f;
+  --scr-mut: #6e6e73;
+  --scr-card: #f5f5f7;
+  --scr-border: #ececf0;
+  --card-text: #4a4a4f;
+  --side-bg: rgba(251, 251, 253, 0.96);
+  --glow-a: rgba(255, 159, 10, 0.28);
+  --glow-b: rgba(43, 196, 180, 0.26);
+  --glow-c: rgba(10, 132, 255, 0.22);
+  color-scheme: light;
+}
+
+/* Purple Theme (Midnight Violet / Neon Amethyst) */
+html[data-theme="purple"] {
+  --bg: #0c0817;
+  --bg2: #140d27;
+  --nav-bg: rgba(12, 8, 23, 0.88);
+  --border: rgba(168, 85, 247, 0.2);
+  --border-strong: rgba(168, 85, 247, 0.35);
+  --fg: #f5f3ff;
+  --fg-sub: #d8b4fe;
+  --mut: #9d8ec2;
+  --accent: #a855f7;
+  --accent-hover: #9333ea;
+  --grad: linear-gradient(90deg, #f472b6, #c084fc 35%, #818cf8 70%, #38bdf8);
+  --phone-bezel: #090514;
+  --phone-rim: #7c3aed;
+  --scr-bg: #160f2e;
+  --scr-fg: #f5f3ff;
+  --scr-mut: #a78bfa;
+  --scr-card: #20173e;
+  --scr-border: rgba(168, 85, 247, 0.22);
+  --card-text: #ddd6fe;
+  --side-bg: rgba(15, 10, 28, 0.96);
+  --glow-a: rgba(192, 132, 252, 0.35);
+  --glow-b: rgba(236, 72, 153, 0.32);
+  --glow-c: rgba(139, 92, 246, 0.3);
+  color-scheme: dark;
+}
+
+html {
+  scroll-padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  scroll-behavior: smooth;
+  background: var(--bg);
+  transition: background-color 0.35s ease;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  line-height: 1.47;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  z-index: 60;
+}
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.grad {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+h2 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.08; margin: 0; }
+
+/* Navigation */
+.nav {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.35s, border-color 0.35s;
+}
+.nav-in {
+  max-width: 1080px;
+  margin: 0 auto;
+  height: 54px;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -.04em;
+  text-decoration: none;
+}
+.nav ul { display: flex; gap: 26px; list-style: none; margin: 0; padding: 0; font-size: .84rem; }
+.nav ul a { color: var(--fg-sub); text-decoration: none; transition: color .2s; }
+.nav ul a:hover { color: var(--fg); }
+.nav-r { display: flex; align-items: center; gap: 10px; }
+
+/* Theme Switcher Toggle */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(125, 125, 125, 0.12);
+  border: 1px solid var(--border);
+  border-radius: 980px;
+  padding: 3px;
+  gap: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.theme-btn {
+  border: none;
+  background: transparent;
+  color: var(--mut);
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 980px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.25s ease;
+}
+.theme-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.pill {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 980px;
+  padding: 7px 16px;
+  font-size: .82rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .2s, transform .15s;
+}
+.pill:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.ib {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(125,125,125, 0.08);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--fg);
+  transition: background .2s, border-color .2s;
+}
+.ib:hover { background: rgba(125,125,125, 0.16); }
+
+/* Hero Section */
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 64px 22px 20px;
+  overflow: visible;
+}
+.hero .k { font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--accent); }
+.hero h1 { font-size: clamp(3rem, 8.5vw, 6.2rem); font-weight: 700; letter-spacing: -.05em; line-height: 1.02; margin: 8px auto 0; }
+.sub { font-size: clamp(1.05rem, 2vw, 1.4rem); color: var(--fg-sub); max-width: 36ch; margin: 20px auto 0; }
+.ctas { display: flex; gap: 20px; justify-content: center; align-items: center; margin-top: 28px; flex-wrap: wrap; }
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 980px;
+  padding: 13px 26px;
+  font: inherit;
+  font-size: 1.02rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .2s, transform .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.lnk { color: var(--accent); text-decoration: none; font-size: 1.02rem; font-weight: 500; }
+.lnk:hover { text-decoration: underline; }
+
+/* Enhanced Organic Glowing Atmosphere (No abrupt cutoffs) */
+.hero-stage {
+  position: relative;
+  margin-top: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(var(--ph) + 40px);
+}
+.ambient-glows {
+  position: absolute;
+  inset: -120px -80px -80px -80px;
+  pointer-events: none;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 0;
+}
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(85px);
+  -webkit-filter: blur(85px);
+  opacity: 0.85;
+  transition: background 0.6s ease;
+  will-change: transform;
+}
+.glow-orb.left {
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, var(--glow-a) 0%, transparent 72%);
+  transform: translate(-220px, -40px);
+}
+.glow-orb.right {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, var(--glow-b) 0%, transparent 72%);
+  transform: translate(240px, -20px);
+}
+.glow-orb.center {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--glow-c) 0%, transparent 75%);
+  transform: translateY(60px);
+}
+
+/* Phone Mockup Frame */
+.phone {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  height: var(--ph);
+  width: calc(var(--ph) * .48);
+  background: var(--phone-bezel);
+  border-radius: 15cqw;
+  container-type: inline-size;
+  padding: 0;
+  box-shadow: 0 0 0 1.5px var(--phone-rim) inset, 0 35px 80px -15px rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.25);
+  transition: background-color 0.35s, box-shadow 0.35s;
+}
+.phone .scr {
+  position: absolute;
+  inset: 2.6%;
+  border-radius: 12.6% / 6%;
+  background: var(--scr-bg);
+  color: var(--scr-fg);
+  overflow: hidden;
+  container-type: inline-size;
+  transition: background-color 0.35s, color 0.35s;
+}
+.phone .scr::after {
+  content: "";
+  position: absolute;
+  top: 2.6cqw;
+  left: 50%;
+  width: 28cqw;
+  height: 7.4cqw;
+  margin-left: -14cqw;
+  background: #000;
+  border-radius: 9cqw;
+  z-index: 5;
+}
+
+/* Phone Screen Views */
+.pane {
+  position: absolute;
+  inset: 0;
+  padding: 4cqw 6.5cqw;
+  opacity: 0;
+  transform: translateY(14px) scale(.98);
+  transition: opacity .4s cubic-bezier(0.2, 0.8, 0.2, 1), transform .4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-size: 4.1cqw;
+  line-height: 1.35;
+  color: var(--scr-fg);
+  pointer-events: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.pane::-webkit-scrollbar { display: none; }
+.pane.on {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.sb { display: flex; justify-content: space-between; font-weight: 600; font-size: 3.8cqw; padding: 1cqw 2cqw 0; margin-bottom: 7.5cqw; }
+.who { display: flex; gap: 3cqw; align-items: center; font-weight: 600; }
+.av { width: 9.5cqw; height: 9.5cqw; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #ec4899); }
+.who small, .pane small { display: block; color: var(--scr-mut); font-weight: 500; font-size: 3.5cqw; }
+.tile { margin: 4cqw 0 3.5cqw; border-radius: 4.5cqw; aspect-ratio: 1.6; background: linear-gradient(135deg, #c084fc, #f472b6 45%, #60a5fa); }
+.it { margin: 0; color: var(--scr-mut); }
+.am { margin: 0 0 2.5cqw; font-size: 11cqw; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; }
+.rw { display: flex; justify-content: space-between; padding: 2.2cqw 0; border-top: 1px solid var(--scr-border); font-size: 3.9cqw; }
+.rw span { color: var(--scr-mut); }
+.rw b { font-weight: 600; }
+.pay { margin-top: 3.5cqw; background: var(--accent); color: #fff; text-align: center; font-weight: 600; border-radius: 4.5cqw; padding: 3.4cqw; }
+.pane h4 { margin: 0; font-size: 6.6cqw; letter-spacing: -.03em; font-weight: 700; }
+.tl { margin-top: 6cqw; position: relative; }
+.tl::before { content: ""; position: absolute; left: 2.4cqw; top: 2cqw; bottom: 8cqw; width: .7cqw; background: var(--scr-border); }
+.tl div { position: relative; padding-left: 8.5cqw; margin-bottom: 5.5cqw; color: var(--scr-mut); font-size: 3.8cqw; }
+.tl div b { display: block; color: var(--scr-fg); font-weight: 600; }
+.tl div::before { content: ""; position: absolute; left: 0; top: 1.2cqw; width: 5.2cqw; height: 5.2cqw; border-radius: 50%; background: var(--scr-border); }
+.tl .dn { color: var(--scr-fg); }
+.tl .dn::before { background: #10b981; }
+.tl .lv { color: var(--scr-fg); }
+.tl .lv::before { background: #a855f7; box-shadow: 0 0 0 1.6cqw rgba(168, 85, 247, 0.3); }
+.chip { display: inline-block; background: rgba(168, 85, 247, 0.18); color: var(--accent); border-radius: 980px; padding: 1.4cqw 3.6cqw; font-weight: 600; font-size: 3.6cqw; }
+.note { margin-top: 4.5cqw; background: var(--scr-card); border-radius: 4.5cqw; padding: 3.6cqw; font-size: 3.7cqw; color: var(--scr-fg); }
+
+/* Compact Ad in Phone Screen 4 */
+.ad-box { margin: 3cqw 0; border: 1px solid var(--scr-border); border-radius: 4.5cqw; overflow: hidden; }
+.ad-img { aspect-ratio: 2.7; background: linear-gradient(135deg, #c084fc, #f472b6 50%, #38bdf8); }
+.ad-body { padding: 2.8cqw 3.5cqw; font-size: 3.7cqw; }
+.ad-btn { background: var(--accent); color: #fff; border-radius: 3cqw; text-align: center; padding: 2cqw; font-weight: 600; margin-top: 2cqw; font-size: 3.6cqw; }
+
+/* Statement Section */
+.st { padding: 90px 0 70px; text-align: center; }
+.st p { margin: 0 auto; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; letter-spacing: -.035em; line-height: 1.2; max-width: 22em; }
+.st span { opacity: .2; transition: opacity .25s ease; }
+.st.active span { opacity: 1; }
+
+/* ZERO-LAG Interactive Four-Step Walkthrough Section */
+.how-section {
+  padding: 80px 0 110px;
+  background: var(--bg2);
+  transition: background-color 0.35s ease;
+  position: relative;
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+}
+.how-header h2 { margin-bottom: 12px; }
+.how-header p { color: var(--mut); font-size: 1.15rem; margin: 0 0 32px; max-width: 38ch; }
+
+/* Interactive Step Selector Cards (Zero Scroll Lag) */
+.step-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.step-card {
+  padding: 18px 22px;
+  border-radius: 20px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.step-card:hover {
+  transform: translateX(4px);
+  border-color: var(--border-strong);
+}
+.step-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  background: var(--bg);
+}
+.step-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.step-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mut);
+}
+.step-card.active .step-num {
+  color: var(--accent);
+}
+.step-card h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--fg);
+}
+.step-card p {
+  margin: 4px 0 0;
+  color: var(--mut);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.step-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+.step-card.active .step-progress {
+  animation: stepTimer 4.8s linear infinite;
+}
+@keyframes stepTimer {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* Bento Grid */
+.feat { padding: 120px 0 100px; }
+.feat h2 { max-width: 12em; margin-bottom: 48px; }
+.bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.card {
+  border-radius: 30px;
+  padding: 34px;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s;
+}
+.card:hover { transform: translateY(-4px); }
+.s2 { grid-column: span 2; }
+.card h3 { margin: 0 0 8px; font-size: 1.6rem; letter-spacing: -.03em; line-height: 1.15; font-weight: 700; }
+.card p { margin: 0; color: var(--card-text); max-width: 32ch; font-size: 1rem; }
+.soon {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: .7rem;
+  font-weight: 600;
+  background: rgba(125, 125, 125, 0.15);
+  border-radius: 99px;
+  padding: 2px 9px;
+  vertical-align: middle;
+  letter-spacing: 0;
+}
+
+/* Light theme card backgrounds */
+html[data-theme="light"] .c1 { background: #ffe8d6; }
+html[data-theme="light"] .c2 { background: #d9f5ea; }
+html[data-theme="light"] .c3 { background: #dcecff; }
+html[data-theme="light"] .c4 { background: #fff3c4; }
+html[data-theme="light"] .c5 { background: #ffe1dc; }
+html[data-theme="light"] .c6 { background: #e9eef2; }
+
+/* Purple theme card backgrounds */
+html[data-theme="purple"] .c1 { background: linear-gradient(145deg, #24133d, #2d174d); border: 1px solid rgba(244, 114, 182, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+html[data-theme="purple"] .c2 { background: linear-gradient(145deg, #13253b, #19344f); border: 1px solid rgba(45, 212, 191, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+html[data-theme="purple"] .c3 { background: linear-gradient(145deg, #1d143f, #281954); border: 1px solid rgba(168, 85, 247, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+html[data-theme="purple"] .c4 { background: linear-gradient(145deg, #2c1a3b, #3b204e); border: 1px solid rgba(251, 146, 60, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+html[data-theme="purple"] .c5 { background: linear-gradient(145deg, #2c122b, #3c193a); border: 1px solid rgba(244, 63, 94, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+html[data-theme="purple"] .c6 { background: linear-gradient(145deg, #181232, #211942); border: 1px solid rgba(129, 140, 248, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+.vis { margin-top: 24px; }
+.chipw { display: flex; gap: 10px; flex-wrap: wrap; }
+.chipw span {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 980px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: .92rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.big { font-size: clamp(2.8rem, 6.5vw, 4.6rem); font-weight: 700; letter-spacing: -.05em; line-height: 1; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); }
+.steps div { position: relative; text-align: center; font-size: .74rem; font-weight: 600; color: var(--fg); }
+.steps i {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid #2bc4b4;
+  margin: 0 auto 8px;
+  position: relative;
+  z-index: 1;
+}
+.steps .f i { background: #2bc4b4; }
+.steps div:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: #2bc4b4;
+  opacity: .5;
+}
+.four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.four div {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 10px;
+  font-weight: 600;
+  font-size: .85rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+.four b { display: block; font-size: 1.4rem; letter-spacing: -.03em; color: var(--accent); }
+.bars { display: flex; gap: 10px; align-items: flex-end; height: 110px; }
+.bars i { flex: 1; border-radius: 8px 8px 3px 3px; background: var(--grad); }
+.vb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  max-width: 270px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.vb i {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-style: normal;
+  font-weight: 700;
+}
+.vb small { display: block; color: var(--mut); font-weight: 500; }
+
+/* Discover Section */
+.disc { padding: 120px 0 100px; background: var(--bg2); transition: background-color 0.35s; }
+.dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.dl { list-style: none; padding: 0; margin: 26px 0 0; }
+.dl li { padding: 9px 0 9px 30px; position: relative; color: var(--fg-sub); }
+.dl li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+.hint { color: var(--mut); font-size: .95rem; margin: 22px 0 0; }
+.pane.col { display: flex; flex-direction: column; }
+.dch { display: flex; gap: 2cqw; margin: 3cqw 0 4cqw; overflow-x: auto; flex: none; scrollbar-width: none; }
+.dch::-webkit-scrollbar { display: none; }
+.dch button {
+  border: 1px solid var(--scr-border);
+  font: inherit;
+  font-size: 3.6cqw;
+  font-weight: 600;
+  padding: 1.8cqw 3.4cqw;
+  border-radius: 980px;
+  background: var(--scr-card);
+  color: var(--scr-fg);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dch button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.deck { position: relative; flex: 1; min-height: 0; margin-bottom: 3cqw; }
+.sc {
+  position: absolute;
+  inset: 0;
+  border-radius: 6cqw;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  box-shadow: 0 2cqw 6cqw rgba(0,0,0,.25);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s;
+}
+.sc.drag { transition: none; cursor: grabbing; }
+.sc::before { content: ""; position: absolute; width: 70cqw; height: 70cqw; border-radius: 50%; background: rgba(255,255,255,.2); top: -18cqw; right: -20cqw; }
+.sc .in { position: relative; padding: 5cqw; background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.8) 45%); color: #fff; }
+.sc .nm { font-size: 6cqw; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
+.sc .pr { font-size: 5cqw; font-weight: 700; margin: 1cqw 0; }
+.sc .sl { display: flex; align-items: center; gap: 1.6cqw; font-size: 3.6cqw; color: #eee; }
+.sc .sl i { width: 4.4cqw; height: 4.4cqw; border-radius: 50%; background: #10b981; color: #fff; font-style: normal; font-size: 2.8cqw; display: grid; place-items: center; }
+.sp { position: absolute; top: 4cqw; left: 4cqw; background: rgba(255,255,255,.92); color: #1d1d1f; border-radius: 980px; padding: 1cqw 3cqw; font-size: 3.2cqw; font-weight: 600; }
+.stamp { position: absolute; top: 10cqw; font-size: 6cqw; font-weight: 800; border: .9cqw solid; border-radius: 2cqw; padding: .6cqw 2.4cqw; opacity: 0; background: rgba(0,0,0,.6); }
+.stamp.o { left: 5cqw; color: #34d399; border-color: #34d399; transform: rotate(-12deg); }
+.stamp.k { right: 5cqw; color: #f87171; border-color: #f87171; transform: rotate(12deg); }
+.acts { display: flex; justify-content: center; gap: 8cqw; padding-bottom: 2cqw; flex: none; }
+.acts button {
+  width: 15cqw;
+  height: 15cqw;
+  border-radius: 50%;
+  border: 1px solid var(--scr-border);
+  background: var(--scr-card);
+  box-shadow: 0 1cqw 4cqw rgba(0,0,0,.18);
+  font-size: 6.4cqw;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.acts .no { color: #ef4444; }
+.acts .yes { color: #10b981; }
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--scr-bg);
+  border-top: 1px solid var(--scr-border);
+  border-radius: 6cqw 6cqw 0 0;
+  padding: 6cqw 7cqw 8cqw;
+  box-shadow: 0 -2cqw 8cqw rgba(0,0,0,.3);
+  transform: translateY(105%);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1);
+  z-index: 4;
+}
+.sheet.on { transform: none; }
+.sheet .pay, .empty .pay { display: block; width: 100%; border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.pay.ghost { background: none; color: var(--scr-mut); margin-top: 1cqw; }
+.empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; color: var(--scr-mut); gap: 4cqw; padding: 0 8cqw; }
+.empty .pay { width: auto; padding: 3cqw 7cqw; }
+
+/* Pricing Section */
+.price { padding: 40px 0 120px; }
+.price h2 { margin-bottom: 14px; }
+.sub2 { color: var(--mut); font-size: 1.2rem; margin: 0 0 46px; max-width: 34em; }
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.plan {
+  border-radius: 30px;
+  padding: 34px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  transition: transform .25s ease, border-color .3s;
+}
+.plan:hover { transform: translateY(-4px); }
+.plan h3 { margin: 0; font-size: 1.5rem; letter-spacing: -.03em; }
+.plan .pr { font-size: 2.6rem; font-weight: 700; letter-spacing: -.04em; margin: 12px 0 0; min-height: 3.4rem; display: flex; align-items: flex-end; }
+.plan .pr small { font-size: 1rem; font-weight: 500; color: var(--mut); letter-spacing: 0; padding-bottom: 6px; }
+.plan ul { list-style: none; padding: 0; margin: 20px 0 28px; flex: 1; }
+.plan li { padding: 10px 0 10px 28px; position: relative; border-top: 1px solid var(--border); font-size: .98rem; }
+.plan li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+.plan .btn { text-align: center; justify-content: center; }
+
+/* Pro tier */
+html[data-theme="light"] .plan.pro {
+  background: #1d1d1f;
+  color: #fff;
+  border-color: #1d1d1f;
+}
+html[data-theme="light"] .plan.pro li { border-color: #3a3a3c; }
+html[data-theme="light"] .plan.pro .pr small { color: #a1a1a6; }
+
+html[data-theme="purple"] .plan.pro {
+  background: linear-gradient(150deg, #2b1154, #1b0a38);
+  border: 1.5px solid #a855f7;
+  color: #fff;
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.25);
+}
+html[data-theme="purple"] .plan.pro li { border-color: rgba(168, 85, 247, 0.25); }
+
+.tg {
+  font-style: normal;
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 600;
+  background: var(--grad);
+  color: #fff;
+  border-radius: 99px;
+  padding: 3px 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: 0;
+}
+
+/* Bottom Launch CTA (Replaces old Early Access form) */
+.launch-cta {
+  padding: 60px 0 80px;
+}
+.launch-box {
+  border-radius: 36px;
+  padding: 70px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+html[data-theme="light"] .launch-box {
+  background: linear-gradient(135deg, #fff2e5, #e0f5ee 50%, #e6efff);
+}
+html[data-theme="purple"] .launch-box {
+  background: linear-gradient(135deg, #241142, #160a2c 50%, #0d071d);
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 10px 40px rgba(168, 85, 247, 0.15);
+}
+.launch-box h2 { font-size: clamp(2.4rem, 6vw, 4.4rem); margin-bottom: 12px; }
+.launch-box p { font-size: 1.2rem; color: var(--fg-sub); margin: 0 auto 30px; max-width: 44ch; }
+
+/* Footer */
+footer { padding: 50px 0 40px; color: var(--mut); font-size: .84rem; }
+footer .wrap { border-top: 1px solid var(--border); padding-top: 22px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+/* Side Panel */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .35s; z-index: 70; }
+.side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: min(400px, 90vw);
+  z-index: 80;
+  background: var(--side-bg);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  transform: translateX(104%);
+  visibility: hidden;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), visibility .45s;
+  padding: calc(22px + env(safe-area-inset-top,0px)) 26px calc(26px + env(safe-area-inset-bottom,0px));
+  overflow-y: auto;
+  border-radius: 28px 0 0 28px;
+  border-left: 1px solid var(--border);
+  box-shadow: -20px 0 60px rgba(0,0,0,.35);
+}
+body.open .side { transform: none; visibility: visible; }
+body.open .scrim { opacity: 1; pointer-events: auto; }
+.side header { display: flex; justify-content: space-between; align-items: center; }
+.side h3 { margin: 0; font-size: 1.6rem; letter-spacing: -.03em; }
+.side>p { margin: 6px 0 0; color: var(--mut); }
+.side ul { list-style: none; margin: 20px 0 0; padding: 0; }
+.side li {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.side li:hover { background: rgba(125, 125, 125, 0.08); }
+.ico { flex: none; width: 42px; height: 42px; border-radius: 12px; }
+.side b { display: block; font-weight: 600; color: var(--fg); }
+.side li span { font-size: .9rem; color: var(--mut); }
+
+.rv { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+.rv.in { opacity: 1; transform: none; }
+
+@media (max-width: 880px) {
+  .nav ul { display: none; }
+  .phone { box-shadow: 0 0 0 1.5px var(--phone-rim) inset, 0 16px 30px -12px rgba(0,0,0,.4); }
+  :root { --ph: min(54svh, 500px); }
+  .how-grid { grid-template-columns: 1fr; gap: 36px; }
+  .how-grid .phw { order: -1; }
+  .plans { grid-template-columns: 1fr; }
+  .dgrid { grid-template-columns: 1fr; gap: 36px; }
+  #dp { --ph: min(64svh, 560px)!important; }
+  .bento { grid-template-columns: 1fr; }
+  .s2 { grid-column: auto; }
+  .glow-orb.left { width: 320px; height: 320px; transform: translate(-120px, -20px); }
+  .glow-orb.right { width: 340px; height: 340px; transform: translate(140px, -10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none!important; animation: none!important; scroll-behavior: auto!important; }
+  .rv { opacity: 1; transform: none; }
+  .st span { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in">
+  <a class="logo" href="#top" aria-label="Reachr home">
+    <svg width="30" height="30" viewBox="0 0 40 40" aria-hidden="true">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="#ffb02e"/>
+          <stop offset="1" stop-color="#ff5a4a"/>
+        </linearGradient>
+      </defs>
+      <rect width="40" height="40" rx="11" fill="#140d27"/>
+      <path d="M13 31V9H21C27.5 9 28 13.5 28 16C28 19 25.5 22 21 22H13" fill="none" stroke="url(#lg)" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 22L28.5 31" fill="none" stroke="#2bc4b4" stroke-width="5.6" stroke-linecap="round"/>
+    </svg>
+    reachr
+  </a>
+  
+  <ul>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#discover">Discover</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+
+  <div class="nav-r">
+    <!-- Light & Purple Mode Switcher -->
+    <div class="theme-switch" role="radiogroup" aria-label="Appearance switcher">
+      <button class="theme-btn active" id="btn-light" type="button" aria-checked="true" role="radio">
+        ☀️ Light
+      </button>
+      <button class="theme-btn" id="btn-purple" type="button" aria-checked="false" role="radio">
+        🔮 Purple
+      </button>
+    </div>
+
+    <a class="pill" href="http://localhost:3000/">Open App</a>
+    <button class="ib" id="menu" type="button" aria-label="More features" aria-expanded="false" aria-controls="side">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+  </div>
+</div></nav>
+
+<div class="scrim" id="scrim"></div>
+<aside class="side" id="side" aria-label="Features & Tools">
+  <header>
+    <h3>Reachr Tools</h3>
+    <button class="ib" id="x" type="button" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <path d="M5 5l14 14M19 5L5 19"/>
+      </svg>
+    </button>
+  </header>
+  <p>Available features for sellers and buyers.</p>
+  <ul>
+    <li onclick="window.location.href='http://localhost:3000/#seller'">
+      <i class="ico" style="background:linear-gradient(135deg,#ff9f0a,#ff6b57)"></i>
+      <div><b>Seller Console</b><span>Create payment links and track balances in real-time.</span></div>
+    </li>
+    <li onclick="window.location.href='http://localhost:3000/#buyer'">
+      <i class="ico" style="background:linear-gradient(135deg,#0a84ff,#2bc4b4)"></i>
+      <div><b>Buyer Tracking Portal</b><span>Track courier milestones with doorstep OTP verification.</span></div>
+    </li>
+    <li onclick="window.location.href='http://localhost:3000/#pay=RCH-DEMO'">
+      <i class="ico" style="background:linear-gradient(135deg,#2bc4b4,#8de0c7)"></i>
+      <div><b>Instant UPI Payment Link</b><span>Simulate protected checkout with money held in escrow.</span></div>
+    </li>
+    <li onclick="window.location.href='http://localhost:3000/#seller'">
+      <i class="ico" style="background:linear-gradient(135deg,#ffd166,#ff9f0a)"></i>
+      <div><b>Automated Invoicing & Receipts</b><span>Generate printable GST-compliant receipts for buyers.</span></div>
+    </li>
+    <li onclick="window.location.href='http://localhost:3000/#buyer'">
+      <i class="ico" style="background:linear-gradient(135deg,#ff6b57,#ff9f0a)"></i>
+      <div><b>Fair Dispute Center</b><span>Upload unboxing evidence with 4-stage transparent resolution.</span></div>
+    </li>
+    <li onclick="window.location.href='http://localhost:3000/'">
+      <i class="ico" style="background:linear-gradient(135deg,#a855f7,#ec4899)"></i>
+      <div><b>Product Swipe Feed</b><span>Tinder-style product discovery for verified Indian shops.</span></div>
+    </li>
+  </ul>
+</aside>
+
+<header class="hero" id="top">
+  <p class="k">Reachr</p>
+  <h1>Sell with<br><span class="grad">confidence.</span></h1>
+  <p class="sub">Payment links, protected delivery and promotion for sellers on Instagram, WhatsApp and YouTube.</p>
+  <div class="ctas">
+    <a class="btn" href="http://localhost:3000/#seller">Start Selling Online →</a>
+    <a class="lnk" href="#how">See how it works ›</a>
+  </div>
+  
+  <!-- Hero Device with Smooth Organic Glow (No Cutoff Edges) -->
+  <div class="hero-stage">
+    <div class="ambient-glows">
+      <div class="glow-orb left"></div>
+      <div class="glow-orb right"></div>
+      <div class="glow-orb center"></div>
+    </div>
+    <div class="phone" id="hp">
+      <div class="scr" id="hs"></div>
+    </div>
+  </div>
+</header>
+
+<section class="st" id="stSection">
+  <div class="wrap">
+    <p id="stm">Selling online runs on trust. Reachr gives the person selling and the person buying a way across: pay in a tap, follow the order, and settle any problem fairly.</p>
+  </div>
+</section>
+
+<!-- ZERO-LAG, SMOOTH INTERACTIVE FOUR-STEP WALKTHROUGH -->
+<section class="how-section" id="how">
+  <div class="wrap how-grid">
+    <div>
+      <div class="how-header">
+        <h2>Four steps.<br><span class="grad">One link.</span></h2>
+        <p>Click any step or watch the live phone preview update instantly with zero lag.</p>
+      </div>
+
+      <div class="step-cards" id="stepCards">
+        <!-- Step 1 -->
+        <div class="step-card active" data-step="0">
+          <div class="step-top">
+            <span class="step-num">Step 01</span>
+            <span class="chip">UPI Escrow</span>
+          </div>
+          <h3>Share a link.</h3>
+          <p>Your buyer pays through direct UPI. Money is held safely in escrow until the order arrives.</p>
+          <div class="step-progress"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card" data-step="1">
+          <div class="step-top">
+            <span class="step-num">Step 02</span>
+            <span class="chip">WhatsApp Milestones</span>
+          </div>
+          <h3>Follow the order.</h3>
+          <p>Live courier tracking sent to buyer and seller via WhatsApp so nobody has to ask where it is.</p>
+          <div class="step-progress"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card" data-step="2">
+          <div class="step-top">
+            <span class="step-num">Step 03</span>
+            <span class="chip">Photo Evidence</span>
+          </div>
+          <h3>Settle it fairly.</h3>
+          <p>Add photos or video, and 4 structured resolution stages take over, backed by courier tracking proof.</p>
+          <div class="step-progress"></div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-card" data-step="3">
+          <div class="step-top">
+            <span class="step-num">Step 04</span>
+            <span class="chip">Ad Attribution</span>
+          </div>
+          <h3>Reach more buyers.</h3>
+          <p>Promote your shop on Instagram, Facebook and YouTube, and see which exact ad brought a delivered sale.</p>
+          <div class="step-progress"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Interactive Walkthrough Phone Frame -->
+    <div class="phw" style="display:flex;justify-content:center;">
+      <div class="phone">
+        <div class="scr" id="ps"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feat" id="features"><div class="wrap">
+  <h2 class="rv">Everything it takes to close a sale.</h2>
+  <div class="bento">
+    <article class="card c1 s2 rv"><div><h3>Payments held until delivery.</h3><p>Buyers pay by UPI. The money is held safely and released to you once the order arrives.</p></div><div class="vis"><div class="big">₹1,250</div><div class="chipw" style="margin-top:14px"><span>UPI</span><span>Held till delivery</span></div></div></article>
+    <article class="card c2 rv"><div><h3>Follow every order.</h3><p>Courier updates, sent to WhatsApp.</p></div><div class="vis"><div class="steps"><div class="f"><i></i>Packed</div><div class="f"><i></i>Shipped</div><div class="f"><i></i>Nearby</div><div><i></i>Delivered</div></div></div></article>
+    <article class="card c3 rv"><div><h3>Verified sellers.</h3><p>Buyers see exactly who they’re paying.</p></div><div class="vis"><div class="vb"><i>✓</i><div><b>Asha’s Crafts</b><small>Verified by Reachr</small></div></div></div></article>
+    <article class="card c4 s2 rv"><div><h3>Promote your shop.</h3><p>Advertise a section on Instagram, Facebook and YouTube, and see which ad led to a real, delivered sale.</p></div><div class="vis"><div class="chipw"><span>Instagram</span><span>Facebook</span><span>YouTube</span></div><div class="big" style="font-size:2.6rem;margin-top:18px">14 sales <span style="font-size:1rem;font-weight:600;color:var(--mut);letter-spacing:0">from one ad</span></div></div></article>
+    <article class="card c5 rv"><div><h3>Fair disputes.</h3><p>Four stages, with photos as proof.</p></div><div class="vis"><div class="four"><div><b>1</b>Raise</div><div><b>2</b>Reply</div><div><b>3</b>Review</div><div><b>4</b>Resolve</div></div></div></article>
+    <article class="card c6 s2 rv"><div><h3>Your sales, at a glance.</h3><p>A simple dashboard for links, payments and orders.</p></div><div class="vis"><div class="bars"><i style="height:35%"></i><i style="height:55%"></i><i style="height:42%"></i><i style="height:70%"></i><i style="height:60%"></i><i style="height:88%"></i><i style="height:76%"></i></div></div></article>
+  </div>
+</div></section>
+
+<section class="disc" id="discover"><div class="wrap dgrid">
+  <div>
+    <h2 class="rv">Find it.<br><span class="grad">Swipe. Order.</span></h2>
+    <p class="l rv" style="color:var(--fg-sub)">Buyers browse sellers by category. Swipe right to order, swipe left to skip.</p>
+    <ul class="dl rv"><li>Only verified sellers appear.</li><li>Paid placements are always labelled Sponsored.</li><li>Every order is protected from the first tap.</li></ul>
+    <p class="hint rv">Try it on the phone: drag a card, or use the buttons.</p>
+  </div>
+  <div class="phw"><div class="phone" id="dp" style="--ph:min(66svh,600px)"><div class="scr"><div class="pane on col" id="dpane"></div></div></div></div>
+</div></section>
+
+<section class="price" id="pricing"><div class="wrap">
+  <h2 class="rv">Start free.<br>Grow when you’re ready.</h2>
+  <p class="sub2 rv">Protection is free for everyone. Paid plans add tools to run and promote your shop.</p>
+  <div class="plans">
+    <article class="plan rv">
+      <h3>Free</h3>
+      <div class="pr">₹0</div>
+      <ul>
+        <li>Payment links</li>
+        <li>Tracked delivery</li>
+        <li>Four-stage disputes</li>
+        <li>Seller verification</li>
+      </ul>
+      <a class="btn" href="http://localhost:3000/#seller">Start Free</a>
+    </article>
+    
+    <article class="plan rv">
+      <h3>Plus</h3>
+      <div class="pr">₹499<small>/mo</small></div>
+      <ul>
+        <li>Everything in Free</li>
+        <li>Seller dashboard</li>
+        <li>Receipts and invoices</li>
+        <li>QR payments</li>
+        <li>WhatsApp order updates</li>
+      </ul>
+      <a class="btn" href="http://localhost:3000/#seller">Upgrade to Plus</a>
+    </article>
+    
+    <article class="plan pro rv">
+      <h3>Pro <em class="tg">For growing shops</em></h3>
+      <div class="pr">₹1,499<small>/mo</small></div>
+      <ul>
+        <li>Everything in Plus</li>
+        <li>Promote on Instagram & YouTube</li>
+        <li>Featured placement in Discover</li>
+        <li>Sales reported per ad</li>
+        <li>Priority support</li>
+        <li>Team members</li>
+      </ul>
+      <a class="btn" href="http://localhost:3000/#seller">Go Pro</a>
+    </article>
+  </div>
+</div></section>
+
+<!-- Direct Launch CTA Banner (No waitlist form) -->
+<section class="launch-cta"><div class="wrap">
+  <div class="launch-box rv">
+    <h2>Ready to sell with <span class="grad">confidence?</span></h2>
+    <p>Generate smart payment links in seconds with automated delivery tracking and escrow protection.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a class="btn" href="http://localhost:3000/#seller">Open Seller Console</a>
+      <a class="btn" style="background:var(--bg);color:var(--fg);border:1.5px solid var(--border-strong)" href="http://localhost:3000/#buyer">Track Your Order</a>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap"><span>Reachr. Smart Payment Links & Delivery Protection.</span><span>Made by Kandipalli Muksh, GITAM</span></div></footer>
+
+<script>
+(function(){
+var $ = function(s){ return document.querySelector(s); },
+    $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+function clamp(x){ return Math.max(0, Math.min(1, x)); }
+
+// Theme Switcher Logic
+var htmlEl = document.documentElement;
+var btnLight = $('#btn-light');
+var btnPurple = $('#btn-purple');
+
+function setTheme(theme) {
+  htmlEl.setAttribute('data-theme', theme);
+  localStorage.setItem('reachr-theme', theme);
+  if(theme === 'purple') {
+    btnPurple.classList.add('active');
+    btnPurple.setAttribute('aria-checked', 'true');
+    btnLight.classList.remove('active');
+    btnLight.setAttribute('aria-checked', 'false');
+  } else {
+    btnLight.classList.add('active');
+    btnLight.setAttribute('aria-checked', 'true');
+    btnPurple.classList.remove('active');
+    btnPurple.setAttribute('aria-checked', 'false');
+  }
+}
+
+btnLight.addEventListener('click', function(){ setTheme('light'); });
+btnPurple.addEventListener('click', function(){ setTheme('purple'); });
+
+var savedTheme = localStorage.getItem('reachr-theme') || 'light';
+setTheme(savedTheme);
+
+// Phone Screen Mockups
+var SB='<div class="sb"><span>9:41</span><span>●●●</span></div>';
+var S1=SB+'<div class="who"><div class="av"></div><div>Asha’s Crafts<small>Payment link</small></div></div><div class="tile"></div><p class="it">Handloom stole</p><p class="am">₹1,250</p><div class="rw"><span>Payment</span><b>Direct UPI</b></div><div class="rw"><span>Delivery</span><b>Tracked</b></div><div class="rw"><span>Protection</span><b>Held till delivery</b></div><div class="pay">Pay with UPI</div>';
+var S2=SB+'<h4>Your order</h4><small>Handloom stole · Asha’s Crafts</small><div class="tl"><div class="dn"><b>Packed</b>Seller confirmed</div><div class="dn"><b>Shipped</b>On its way</div><div class="lv"><b>Out for delivery</b>Nearby destination</div><div><b>Delivered</b>Buyer confirms</div></div><span class="chip">Arriving today</span>';
+var S3=SB+'<h4>Something wrong?</h4><small>Dispute in progress</small><div class="tl"><div class="dn"><b>Raise it</b>Issue flagged</div><div class="dn"><b>Respond</b>Seller replied</div><div class="lv"><b>Review</b>Evidence checked</div><div><b>Resolve</b>Protected refund</div></div><div class="note">Photos and delivery milestone tracking attached as evidence.</div>';
+var S4=SB+'<h4>Promote</h4><small>Handloom sarees campaign</small><div class="ad-box"><div class="ad-img"></div><div class="ad-body"><b>Asha’s Crafts</b> <small style="display:inline;color:var(--scr-mut)">Sponsored</small><div class="ad-btn">Shop with protection</div></div></div><div class="rw"><span>Ad spend</span><b>₹2,000</b></div><div class="rw"><span>Protected sales</span><b>14</b></div><div class="rw"><span>Delivered</span><b>11</b></div>';
+
+$('#hs').innerHTML='<div class="pane on">'+S1+'</div>';
+$('#ps').innerHTML='<div class="pane on">'+S1+'</div><div class="pane">'+S2+'</div><div class="pane">'+S3+'</div><div class="pane">'+S4+'</div>';
+
+// Statement section word glow on scroll
+var stm=$('#stm'), words=stm.textContent.split(' ');
+stm.innerHTML=words.map(function(w){ return '<span>'+w+' </span>'; }).join('');
+var ws=$$('#stm span');
+
+// Smooth Intersection Observer for Elements
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+},{ threshold: 0.15 });
+$$('.rv').forEach(function(e){ io.observe(e); });
+
+// Statement Section Observer
+var stEl = $('#stSection');
+var stIo = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(e.isIntersecting){
+      ws.forEach(function(span, idx){
+        setTimeout(function(){ span.style.opacity = '1'; }, idx * 25);
+      });
+    }
+  });
+},{ threshold: 0.3 });
+if(stEl) stIo.observe(stEl);
+
+// ZERO-LAG STEP WALKTHROUGH CONTROLLER
+var stepCards = $$('.step-card');
+var stepPanes = $$('#ps .pane');
+var currentStep = 0;
+var stepTimer = null;
+var isHovering = false;
+
+function activateStep(idx) {
+  currentStep = idx;
+  stepCards.forEach(function(card, i){
+    card.classList.toggle('active', i === idx);
+  });
+  stepPanes.forEach(function(pane, i){
+    pane.classList.toggle('on', i === idx);
+  });
+}
+
+function nextStep() {
+  if (isHovering) return;
+  var next = (currentStep + 1) % stepCards.length;
+  activateStep(next);
+}
+
+// Click to switch immediately
+stepCards.forEach(function(card){
+  card.addEventListener('click', function(){
+    var idx = parseInt(this.getAttribute('data-step'), 10);
+    activateStep(idx);
+    resetTimer();
+  });
+  card.addEventListener('mouseenter', function(){ isHovering = true; });
+  card.addEventListener('mouseleave', function(){ isHovering = false; });
+});
+
+function resetTimer() {
+  if (stepTimer) clearInterval(stepTimer);
+  stepTimer = setInterval(nextStep, 4800);
+}
+resetTimer();
+
+// Discover: Swipe to Order
+(function(){
+var D={
+  Sarees:[['Kalamkari silk saree',3200,'Asha’s Looms',1,'#9333ea','#ec4899'],['Handloom cotton saree',1450,'Vani Weaves',0,'#a855f7','#f43f5e'],['Ikat dupatta',980,'Rekha Textiles',0,'#7c3aed','#db2777']],
+  Handmade:[['Terracotta planter set',650,'Clay &amp; Co',0,'#059669','#0d9488'],['Macramé wall hanging',890,'Knot Studio',1,'#8b5cf6','#6366f1'],['Brass diya pair',420,'Deepa Crafts',0,'#d97706','#b45309']],
+  Food:[['Homemade mango pickle',320,'Amma’s Kitchen',0,'#d97706','#ea580c'],['Millet cookie box',280,'Grain Lab',1,'#9333ea','#c026d3'],['Cold-pressed groundnut oil',540,'Village Press',0,'#ca8a04','#b45309']],
+  Jewellery:[['Oxidised silver jhumkas',760,'Nila Silver',0,'#6366f1','#8b5cf6'],['Beaded necklace',540,'Bead Bazaar',1,'#0284c7','#2563eb'],['Temple bangles',1150,'Sri Crafts',0,'#7c3aed','#c026d3']]
+};
+var cats=Object.keys(D), cur=cats[0], i=0, pane=$('#dpane'), busy=false;
+pane.innerHTML=SB+'<h4>Discover</h4><div class="dch">'+cats.map(function(c){return '<button type="button" data-c="'+c+'">'+c+'</button>'}).join('')+'</div><div class="deck" id="deck" tabindex="0" aria-label="Swipe deck. Right arrow orders, left arrow skips."></div><div class="acts"><button class="no" type="button" aria-label="Skip">✕</button><button class="yes" type="button" aria-label="Order">✓</button></div><div class="sheet" id="sheet" aria-live="polite"></div>';
+var deck=$('#deck'), sheet=$('#sheet');
+
+function chips(){ $$('#dpane .dch button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-c')===cur); }); }
+function money(n){ return '₹'+n.toLocaleString('en-IN'); }
+function topCard(){ return deck.querySelector('.sc:last-child'); }
+
+function render(){
+  deck.innerHTML='';
+  var items=D[cur].slice(i);
+  if(!items.length){
+    deck.innerHTML='<div class="empty"><span>You’ve seen every '+cur.toLowerCase()+' seller for now.</span><button class="pay" type="button" id="again">Start again</button></div>';
+    return;
+  }
+  for(var k=Math.min(1,items.length-1);k>=0;k--){
+    var it=items[k], c=document.createElement('div');
+    c.className='sc';
+    c.style.background='linear-gradient(160deg,'+it[4]+','+it[5]+')';
+    c.innerHTML=(it[3]?'<span class="sp">Sponsored</span>':'')+'<span class="stamp o">ORDER</span><span class="stamp k">SKIP</span><div class="in"><div class="nm">'+it[0]+'</div><div class="pr">'+money(it[1])+'</div><div class="sl"><i>✓</i>'+it[2]+' · Verified</div></div>';
+    if(k){ c.style.transform='scale(.94) translateY(3cqw)'; } else { drag(c); }
+    deck.appendChild(c);
+  }
+}
+
+function drag(c){
+  var x0=0, dx=0, on=false, o=c.querySelector('.o'), kk=c.querySelector('.k');
+  c.addEventListener('pointerdown',function(e){
+    if(busy)return; on=true; x0=e.clientX; dx=0; c.classList.add('drag'); c.setPointerCapture(e.pointerId);
+  });
+  c.addEventListener('pointermove',function(e){
+    if(!on)return; dx=e.clientX-x0;
+    c.style.transform='translateX('+dx+'px) rotate('+(dx/18)+'deg)';
+    o.style.opacity=clamp(dx/80); kk.style.opacity=clamp(-dx/80);
+  });
+  function end(){
+    if(!on)return; on=false; c.classList.remove('drag');
+    if(dx>90) fly(c,1); else if(dx<-90) fly(c,-1); else { c.style.transform=''; o.style.opacity=0; kk.style.opacity=0; }
+  }
+  c.addEventListener('pointerup',end);
+  c.addEventListener('pointercancel',end);
+}
+
+function fly(c,dir){
+  if(busy||!c)return; busy=true; var it=D[cur][i]; c.classList.remove('drag');
+  c.style.transform='translateX('+(dir*c.offsetWidth*1.5)+'px) rotate('+(dir*18)+'deg)'; c.style.opacity=0;
+  setTimeout(function(){ i++; busy=false; render(); if(dir>0) order(it); }, 320);
+}
+
+function order(it){
+  sheet.innerHTML='<h4 style="font-size:5.4cqw">'+it[0]+'</h4><small>'+it[2]+' · Verified</small><p class="am" style="margin:3cqw 0 2cqw">'+money(it[1])+'</p><div class="rw"><span>Payment</span><b>UPI</b></div><div class="rw"><span>Money</span><b>Held till delivery</b></div><button class="pay" type="button" id="pb">Pay with UPI</button><button class="pay ghost" type="button" id="nb">Not now</button>';
+  sheet.classList.add('on');
+}
+
+pane.addEventListener('click',function(e){
+  var t=e.target;
+  if(t.getAttribute('data-c')){ cur=t.getAttribute('data-c'); i=0; chips(); render(); return; }
+  if(t.id==='pb'){ sheet.innerHTML='<h4 style="font-size:5.4cqw">Order placed</h4><small>Protected and tracked. The money is released to the seller after delivery.</small><button class="pay" type="button" id="nb" style="margin-top:6cqw">Keep browsing</button>'; return; }
+  if(t.id==='nb'){ sheet.classList.remove('on'); return; }
+  if(t.id==='again'){ i=0; render(); return; }
+  if(t.closest('.acts .no')) fly(topCard(),-1);
+  else if(t.closest('.acts .yes')) fly(topCard(),1);
+});
+
+deck.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight') fly(topCard(),1);
+  if(e.key==='ArrowLeft') fly(topCard(),-1);
+});
+
+chips(); render();
+})();
+
+// Side panel drawer
+var mb=$('#menu'), body=document.body;
+function tog(o){ body.classList.toggle('open',o); mb.setAttribute('aria-expanded',o); if(o) $('#x').focus(); }
+mb.addEventListener('click',function(){ tog(true); });
+$('#x').addEventListener('click',function(){ tog(false); mb.focus(); });
+$('#scrim').addEventListener('click',function(){ tog(false); });
+addEventListener('keydown',function(e){ if(e.key==='Escape'&&body.classList.contains('open')){ tog(false); mb.focus(); } });
+
+})();
+</script>
+</body>
+</html>

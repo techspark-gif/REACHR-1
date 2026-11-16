@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import {
+  Link as LinkIcon,
+  Package,
+  BarChart3,
+  Megaphone,
   Plus,
   Search,
   Filter,
@@ -7,22 +11,24 @@ import {
   Share2,
   Clock,
   CheckCircle,
-  AlertCircle,
   Truck,
   MessageSquare,
   QrCode,
   DollarSign,
   TrendingUp,
-  Users,
   ShieldAlert,
   ArrowLeft,
   ChevronRight,
   ExternalLink,
   Send,
   Sparkles,
+  Sun,
+  Moon,
+  LogOut,
+  ArrowUpRight,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { OrderLink, OrderStatus, PaymentRail, SellerCredentials, SubscriptionTier } from '../types';
+import { OrderLink, OrderStatus, SellerCredentials, SubscriptionTier } from '../types';
 import { SimpleSvgQr } from '../utils/qr';
 import { sounds } from '../utils/audio';
 import { SocialAdStudio } from './SocialAdStudio';
@@ -40,6 +46,8 @@ interface SellerDashboardProps {
   showToast: (msg: string) => void;
   currentSeller?: SellerCredentials;
   onOpenSubscription?: () => void;
+  theme?: 'light' | 'purple';
+  onToggleTheme?: (theme: 'light' | 'purple') => void;
 }
 
 export const SellerDashboard: React.FC<SellerDashboardProps> = ({
@@ -55,8 +63,14 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   showToast,
   currentSeller,
   onOpenSubscription,
+  theme = 'purple',
+  onToggleTheme,
 }) => {
   const tier: SubscriptionTier = currentSeller?.subscriptionTier || 'starter';
+
+  // Taskbar Tabs: 'links' | 'orders' | 'analytics' | 'ads'
+  const [activeTaskbarTab, setActiveTaskbarTab] = useState<'links' | 'orders' | 'analytics' | 'ads'>('links');
+
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -70,17 +84,21 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [expiryHours, setExpiryHours] = useState('0');
   const [terms, setTerms] = useState('Standard courier dispatch in 2 business days. Exchange allowed within 7 days.');
 
+  // QR Modal State
+  const [activeQrOrder, setActiveQrOrder] = useState<OrderLink | null>(null);
+
   // Chat message input for selected order
   const [chatInput, setChatInput] = useState('');
-
-  // Dispute proposal input
   const [disputeProposal, setDisputeProposal] = useState('');
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId);
 
-  // Compute stats
+  // Computed metrics
   const paidOrders = orders.filter((o) => o.status === 'paid' || o.status === 'resolved');
   const totalRevenue = paidOrders.reduce((sum, o) => sum + o.amount, 0);
+  const escrowPendingAmount = orders
+    .filter((o) => o.status === 'pending' || (o.status === 'paid' && o.deliveryStage < 5))
+    .reduce((sum, o) => sum + o.amount, 0);
 
   const customerMap: Record<string, number> = {};
   orders.forEach((o) => {
@@ -89,11 +107,10 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const uniqueCustomers = Object.keys(customerMap).length;
   const repeatCustomers = Object.values(customerMap).filter((c) => c > 1).length;
   const repeatRate = uniqueCustomers > 0 ? Math.round((repeatCustomers / uniqueCustomers) * 100) : 0;
-  const openDisputes = orders.filter((o) => o.status === 'disputed').length;
 
   // 7-Day Chart data
   const chartDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
-  const baseDayAmounts = [3200, 4800, 2400, 5600, 3900, 7200, totalRevenue > 0 ? totalRevenue : 1200];
+  const baseDayAmounts = [3200, 4800, 2400, 5600, 3900, 7200, totalRevenue > 0 ? totalRevenue : 4500];
   const maxDayAmount = Math.max(...baseDayAmounts, 1);
 
   // Filtered orders
@@ -153,15 +170,14 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
     setQuantity(1);
 
     sounds.playSuccess();
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-    showToast(`Payment Link ${linkCode} created successfully!`);
+    showToast(`Payment link ${linkCode} created!`);
   };
 
   const handleCopyLink = (linkCode: string) => {
     const url = `${window.location.origin}${window.location.pathname}#pay=${linkCode}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url);
-      showToast(`Link copied: ${url}`);
+      showToast(`Link copied to clipboard!`);
       sounds.playReward();
     } else {
       showToast(`Share URL: ${url}`);
@@ -187,7 +203,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
     });
 
     sounds.playMessage();
-    showToast(`Fulfillment stage advanced to: ${stageNames[nextStage]}`);
+    showToast(`Stage advanced to: ${stageNames[nextStage]}`);
   };
 
   const handleMarkCashReceived = (order: OrderLink) => {
@@ -213,7 +229,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
     sounds.playSuccess();
     confetti({ particleCount: 70, spread: 70, origin: { y: 0.5 } });
-    showToast('Cash marked received! Order completed.');
+    showToast('Payment verified! Order marked as paid.');
   };
 
   const handleSendSellerMessage = () => {
@@ -266,111 +282,99 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
     setDisputeProposal('');
     sounds.playSuccess();
-    showToast('Proposal sent to customer! Awaiting their acceptance.');
+    showToast('Proposal sent to customer! Awaiting their response.');
   };
 
-  // If an order is selected, show its full detail drawer / workspace
+  /* ── FOCUSED ORDER DETAIL MODAL / WORKSPACE ── */
   if (selectedOrder) {
     const shareUrl = `${window.location.origin}${window.location.pathname}#pay=${selectedOrder.linkCode}`;
     const waText = encodeURIComponent(
-      `Hi ${selectedOrder.customerName}, here is your payment request for ₹${selectedOrder.amount.toLocaleString(
+      `Hi ${selectedOrder.customerName}, here is your payment link for ₹${selectedOrder.amount.toLocaleString(
         'en-IN'
       )} (${selectedOrder.note}): ${shareUrl}`
     );
     const waLink = `https://wa.me/${(selectedOrder.customerPhone || '').replace(/\D/g, '')}?text=${waText}`;
 
     return (
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-6">
-        {/* Back navigation */}
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-6 animate-fadeIn">
+        {/* Navigation Bar */}
         <div className="flex items-center justify-between">
           <button
             onClick={() => onSelectOrder(null)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-sm font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--card)] hover:bg-[var(--bg-warm)] border border-[var(--line)] text-xs font-semibold text-[var(--ink)] shadow-xs transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to All Links</span>
+            <span>Back to Seller Studio</span>
           </button>
 
           <button
             onClick={() => onSwitchToBuyer(selectedOrder.id)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-bold shadow-md shadow-violet-500/20 hover:opacity-95 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--accent)] hover:opacity-90 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
           >
-            <span>Open as Buyer</span>
+            <span>Open Buyer Checkout</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Order Hero Banner */}
-        <div
-          className={`p-6 sm:p-8 rounded-3xl border shadow-2xl relative overflow-hidden ${
-            selectedOrder.status === 'paid'
-              ? 'bg-gradient-to-r from-[#0E3A32] via-[#0D2D36] to-[#122046] border-teal-500/30'
-              : selectedOrder.status === 'disputed'
-              ? 'bg-gradient-to-r from-[#3C1126] via-[#2A1138] to-[#141A3B] border-pink-500/30'
-              : selectedOrder.status === 'resolved'
-              ? 'bg-gradient-to-r from-[#21194A] via-[#1A2548] to-[#121936] border-purple-500/30'
-              : 'bg-gradient-to-r from-[#38260E] via-[#2D1B28] to-[#121A38] border-amber-500/30'
-          }`}
-        >
+        <div className="p-6 sm:p-8 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-lg space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <span className="text-xs uppercase tracking-wider font-extrabold text-slate-300">
-                {selectedOrder.businessName} · {selectedOrder.linkCode}
-              </span>
-              <h2 className="font-display font-extrabold text-4xl sm:text-5xl text-white mt-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-warm)] text-[var(--mut)] text-xs font-mono font-semibold">
+                <span>{selectedOrder.linkCode}</span>
+                <span>·</span>
+                <span>{selectedOrder.createdAt}</span>
+              </div>
+              <h2 className="font-display font-bold text-3xl sm:text-5xl text-[var(--ink)] mt-2">
                 ₹{selectedOrder.amount.toLocaleString('en-IN')}
               </h2>
-              <p className="text-slate-300 text-sm mt-1">
-                {selectedOrder.note} · For <span className="font-semibold text-white">{selectedOrder.customerName}</span>
+              <p className="text-sm text-[var(--mut)] mt-1">
+                {selectedOrder.note} · For <b className="text-[var(--ink)]">{selectedOrder.customerName}</b>
               </p>
             </div>
 
-            <div className="text-right">
+            <div className="flex flex-col items-end gap-2">
               <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                   selectedOrder.status === 'paid'
-                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                    ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30'
                     : selectedOrder.status === 'disputed'
-                    ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30 animate-pulse'
+                    ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30 animate-pulse'
                     : selectedOrder.status === 'resolved'
-                    ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    ? 'bg-purple-500/15 text-purple-500 border border-purple-500/30'
+                    : 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
                 }`}
               >
-                ● {selectedOrder.status}
+                {selectedOrder.status === 'paid' ? 'Escrow Protected · Paid' : selectedOrder.status}
               </span>
-              {selectedOrder.paymentMethod && (
-                <div className="text-xs text-slate-300 mt-2 font-mono">
-                  {selectedOrder.paymentMethod.name} · Ref: {selectedOrder.paymentMethod.ref}
-                </div>
+
+              {selectedOrder.customerPhone && (
+                <span className="text-xs text-[var(--mut)]">📱 {selectedOrder.customerPhone}</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* 2-Column Grid: Sharing & QR Code (Left) + Fulfillment & Chat (Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: QR Code & Sharing Options */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="p-6 rounded-3xl bg-[#121936] border border-white/10 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-lg text-white">Instant Sharing & QR</h3>
-                <span className="text-xs text-slate-400 font-mono">{selectedOrder.linkCode}</span>
-              </div>
+        {/* 2-Column Detail Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Share Link & QR */}
+          <div className="lg:col-span-5 space-y-5">
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-4">
+              <h3 className="font-display font-semibold text-base text-[var(--ink)]">1-Click Share</h3>
 
-              {/* Scannable SVG QR Card */}
-              <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
-                <SimpleSvgQr text={shareUrl} size={170} />
-                <span className="text-[11px] text-slate-400 text-center leading-relaxed">
-                  Scan with any camera or UPI scanner to launch checkout.
+              {/* QR Box */}
+              <div className="p-5 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] flex flex-col items-center justify-center space-y-3">
+                <SimpleSvgQr text={shareUrl} size={160} />
+                <span className="text-[11px] text-[var(--mut)] text-center leading-relaxed">
+                  Scan with any camera or UPI app to open checkout.
                 </span>
               </div>
 
               {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   onClick={() => handleCopyLink(selectedOrder.linkCode)}
-                  className="py-3 px-3 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/40 text-violet-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="py-3 px-3 rounded-2xl bg-[var(--bg-warm)] hover:bg-[var(--line)] border border-[var(--line)] text-[var(--ink)] font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                   <span>Copy Link</span>
@@ -380,70 +384,59 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-3 px-3 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
+                  className="py-3 px-3 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-600 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer text-center transition-colors"
                 >
                   <Share2 className="w-4 h-4" />
                   <span>WhatsApp</span>
                 </a>
               </div>
 
-              {/* COD Action if pending */}
               {selectedOrder.status === 'pending' && (
-                <div className="pt-2 border-t border-white/5">
-                  <button
-                    onClick={() => handleMarkCashReceived(selectedOrder)}
-                    className="w-full py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <DollarSign className="w-4 h-4" />
-                    <span>Mark Cash / Offline Payment Received</span>
-                  </button>
-                </div>
+                <button
+                  onClick={() => handleMarkCashReceived(selectedOrder)}
+                  className="w-full py-2.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-600 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span>Mark Payment Received</span>
+                </button>
               )}
             </div>
 
-            {/* Terms and conditions info */}
-            <div className="p-6 rounded-3xl bg-[#121936] border border-white/10 space-y-3">
-              <h4 className="font-display font-bold text-sm text-white">Terms & Return Policy</h4>
-              <p className="text-xs text-slate-300 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                {selectedOrder.terms || 'Standard 7-day exchange window. Delivered via express surface courier.'}
+            {/* Terms Card */}
+            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-2">
+              <span className="text-xs font-bold text-[var(--mut)] uppercase tracking-wider">Policy &amp; Terms</span>
+              <p className="text-xs text-[var(--ink)] leading-relaxed bg-[var(--bg-warm)] p-3 rounded-xl border border-[var(--line)]">
+                {selectedOrder.terms || 'Standard 7-day exchange window with doorstep inspection.'}
               </p>
-              {selectedOrder.expiresAt && (
-                <div className="text-[11px] text-amber-400 font-semibold flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Expires: {selectedOrder.expiresAt}</span>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Right Column: Fulfillment Tracker, Dispute Resolution, and Chat */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Right Column: Fulfillment Tracker & Live Chat */}
+          <div className="lg:col-span-7 space-y-5">
             {/* Fulfillment Tracker */}
-            <div className="p-6 rounded-3xl bg-[#121936] border border-white/10 space-y-4">
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-lg text-white flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-teal-400" />
-                  <span>Fulfillment Pipeline</span>
-                </h3>
-                <span className="text-xs text-teal-400 font-semibold">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-[var(--accent)]" />
+                  <h3 className="font-display font-semibold text-base text-[var(--ink)]">Fulfillment Timeline</h3>
+                </div>
+                <span className="text-xs font-semibold text-[var(--accent)]">
                   Stage {selectedOrder.deliveryStage + 1} of 6
                 </span>
               </div>
 
-              {/* Step indicator */}
+              {/* Steps Progress */}
               <div className="grid grid-cols-6 gap-1.5 py-2">
-                {['Placed', 'Confirmed', 'Packed', 'Dispatched', 'Out', 'Delivered'].map((step, idx) => (
+                {['Placed', 'Confirmed', 'Packed', 'Shipped', 'Out', 'Delivered'].map((step, idx) => (
                   <div key={idx} className="text-center space-y-1">
                     <div
                       className={`h-2 rounded-full transition-all ${
-                        idx <= selectedOrder.deliveryStage
-                          ? 'bg-gradient-to-r from-teal-400 to-cyan-400 shadow-sm shadow-teal-500/30'
-                          : 'bg-white/10'
+                        idx <= selectedOrder.deliveryStage ? 'bg-[var(--accent)] shadow-xs' : 'bg-[var(--line)]'
                       }`}
                     />
                     <div
                       className={`text-[10px] font-semibold truncate ${
-                        idx === selectedOrder.deliveryStage ? 'text-teal-300' : 'text-slate-500'
+                        idx === selectedOrder.deliveryStage ? 'text-[var(--accent)] font-bold' : 'text-[var(--mut)]'
                       }`}
                     >
                       {step}
@@ -452,114 +445,40 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 ))}
               </div>
 
-              {/* Advance Stage CTA */}
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-xs text-slate-400">
-                  Current:{' '}
-                  <b className="text-white">
-                    {
-                      ['Order Placed', 'Confirmed', 'Packed', 'Dispatched', 'Out for Delivery', 'Delivered'][
-                        selectedOrder.deliveryStage
-                      ]
-                    }
-                  </b>
-                </span>
-                {selectedOrder.deliveryStage < 5 && (
+              {selectedOrder.deliveryStage < 5 && (
+                <div className="pt-2 flex justify-end">
                   <button
                     onClick={() => handleAdvanceDeliveryStage(selectedOrder)}
-                    className="px-4 py-2 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 text-teal-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-[var(--accent)] hover:opacity-90 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                   >
-                    <span>Advance Stage</span>
+                    <span>Advance to Next Stage</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* Dispute Resolution Module (if active) */}
-            {selectedOrder.dispute && (
-              <div className="p-6 rounded-3xl bg-pink-950/30 border border-pink-500/40 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="w-5 h-5 text-pink-400" />
-                    <h3 className="font-display font-bold text-lg text-white">
-                      Dispute: {selectedOrder.dispute.reason}
-                    </h3>
-                  </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-pink-500/20 text-pink-300 font-bold uppercase">
-                    Stage {selectedOrder.dispute.currentStage} of 4
-                  </span>
-                </div>
-
-                {/* Dispute Timeline */}
-                <div className="space-y-2 py-2">
-                  {selectedOrder.dispute.timeline.map((event, i) => (
-                    <div key={i} className="text-xs p-3 rounded-xl bg-white/[0.04] border border-white/5 space-y-1">
-                      <div className="flex items-center justify-between font-bold text-pink-300">
-                        <span>{event.title}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">{event.timestamp}</span>
-                      </div>
-                      <p className="text-slate-300 leading-relaxed">{event.description}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Seller Proposal Box (If stage 1) */}
-                {selectedOrder.dispute.currentStage === 1 && (
-                  <div className="pt-2 space-y-3">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-pink-300">
-                      Submit Your Official Proposal
-                    </label>
-                    <input
-                      type="text"
-                      value={disputeProposal}
-                      onChange={(e) => setDisputeProposal(e.target.value)}
-                      placeholder="e.g. Free replacement in Size 10 UK, or 35% partial goodwill refund"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
-                    />
-                    <button
-                      onClick={handleProposeDisputeSolution}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:opacity-95 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      Send Proposal to Customer
-                    </button>
-                  </div>
-                )}
-
-                {selectedOrder.dispute.currentStage === 2 && (
-                  <div className="text-xs text-amber-300 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
-                    Awaiting customer review of your proposal: "{selectedOrder.dispute.proposedSolution}"
-                  </div>
-                )}
-
-                {selectedOrder.dispute.currentStage === 4 && (
-                  <div className="text-xs text-emerald-300 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
-                    Dispute resolved: {selectedOrder.dispute.resolutionSummary}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Contextual Order Chat */}
-            <div className="p-6 rounded-3xl bg-[#121936] border border-white/10 space-y-4">
+            {/* Contextual Order Conversation */}
+            <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-lg text-white flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-pink-400" />
-                  <span>Order Conversation</span>
-                </h3>
-                <span className="text-xs text-slate-400">Attached to order</span>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-purple-500" />
+                  <h3 className="font-display font-semibold text-base text-[var(--ink)]">Customer Messages</h3>
+                </div>
+                <span className="text-xs text-[var(--mut)]">{selectedOrder.customerName}</span>
               </div>
 
-              <div className="h-64 overflow-y-auto space-y-2.5 p-3 rounded-2xl bg-black/20 border border-white/5 scrollbar-none">
+              {/* Chat Thread */}
+              <div className="h-60 overflow-y-auto space-y-2.5 p-3 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] scrollbar-none">
                 {selectedOrder.messages.map((m) => (
                   <div
                     key={m.id}
                     className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed space-y-1 ${
                       m.sender === 'seller'
-                        ? 'ml-auto bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-br-xs'
+                        ? 'ml-auto bg-[var(--accent)] text-white rounded-br-xs'
                         : m.sender === 'customer'
-                        ? 'mr-auto bg-[#1C2648] text-slate-200 border border-white/10 rounded-bl-xs'
-                        : 'mx-auto text-center bg-amber-500/15 text-amber-300 border border-amber-500/20'
+                        ? 'mr-auto bg-[var(--card)] text-[var(--ink)] border border-[var(--line)] rounded-bl-xs'
+                        : 'mx-auto text-center bg-amber-500/10 text-amber-600 border border-amber-500/20'
                     }`}
                   >
                     <div>{m.text}</div>
@@ -571,22 +490,22 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 ))}
               </div>
 
-              {/* Message Input */}
+              {/* Input */}
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendSellerMessage()}
-                  placeholder="Send reply to customer..."
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
+                  placeholder="Type an update or reply..."
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] placeholder-[var(--mut)] focus:outline-none focus:border-[var(--accent)]"
                 />
                 <button
                   onClick={handleSendSellerMessage}
-                  className="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-[var(--accent)] hover:opacity-90 text-white font-semibold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
                 >
-                  <span>Send</span>
                   <Send className="w-3.5 h-3.5" />
+                  <span>Send</span>
                 </button>
               </div>
             </div>
@@ -596,441 +515,560 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
     );
   }
 
-  // DEFAULT VIEW: Command Center with KPI stats, Revenue chart, Link Creator & Link Library
+  /* ── MAIN SELLER STUDIO WORKSPACE WITH MODERN FLOATING TASKBAR DOCK ── */
   return (
-    <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
-      {/* Merchant Profile & Authentication Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-[#0F1528]/90 backdrop-blur-xl border border-pink-500/25 shadow-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center text-white font-black text-lg shadow-md shadow-pink-500/25">
-            {(currentSeller?.businessName || "M").charAt(0).toUpperCase()}
+    <div className="relative z-10 w-full max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-8 animate-fadeIn font-sans">
+      {/* Studio Header Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm transition-colors">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+            {currentSeller?.businessName?.charAt(0) || 'M'}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-lg text-white">
+              <h2 className="font-display font-bold text-xl text-[var(--ink)]">
                 {currentSeller?.businessName || "Meera's Handloom"}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Verified Merchant
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <span className="font-mono text-pink-300">
-                {currentSeller?.vpa || "meera@upi"}
-              </span>
-              <span>•</span>
-              <span className="text-slate-400">
-                {currentSeller?.city || (currentSeller?.ownerName ? `Owner: ${currentSeller.ownerName}` : "GSTIN: 29AABCU9603R1ZM")}
-              </span>
-              <span>•</span>
-              <span className="text-emerald-400 font-semibold">
-                {currentSeller?.trustScore ? `${currentSeller.trustScore}% Trust Score` : "99.2% Positive Trust"}
+              </h2>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                Verified Merchant
               </span>
             </div>
+            <p className="text-xs text-[var(--mut)] mt-0.5">
+              UPI: <span className="font-mono text-[var(--ink)]">{currentSeller?.vpa || 'meera@upi'}</span> · Trust Score: <b className="text-emerald-500">99%</b>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          {/* Subscription Tier Button */}
+        {/* Header Right Controls */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Theme switcher */}
+          {onToggleTheme && (
+            <button
+              onClick={() => onToggleTheme(theme === 'purple' ? 'light' : 'purple')}
+              className="p-2.5 rounded-2xl bg-[var(--bg-warm)] hover:bg-[var(--line)] border border-[var(--line)] text-[var(--ink)] cursor-pointer transition-colors"
+              title={`Switch to ${theme === 'purple' ? 'Light' : 'Purple'} mode`}
+            >
+              {theme === 'purple' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-purple-600" />}
+            </button>
+          )}
+
+          {/* Subscription Tier Badge */}
           <button
             onClick={onOpenSubscription}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-lg ${
-              tier === 'elite'
-                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-amber-500/25'
-                : tier === 'pro'
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-indigo-500/25'
-                : 'bg-white/10 hover:bg-white/15 text-slate-200 border border-white/20'
-            }`}
+            className="px-3.5 py-2 rounded-2xl bg-[var(--bg-warm)] hover:bg-[var(--line)] border border-[var(--line)] text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>
-              {tier === 'elite'
-                ? '⭐ Elite Brand Plan'
-                : tier === 'pro'
-                ? '⚡ Pro Growth Plan'
-                : 'Upgrade Plan (Get Meta Ads)'}
-            </span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>{tier === 'elite' ? 'Elite Plan' : tier === 'pro' ? 'Pro Growth' : 'Starter Free'}</span>
           </button>
 
           {onSwitchPortal && (
             <button
               onClick={onSwitchPortal}
-              className="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+              className="px-3.5 py-2 rounded-2xl bg-[var(--bg-warm)] hover:bg-[var(--line)] border border-[var(--line)] text-xs font-semibold text-[var(--ink)] transition-colors cursor-pointer"
             >
-              Switch Portal
+              Public Home
             </button>
           )}
+
           {onSignOut && (
             <button
               onClick={onSignOut}
-              className="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 cursor-pointer transition-colors"
+              title="Sign Out"
             >
-              <span>Sign Out</span>
+              <LogOut className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
 
-      {/* 1. TOP STATS STRIP WITH ASYMMETRICAL ORGANIC RADII */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div
-          className="p-5 text-white shadow-xl transition-transform hover:-translate-y-1"
-          style={{
-            background: 'linear-gradient(135deg, #7557ff, #a855f7)',
-            borderRadius: '28px 28px 60px 28px',
-          }}
-        >
-          <small className="opacity-90 font-bold text-xs uppercase tracking-wider block">Paying Customers</small>
-          <div className="font-display font-extrabold text-4xl mt-1 font-mono">{uniqueCustomers}</div>
+      {/* QUICK SUMMARY STRIP */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[var(--card)] border border-[var(--line)] shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--mut)]">Total Volume</span>
+          <div className="font-display font-bold text-2xl sm:text-3xl text-[var(--ink)] mt-1">
+            ₹{totalRevenue.toLocaleString('en-IN')}
+          </div>
+          <span className="text-[11px] text-emerald-500 font-semibold mt-0.5 block">100% Settled</span>
         </div>
 
-        <div
-          className="p-5 shadow-xl transition-transform hover:-translate-y-1"
-          style={{
-            background: 'linear-gradient(135deg, #00bfa6, #168be5)',
-            borderRadius: '28px 60px 28px 28px',
-            color: '#12082b',
-          }}
-        >
-          <small className="opacity-90 font-bold text-xs uppercase tracking-wider block">Received</small>
-          <div className="font-display font-extrabold text-4xl mt-1 font-mono">₹{totalRevenue.toLocaleString('en-IN')}</div>
+        <div className="p-4 sm:p-5 rounded-2xl bg-[var(--card)] border border-[var(--line)] shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--mut)]">In Escrow</span>
+          <div className="font-display font-bold text-2xl sm:text-3xl text-[var(--ink)] mt-1">
+            ₹{escrowPendingAmount.toLocaleString('en-IN')}
+          </div>
+          <span className="text-[11px] text-[var(--accent)] font-semibold mt-0.5 block">Auto-releasing</span>
         </div>
 
-        <div
-          className="p-5 shadow-xl transition-transform hover:-translate-y-1"
-          style={{
-            background: 'linear-gradient(135deg, #e8b94e, #ff8d43)',
-            borderRadius: '60px 28px 28px 28px',
-            color: '#12082b',
-          }}
-        >
-          <small className="opacity-90 font-bold text-xs uppercase tracking-wider block">Repeat Customers</small>
-          <div className="font-display font-extrabold text-4xl mt-1 font-mono">{repeatRate}%</div>
+        <div className="p-4 sm:p-5 rounded-2xl bg-[var(--card)] border border-[var(--line)] shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--mut)]">Active Orders</span>
+          <div className="font-display font-bold text-2xl sm:text-3xl text-[var(--ink)] mt-1">
+            {orders.length}
+          </div>
+          <span className="text-[11px] text-[var(--mut)] mt-0.5 block">Across India</span>
         </div>
 
-        <div
-          className="p-5 text-white shadow-xl transition-transform hover:-translate-y-1"
-          style={{
-            background: 'linear-gradient(135deg, #ff4f87, #ff8b65)',
-            borderRadius: '28px 28px 28px 60px',
-          }}
-        >
-          <small className="opacity-90 font-bold text-xs uppercase tracking-wider block">Open Disputes</small>
-          <div className="font-display font-extrabold text-4xl mt-1 font-mono">{openDisputes}</div>
+        <div className="p-4 sm:p-5 rounded-2xl bg-[var(--card)] border border-[var(--line)] shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--mut)]">Repeat Buyers</span>
+          <div className="font-display font-bold text-2xl sm:text-3xl text-[var(--ink)] mt-1">
+            {repeatRate}%
+          </div>
+          <span className="text-[11px] text-purple-500 font-semibold mt-0.5 block">0% Disputes</span>
         </div>
       </div>
 
-      {/* Meta Ad Studio (Instagram & Facebook ad generator) */}
-      <SocialAdStudio
-        seller={currentSeller || {
-          email: 'meera@handloom.in',
-          businessName: "Meera's Handloom",
-          ownerName: "Meera R.",
-          vpa: 'meera@upi',
-          phone: '+91 98451 22390',
-          isVerified: true,
-          city: 'Bengaluru, Karnataka',
-          category: 'Handloom & Textiles',
-          trustScore: 99,
-          subscriptionTier: tier,
-        }}
-        onOpenSubscriptionModal={onOpenSubscription || (() => {})}
-        showToast={showToast}
-      />
+      {/* MODERN TASKBAR DOCK */}
+      <div className="flex justify-center sticky top-4 z-30">
+        <div className="p-1.5 rounded-full bg-[var(--card)] border border-[var(--line)] shadow-xl flex items-center gap-1.5 backdrop-blur-md max-w-full overflow-x-auto scrollbar-none transition-colors">
+          <button
+            onClick={() => {
+              setActiveTaskbarTab('links');
+              sounds.playMessage();
+            }}
+            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTaskbarTab === 'links'
+                ? 'bg-[var(--accent)] text-white shadow-sm'
+                : 'text-[var(--mut)] hover:text-[var(--ink)] hover:bg-[var(--bg-warm)]'
+            }`}
+          >
+            <LinkIcon className="w-3.5 h-3.5" />
+            <span>Payment Links</span>
+          </button>
 
-      {/* 2. REVENUE VELOCITY CHART */}
-      <div className="p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h3 className="font-display font-bold text-xl text-white">Money in, last 7 days</h3>
-            <p className="text-xs text-slate-400">Earlier days are sample data. Today grows dynamically as buyers pay.</p>
-          </div>
-          <div className="text-xs font-mono font-bold px-3 py-1.5 rounded-xl bg-teal-500/10 text-teal-300 border border-teal-500/20">
-            Peak Day: ₹{Math.max(...baseDayAmounts).toLocaleString('en-IN')}
-          </div>
-        </div>
+          <button
+            onClick={() => {
+              setActiveTaskbarTab('orders');
+              sounds.playMessage();
+            }}
+            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTaskbarTab === 'orders'
+                ? 'bg-[var(--accent)] text-white shadow-sm'
+                : 'text-[var(--mut)] hover:text-[var(--ink)] hover:bg-[var(--bg-warm)]'
+            }`}
+          >
+            <Package className="w-3.5 h-3.5" />
+            <span>Orders Queue</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                activeTaskbarTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[var(--bg-warm)] text-[var(--ink)]'
+              }`}
+            >
+              {orders.length}
+            </span>
+          </button>
 
-        {/* Bar chart */}
-        <div className="pt-6 flex items-end gap-3 h-44 sm:h-52 w-full">
-          {baseDayAmounts.map((amt, idx) => {
-            const heightPercent = Math.max(12, Math.round((amt / maxDayAmount) * 100));
-            const isToday = idx === 6;
-            return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
-                <div
-                  className="w-full rounded-t-xl transition-all duration-500 group-hover:scale-y-105 origin-bottom relative cursor-pointer"
-                  style={{
-                    height: `${heightPercent}%`,
-                    background: isToday
-                      ? 'linear-gradient(180deg, #ff4f87 0%, #8b5cf6 100%)'
-                      : idx % 2 === 0
-                      ? 'linear-gradient(180deg, #00bfa6 0%, #168be5 100%)'
-                      : 'linear-gradient(180deg, #ff9f43 0%, #ff4f87 100%)',
-                  }}
-                  title={`₹${amt.toLocaleString('en-IN')}`}
-                >
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded shadow pointer-events-none whitespace-nowrap">
-                    ₹{amt.toLocaleString('en-IN')}
-                  </div>
-                </div>
-                <span className={`text-xs font-semibold ${isToday ? 'text-pink-400 font-bold' : 'text-slate-400'}`}>
-                  {chartDays[idx]}
-                </span>
-              </div>
-            );
-          })}
+          <button
+            onClick={() => {
+              setActiveTaskbarTab('analytics');
+              sounds.playMessage();
+            }}
+            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTaskbarTab === 'analytics'
+                ? 'bg-[var(--accent)] text-white shadow-sm'
+                : 'text-[var(--mut)] hover:text-[var(--ink)] hover:bg-[var(--bg-warm)]'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Revenue &amp; Velocity</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTaskbarTab('ads');
+              sounds.playMessage();
+            }}
+            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+              activeTaskbarTab === 'ads'
+                ? 'bg-[var(--accent)] text-white shadow-sm'
+                : 'text-[var(--mut)] hover:text-[var(--ink)] hover:bg-[var(--bg-warm)]'
+            }`}
+          >
+            <Megaphone className="w-3.5 h-3.5" />
+            <span>Social Ad Studio</span>
+          </button>
         </div>
       </div>
 
-      {/* FEATURE TILES */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1 hover:border-violet-500/40 transition-colors">
-          <div className="text-2xl mb-1">🧾</div>
-          <b className="text-white text-sm block">ProofVault</b>
-          <p className="text-slate-400 text-xs">Keep order details, timestamps, messages and evidence together.</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1 hover:border-teal-500/40 transition-colors">
-          <div className="text-2xl mb-1">🛡️</div>
-          <b className="text-white text-sm block">Trust Profile</b>
-          <p className="text-slate-400 text-xs">Show clear trust signals without pretending unverified sellers are verified.</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1 hover:border-pink-500/40 transition-colors">
-          <div className="text-2xl mb-1">⚖️</div>
-          <b className="text-white text-sm block">FairResolve</b>
-          <p className="text-slate-400 text-xs">Disputes move through response and review; no automatic fund locks.</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1 hover:border-amber-500/40 transition-colors">
-          <div className="text-2xl mb-1">📊</div>
-          <b className="text-white text-sm block">Seller Insights</b>
-          <p className="text-slate-400 text-xs">Use order data to understand pending payments and repeat buyers.</p>
-        </div>
-      </div>
-
-      {/* 3. MAIN WORKSPACE: SMARTPAY GENERATOR (LEFT) + LINK DIRECTORY (RIGHT) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: SmartPay Link Creator */}
-        <div className="lg:col-span-5 p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-pink-400 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4" />
-              <span>SmartPay Link Generator</span>
-            </div>
-            <h3 className="font-display font-extrabold text-2xl text-white">Create a Payment Request</h3>
-            <p className="text-xs text-slate-400">
-              Creates a unique, verifiable payment link with custom terms and an autonomous QR code.
-            </p>
-          </div>
-
-          <form onSubmit={handleCreateLinkSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Customer Full Name *</label>
-              <input
-                type="text"
-                required
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="e.g. Priya Nair"
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
-              />
+      {/* ── WORKSPACE 1: PAYMENT LINKS CREATOR & DIRECTORY ── */}
+      {activeTaskbarTab === 'links' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fadeIn">
+          {/* Left Column: Link Creator */}
+          <div className="lg:col-span-5 p-6 sm:p-7 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-5 text-[var(--ink)] transition-colors">
+            <div className="space-y-1">
+              <h3 className="font-display font-semibold text-lg text-[var(--ink)]">Create a Payment Link</h3>
+              <p className="text-xs text-[var(--mut)]">
+                Generate an escrow-protected UPI payment link to share with buyers.
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleCreateLinkSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Amount (₹ INR) *</label>
+                <label className="block text-xs font-semibold text-[var(--mut)] mb-1">Customer Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="e.g. Priya Sharma"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] placeholder-[var(--mut)] focus:outline-none focus:border-[var(--accent)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--mut)] mb-1">WhatsApp / Phone (Optional)</label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] placeholder-[var(--mut)] focus:outline-none focus:border-[var(--accent)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--mut)] mb-1">Amount (₹) *</label>
                 <input
                   type="number"
                   required
-                  min="1"
+                  min={1}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="1500"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-pink-500"
+                  placeholder="e.g. 1250"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] placeholder-[var(--mut)] font-semibold focus:outline-none focus:border-[var(--accent)]"
                 />
+
+                {/* Preset Amount Chips */}
+                <div className="flex gap-1.5 mt-2">
+                  {[500, 1200, 2500, 5000].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setAmount(preset)}
+                      className="px-2.5 py-1 rounded-lg bg-[var(--bg-warm)] hover:bg-[var(--line)] text-[10px] font-semibold text-[var(--ink)] cursor-pointer transition-colors"
+                    >
+                      +₹{preset.toLocaleString('en-IN')}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Quantity</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-pink-500"
-                />
+                <label className="block text-xs font-semibold text-[var(--mut)] mb-1">Item Details &amp; Quantity *</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="e.g. Pure Cotton Handloom Saree"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] placeholder-[var(--mut)] focus:outline-none focus:border-[var(--accent)]"
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    className="w-16 px-3 py-2.5 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] text-center font-bold focus:outline-none focus:border-[var(--accent)]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-[var(--accent)] hover:opacity-90 text-white font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Protected Link</span>
+              </button>
+            </form>
+          </div>
+
+          {/* Right Column: Active Links Library */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display font-semibold text-lg text-[var(--ink)]">Active Payment Links</h3>
+                <p className="text-xs text-[var(--mut)]">{orders.length} links generated for your store</p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">What is this for? *</label>
+            <div className="space-y-3">
+              {orders.map((o) => {
+                const shareUrl = `${window.location.origin}${window.location.pathname}#pay=${o.linkCode}`;
+                const waLink = `https://wa.me/${(o.customerPhone || '').replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `Hi ${o.customerName}, here is your Reachr payment link for ₹${o.amount.toLocaleString('en-IN')}: ${shareUrl}`
+                )}`;
+
+                return (
+                  <div
+                    key={o.id}
+                    className="p-5 rounded-2xl bg-[var(--card)] border border-[var(--line)] shadow-xs flex flex-wrap items-center justify-between gap-4 hover:border-[var(--accent)] transition-all"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-[var(--accent)]">{o.linkCode}</span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            o.status === 'paid'
+                              ? 'bg-emerald-500/15 text-emerald-500'
+                              : o.status === 'disputed'
+                              ? 'bg-rose-500/15 text-rose-500'
+                              : 'bg-amber-500/15 text-amber-500'
+                          }`}
+                        >
+                          {o.status}
+                        </span>
+                      </div>
+                      <div className="font-bold text-sm text-[var(--ink)]">{o.note}</div>
+                      <div className="text-xs text-[var(--mut)]">
+                        Customer: <b className="text-[var(--ink)]">{o.customerName}</b> · {o.createdAt}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="font-display font-bold text-lg text-[var(--ink)]">
+                          ₹{o.amount.toLocaleString('en-IN')}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleCopyLink(o.linkCode)}
+                          className="p-2 rounded-xl bg-[var(--bg-warm)] hover:bg-[var(--line)] text-[var(--ink)] transition-colors cursor-pointer"
+                          title="Copy Link"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+
+                        <a
+                          href={waLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 transition-colors cursor-pointer"
+                          title="Share on WhatsApp"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                        </a>
+
+                        <button
+                          onClick={() => setActiveQrOrder(o)}
+                          className="p-2 rounded-xl bg-[var(--bg-warm)] hover:bg-[var(--line)] text-[var(--ink)] transition-colors cursor-pointer"
+                          title="View QR Code"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => onSelectOrder(o.id)}
+                          className="px-3 py-2 rounded-xl bg-[var(--accent)] hover:opacity-90 text-white font-semibold text-xs cursor-pointer transition-all shadow-xs"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── WORKSPACE 2: ORDERS & FULFILLMENT QUEUE ── */}
+      {activeTaskbarTab === 'orders' && (
+        <div className="space-y-5 animate-fadeIn">
+          {/* Search & Status Filters */}
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[var(--card)] border border-[var(--line)]">
+            <div className="relative flex-1 min-w-[240px]">
+              <Search className="w-4 h-4 text-[var(--mut)] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                required
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="e.g. Block-print linen cushion covers (Set of 4)"
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by customer, link code, or item..."
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[var(--bg-warm)] border border-[var(--line)] text-xs text-[var(--ink)] placeholder-[var(--mut)] focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Customer Phone (Optional)</label>
-                <input
-                  type="text"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="+91 98451 22390"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Link Expiry</label>
-                <select
-                  value={expiryHours}
-                  onChange={(e) => setExpiryHours(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white text-xs focus:outline-none focus:border-pink-500"
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+              {['all', 'pending', 'paid', 'disputed'].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                    statusFilter === st
+                      ? 'bg-[var(--accent)] text-white shadow-xs'
+                      : 'bg-[var(--bg-warm)] text-[var(--mut)] hover:text-[var(--ink)]'
+                  }`}
                 >
-                  <option value="0" className="bg-[#121936]">
-                    No Expiry
-                  </option>
-                  <option value="24" className="bg-[#121936]">
-                    24 Hours
-                  </option>
-                  <option value="72" className="bg-[#121936]">
-                    3 Days
-                  </option>
-                  <option value="168" className="bg-[#121936]">
-                    7 Days
-                  </option>
-                </select>
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Orders Table */}
+          <div className="space-y-3">
+            {filteredOrders.map((o) => (
+              <div
+                key={o.id}
+                onClick={() => onSelectOrder(o.id)}
+                className="p-5 rounded-2xl bg-[var(--card)] border border-[var(--line)] shadow-xs hover:border-[var(--accent)] transition-all cursor-pointer flex flex-wrap items-center justify-between gap-4"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-[var(--accent)]">{o.linkCode}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        o.status === 'paid'
+                          ? 'bg-emerald-500/15 text-emerald-500'
+                          : o.status === 'disputed'
+                          ? 'bg-rose-500/15 text-rose-500'
+                          : 'bg-amber-500/15 text-amber-500'
+                      }`}
+                    >
+                      {o.status}
+                    </span>
+                    <span className="text-xs text-[var(--mut)]">Stage {o.deliveryStage + 1} of 6</span>
+                  </div>
+                  <h4 className="font-bold text-sm text-[var(--ink)]">{o.note}</h4>
+                  <div className="text-xs text-[var(--mut)]">
+                    Buyer: <b className="text-[var(--ink)]">{o.customerName}</b> · {o.createdAt}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="font-display font-bold text-xl text-[var(--ink)]">
+                      ₹{o.amount.toLocaleString('en-IN')}
+                    </div>
+                    <div className="text-[11px] text-[var(--mut)]">
+                      {o.status === 'paid' ? 'Held in Escrow' : 'Awaiting UPI'}
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-xl bg-[var(--bg-warm)] text-[var(--ink)]">
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── WORKSPACE 3: REVENUE & VELOCITY ANALYTICS ── */}
+      {activeTaskbarTab === 'analytics' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Velocity Bar Chart */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display font-bold text-lg text-[var(--ink)]">7-Day Revenue Velocity</h3>
+                <p className="text-xs text-[var(--mut)]">Direct UPI sales volume across verified payment links</p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-[var(--mut)]">Weekly Volume</span>
+                <div className="font-display font-bold text-xl text-emerald-500">₹32,600</div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Delivery & Return Terms</label>
-              <textarea
-                rows={2}
-                value={terms}
-                onChange={(e) => setTerms(e.target.value)}
-                placeholder="e.g. Dispatches in 2 days. 7-day exchange window."
-                className="w-full px-4 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs leading-relaxed focus:outline-none focus:border-pink-500"
+            {/* Custom SVG/CSS Bar Chart */}
+            <div className="h-52 flex items-end justify-between gap-3 pt-6 border-b border-[var(--line)] pb-2">
+              {chartDays.map((day, idx) => {
+                const val = baseDayAmounts[idx];
+                const heightPercent = Math.max(20, Math.round((val / maxDayAmount) * 100));
+
+                return (
+                  <div key={day} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5 group">
+                    <span className="text-[10px] font-bold text-[var(--mut)] group-hover:text-[var(--ink)] transition-colors">
+                      ₹{val.toLocaleString('en-IN')}
+                    </span>
+                    <div className="w-full flex-1 flex items-end px-1">
+                      <div
+                        className="w-full rounded-t-xl transition-all duration-500 ease-out group-hover:brightness-110 shadow-sm"
+                        style={{
+                          height: `${heightPercent}%`,
+                          minHeight: '24px',
+                          background:
+                            idx === chartDays.length - 1
+                              ? 'linear-gradient(to top, #a855f7, #ec4899)'
+                              : 'linear-gradient(to top, #0a84ff, #2bc4b4)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold text-[var(--mut)]">{day}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── WORKSPACE 4: SOCIAL AD STUDIO ── */}
+      {activeTaskbarTab === 'ads' && (
+        <div className="animate-fadeIn">
+          <SocialAdStudio
+            seller={currentSeller || {
+              email: 'meera@handloom.in',
+              businessName: "Meera's Handloom",
+              ownerName: 'Meera R.',
+              vpa: 'meera@upi',
+              phone: '+91 98451 22390',
+              isVerified: true,
+              city: 'Bengaluru',
+              category: 'Handloom',
+              trustScore: 99,
+              subscriptionTier: tier,
+            }}
+            onOpenSubscriptionModal={onOpenSubscription || (() => {})}
+            showToast={showToast}
+          />
+        </div>
+      )}
+
+      {/* Scannable QR Code Popup Modal */}
+      {activeQrOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--line)] shadow-2xl max-w-sm w-full text-center space-y-4">
+            <div className="flex justify-between items-center">
+              <h4 className="font-bold text-sm text-[var(--ink)]">Scan to Pay</h4>
+              <button
+                onClick={() => setActiveQrOrder(null)}
+                className="w-7 h-7 rounded-full bg-[var(--bg-warm)] flex items-center justify-center text-[var(--mut)] hover:text-[var(--ink)] cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[var(--bg-warm)] border border-[var(--line)] flex justify-center">
+              <SimpleSvgQr
+                text={`${window.location.origin}${window.location.pathname}#pay=${activeQrOrder.linkCode}`}
+                size={180}
               />
+            </div>
+
+            <div className="space-y-1">
+              <div className="font-bold text-base text-[var(--ink)]">
+                ₹{activeQrOrder.amount.toLocaleString('en-IN')}
+              </div>
+              <div className="text-xs text-[var(--mut)]">{activeQrOrder.note}</div>
             </div>
 
             <button
-              type="submit"
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500 hover:opacity-95 text-white font-bold text-sm shadow-lg shadow-pink-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+              onClick={() => {
+                handleCopyLink(activeQrOrder.linkCode);
+                setActiveQrOrder(null);
+              }}
+              className="w-full py-2.5 rounded-xl bg-[var(--accent)] hover:opacity-90 text-white font-bold text-xs cursor-pointer shadow-sm"
             >
-              <Plus className="w-4 h-4" />
-              <span>Create SmartPay Link</span>
+              Copy Payment URL
             </button>
-          </form>
-        </div>
-
-        {/* Right Column: Searchable, Filterable Order Directory */}
-        <div className="lg:col-span-7 p-6 md:p-8 rounded-3xl bg-[#121936] border border-white/10 shadow-xl space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="font-display font-extrabold text-2xl text-white">Your Orders & Links</h3>
-              <p className="text-xs text-slate-400">Click any order to manage fulfillment, chat, or view QR.</p>
-            </div>
-            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-white/[0.05] text-slate-300">
-              {filteredOrders.length} links
-            </span>
-          </div>
-
-          {/* Search bar */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by customer name, item, or code..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
-            />
-          </div>
-
-          {/* Status Filter Segmented Controls */}
-          <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] border border-white/10 rounded-xl overflow-x-auto scrollbar-none">
-            {['all', 'pending', 'paid', 'disputed', 'resolved'].map((f) => (
-              <button
-                key={f}
-                onClick={() => {
-                  setStatusFilter(f);
-                  sounds.playMessage();
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
-                  statusFilter === f
-                    ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {/* Orders List */}
-          <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-            {filteredOrders.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs">
-                No orders match your search or filter criteria.
-              </div>
-            ) : (
-              filteredOrders.map((order) => (
-                <div
-                  key={order.id}
-                  onClick={() => {
-                    onSelectOrder(order.id);
-                    sounds.playMessage();
-                  }}
-                  className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 group ${
-                    order.status === 'paid'
-                      ? 'bg-teal-950/20 border-teal-500/20 hover:border-teal-500/50 hover:bg-teal-950/30'
-                      : order.status === 'disputed'
-                      ? 'bg-pink-950/20 border-pink-500/30 hover:border-pink-500/60 hover:bg-pink-950/30'
-                      : order.status === 'resolved'
-                      ? 'bg-purple-950/20 border-purple-500/20 hover:border-purple-500/50 hover:bg-purple-950/30'
-                      : 'bg-white/[0.03] border-white/10 hover:border-white/25 hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display font-bold text-sm text-white group-hover:text-pink-400 transition-colors truncate">
-                        {order.customerName}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-400">({order.linkCode})</span>
-                    </div>
-                    <div className="text-xs text-slate-300 truncate max-w-sm">{order.note}</div>
-                    <div className="text-[10px] text-slate-500">{order.createdAt}</div>
-                  </div>
-
-                  <div className="text-right shrink-0 space-y-1">
-                    <div className="font-display font-extrabold text-base text-white font-mono">
-                      ₹{order.amount.toLocaleString('en-IN')}
-                    </div>
-                    <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
-                        order.status === 'paid'
-                          ? 'bg-teal-500/20 text-teal-300'
-                          : order.status === 'disputed'
-                          ? 'bg-pink-500/20 text-pink-300'
-                          : order.status === 'resolved'
-                          ? 'bg-purple-500/20 text-purple-300'
-                          : 'bg-amber-500/20 text-amber-300'
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
